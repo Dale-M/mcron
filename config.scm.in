@@ -26,3 +26,10 @@
 (define-public config-package-string "@PACKAGE_STRING@")
 (define-public config-package-bugreport "@PACKAGE_BUGREPORT@")
 (define-public config-sendmail "@SENDMAIL@")
+
+(define-public config-spool-dir "@CONFIG_SPOOL_DIR@")
+(define-public config-socket-file "@CONFIG_SOCKET_FILE@")
+(define-public config-allow-file "@CONFIG_ALLOW_FILE@")
+(define-public config-deny-file "@CONFIG_DENY_FILE@")
+(define-public config-pid-file "@CONFIG_PID_FILE@")
+(define-public config-tmp-dir "@CONFIG_TMP_DIR@")

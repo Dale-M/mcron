@@ -172,13 +172,13 @@ concerns that surround all existing cron programs.
 The user can obtain an advance schedule of all the jobs that are due
 to run.
 @item
-Vixie cron is implemented in 4500 lines of C code; mcron is 1500 lines
+Vixie cron is implemented in 4500 lines of C code; mcron is 2000 lines
 of scheme, despite the fact that it offers many more features and much
 more flexibility, and complete compatibility with Vixie cron.
 @end itemize
 
 A full discussion of the design and philosophy of mcron can be found
-in the white paper at http://.../mcron.html [FIXME].
+in the white paper at http://rdmp.org:20202/mcron.html.
 
 
 @node Simple examples, Syntax, Introduction, Top
@@ -899,14 +899,14 @@ standard output.
 @cindex running cron
 @cindex crond, invokation
 @cindex running crond
-@cindex /var/cron/tabs
-@cindex /var/run/cron.pid
+@cindex @CONFIG_SPOOL_DIR@
+@cindex @CONFIG_SOCKET_FILE@
 If the program runs by the name of @code{cron} or @code{crond}, then
-it will read all the files in @code{/var/cron/tabs} (which should only
+it will read all the files in @code{@CONFIG_SPOOL_DIR@} (which should only
 be readable by root) and the file @code{/etc/crontab}, and then
 detaches itself from the terminal to live forever as a daemon
 process. Additionally, it creates a UNIX socket at
-@code{/var/cron/socket}, and listens for messages sent to that socket
+@code{@CONFIG_SOCKET_FILE@}, and listens for messages sent to that socket
 consisting of a user name whose crontabs have been changed. In this
 case, the program will re-read that user's crontab. This is for
 correct functioning with the crontab program.
@@ -1047,7 +1047,7 @@ No problems.
 
 @item 1
 An attempt has been made to start cron but there is already a
-/var/run/cron.pid file. If there really is no other cron daemon
+@CONFIG_PID_FILE@ file. If there really is no other cron daemon
 running (this does not include invokations of mcron) then you should
 remove this file before attempting to run cron.
 
@@ -1065,7 +1065,7 @@ to be specified in one of these forms.
 
 @item 4
 An attempt to run cron has been made by a user who does not have
-permission to access the crontabs in /var/cron/tabs. These files
+permission to access the crontabs in @CONFIG_SPOOL_DIR@. These files
 should be readable only by root, and the cron daemon must be run as
 root.
 
@@ -1075,7 +1075,7 @@ schedule!
 
 @item 6
 The system administrator has blocked this user from using crontab with
-the files /var/cron/allow and /var/cron/deny.
+the files @CONFIG_ALLOW_FILE@ and @CONFIG_DENY_FILE@.
 
 @item 7
 Crontab has been run with more than one of the arguments @code{-l},
@@ -1102,10 +1102,10 @@ The last component of the name of the program was not one of
 Either the ~/.cron directory does not exist, or there is a problem
 reading the files there.
 
-@item 14
-There is a problem writing to /var/cron/update. This is probably
-because the crontab program is not installed SUID root, as it should
-be.
+@c @item 14
+@c There is a problem writing to /var/cron/update. This is probably
+@c because the crontab program is not installed SUID root, as it should
+@c be.
 
 @item 15
 Crontab has been run without any arguments at all. There is no default

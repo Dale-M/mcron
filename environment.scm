@@ -24,8 +24,8 @@
 ;; and represents the cumulated environment settings in a configuration
 ;; file. When a job definition is seen in a configuration file, the
 ;; current-environment-mods are copied into the internal job description, and
-;; when the job actually runs these environment modifications are applied to the
-;; UNIX environment in which the job runs.
+;; when the job actually runs these environment modifications are applied to
+;; the UNIX environment in which the job runs.
 
 
 
@@ -76,8 +76,8 @@
 
 
 
-;; Each time a job is added to the system, we take a snapshot of the current set
-;; of environment modifiers.
+;; Each time a job is added to the system, we take a snapshot of the current
+;; set of environment modifiers.
 
 (define (get-current-environment-mods-copy)
   (list-copy current-environment-mods))
@@ -93,10 +93,11 @@
 
 
 
-;; Procedure to add another environment setting to the alist above. This is used
-;; both implicitly by the Vixie parser, and can be used directly by users in
-;; scheme configuration files. The return value is purely for the convenience of
-;; the parse-vixie-environment in the vixie-specification module (yuk).
+;; Procedure to add another environment setting to the alist above. This is
+;; used both implicitly by the Vixie parser, and can be used directly by users
+;; in scheme configuration files. The return value is purely for the
+;; convenience of the parse-vixie-environment in the vixie-specification module
+;; (yuk).
 
 (define (append-environment-mods name value)
   (set! current-environment-mods (append current-environment-mods

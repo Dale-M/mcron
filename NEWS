@@ -3,7 +3,26 @@ Historic moments in the life of mcron.                        -*-text-*-
 Copyright (C) 2003 Dale Mellor
 See the end for copying conditions.
 
-Please send bug reports to dale_mellor@users.sourceforge.net.
+Please send bug reports to bugs-mcron@gnu.org.
+
+
+Friday, 12th December 2003
+    Released version 1.0.0 through rdmp.org. No CVS tag has been created.
+
+
+Tuesday, 2nd December 2003
+    Mcron is now officially a GNU program. Unfortunately Savannah, the
+    development environment, has been mauled so an immediate GNU release is not
+    likely. No CVS tag has been created.
+
+
+Tuesday, 5th August 2003
+    Released version 0.99.3. The CVS tag will be release_0-99-3 (no branch).
+
+
+Sunday, 3rd August 2003
+    Broken the code into modules (which is not the same as saying the code is
+    broken ;-) ).
 
 
 Sunday, 20th July 2003
@@ -20,13 +39,14 @@ Sunday, 20th July 2003
 Saturday, 5th July 2003
     Released version 0.99.1, with installation of cron and crontab disabled by
     default (suspect problems with Guile internals are preventing these from
-    working properly). The CVS tag is release_0-99-1 (no branch has been created
-    for it).
+    working properly). The CVS tag is release_0-99-1 (no branch has been
+    created for it).
 
 
 Friday, 4th July 2003
     We have been accepted as a Savannah project. A CVS repository and web home
-    page have been created. We're still waiting for acceptance as a GNU project.
+    page have been created. We're still waiting for acceptance as a GNU
+    project.
 
 
 

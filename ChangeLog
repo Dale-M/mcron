@@ -1,3 +1,27 @@
+2003-12-11  Dale Mellor <dale_mellor@users.sourceforge.net>
+
+	* Modified all auxiliary files to reflect that we are now a GNU
+	package.
+
+	* Bumped version to 1.0.0.
+
+	
+2003-12-07  Dale Mellor <dale_mellor@users.sourceforge.net>
+
+	* configure.ac: Added switches for files and directories used by
+	mcron: --spool-dir, --socket-file, --allow-file, --deny-file,
+	--pid-file and --tmp-dir. All the code has been modified to use
+	these configure options (including the source for the texinfo
+	manual).
+
+	
+2003-12-05  Dale Mellor <dale_mellor@users.sourceforge.net>
+
+	* configure.ac: Added test for guile version >= 1.6.4.
+
+	* bumped version to 0.99.4.
+
+	
 2003-08-03  Dale Mellor <dale_mellor@users.sourceforge.net>
 
         * Third cut, fully functional, modular, production quality, still

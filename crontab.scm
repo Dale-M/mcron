@@ -29,8 +29,8 @@
 
 (define (hit-server user-name)
   (catch #t (lambda ()
-              (let* ((socket (socket AF_UNIX SOCK_STREAM 0)))
-                (connect socket AF_UNIX "/var/cron/socket")
+              (let ((socket (socket AF_UNIX SOCK_STREAM 0)))
+                (connect socket AF_UNIX config-socket-file)
                 (display user-name socket)
                 (close socket)))
          (lambda (key . args)
@@ -65,8 +65,8 @@
 ;; If the real user is not allowed to use crontab due to the /var/cron/allow
 ;; and/or /var/cron/deny files, bomb out now.
 
-(if (or (eq? (in-access-file? "/var/cron/allow" crontab-real-user) #f)
-        (eq? (in-access-file? "/var/cron/deny" crontab-real-user) #t))
+(if (or (eq? (in-access-file? config-allow-file crontab-real-user) #f)
+        (eq? (in-access-file? config-deny-file crontab-real-user) #t))
     (begin
       (display "Access denied by system operator.\n")
       (primitive-exit 6)))
@@ -103,7 +103,7 @@
 
 ;; So now we know which crontab file we will be manipulating.
 
-(define crontab-file (string-append "/var/cron/tabs/" crontab-user))
+(define crontab-file (string-append config-spool-dir "/" crontab-user))
 
 
 
@@ -139,7 +139,9 @@
  ;; crontab, wake the cron daemon up, and remove the temporary file.
 
  ((option-ref options 'edit #f)
-  (let ((temp-file (string-append "/tmp/crontab." (number->string (getpid)))))
+  (let ((temp-file (string-append config-tmp-dir
+                                  "/crontab."
+                                  (number->string (getpid)))))
     (catch #t (lambda () (copy-file crontab-file temp-file))
               (lambda (key . args) (with-output-to-file temp-file noop)))
     (chown temp-file (getuid) (getgid))

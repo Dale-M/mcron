@@ -162,8 +162,8 @@ Report bugs to " config-package-bugreport ".\n
 ;; running.
 
 (define (delete-run-file)
-  (catch #t (lambda () (delete-file "/var/run/cron.pid")
-                       (delete-file "/var/cron/socket"))
+  (catch #t (lambda () (delete-file config-pid-file)
+                       (delete-file config-socket-file))
             noop)
   (quit))
 
@@ -187,14 +187,14 @@ Report bugs to " config-package-bugreport ".\n
             (display "This program must be run by the root user (and should ")
             (display "have been installed as such).\n")
             (primitive-exit 16)))
-      (if (access? "/var/run/cron.pid" F_OK)
+      (if (access? config-pid-file F_OK)
           (begin
             (display "A cron daemon is already running.\n")
             (display "  (If you are sure this is not true, remove the file\n")
-            (display "   /var/run/cron.pid.)\n")
+            (display "   " config-pid-file ".)\n")
             (primitive-exit 1)))
       (if (not (option-ref options 'schedule #f))
-          (with-output-to-file "/var/run/cron.pid" noop))
+          (with-output-to-file config-pid-file noop))
       (setenv "MAILTO" #f)
       (c-set-cron-signals)))
 
@@ -294,12 +294,12 @@ Report bugs to " config-package-bugreport ".\n
 
 (define (process-files-in-system-directory)
   (catch #t (lambda ()
-              (let ((directory (opendir "/var/cron/tabs")))
+              (let ((directory (opendir config-spool-dir)))
                 (do ((file-name (readdir directory) (readdir directory)))
                     ((eof-object? file-name))
                   (and-let* ((user (valid-user file-name)))
                             (set-configuration-user user)
-                            (read-vixie-file (string-append "/var/cron/tabs/"
+                            (read-vixie-file (string-append config-spool-dir
                                                             file-name))))))
       (lambda (key . args)
         (display "You do not have permission to access the system crontabs.\n")
@@ -366,7 +366,7 @@ option.\n")
           (quit))
       (setsid)
       (if (eq? command-type 'cron)
-          (with-output-to-file "/var/run/cron.pid"
+          (with-output-to-file config-pid-file
             (lambda () (display (getpid)) (newline))))))
 
 
@@ -380,7 +380,7 @@ option.\n")
 
 (if (eq? command-type 'cron)
     (let ((socket (socket AF_UNIX SOCK_STREAM 0)))
-      (bind socket AF_UNIX "/var/cron/socket")
+      (bind socket AF_UNIX config-socket-file)
       (listen socket 5)
       (set! fd-list (list socket))))
 
@@ -406,7 +406,7 @@ option.\n")
         (let ((user (getpw user-name)))
           (remove-user-jobs user)
           (set-configuration-user user)
-          (read-vixie-file (string-append "/var/cron/tabs/" user-name))))))
+          (read-vixie-file (string-append config-spool-dir "/" user-name))))))
 
 
 

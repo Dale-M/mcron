@@ -186,6 +186,6 @@
                   (let ((mtime (stat:mtime (stat "/etc/crontab"))))
                     (if (> mtime (- (current-time) 60))
                         (let ((socket (socket AF_UNIX SOCK_STREAM 0)))
-                          (connect socket AF_UNIX "/var/cron/socket")
+                          (connect socket AF_UNIX config-socket-file)
                           (display "/etc/crontab" socket)
                           (close socket)))))))

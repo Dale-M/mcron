@@ -40,10 +40,9 @@
 ;;
 ;;  (vector user next-time-function action environment displayable next-time)
 ;;
-;; where action may be a string (indicating a shell command) or a list
-;; (indicating scheme code) or a procedure, and the environment is an alist of
+;; where action must be a procedure, and the environment is an alist of
 ;; modifications that need making to the UNIX environment before the action is
-;; run. The next-time elements is the only one that is modified during the
+;; run. The next-time element is the only one that is modified during the
 ;; running of a cron process (i.e. all the others are set once and for all at
 ;; configuration time).
 ;;
@@ -158,16 +157,16 @@
 
 
 
-;; If the user has requested a schedule of jobs that will run, we provide the
-;; information here and then get out.
+;; Create a string containing a textual list of the next count jobs to run.
 ;;
-;; Start by determining the number of time points in the future that output is
-;; required for. This may be provided on the command line as a parameter to the
-;; --schedule option, or else we assume a default of 8. Having determined this
-;; count we enter a loop of displaying the next set of jobs to run, artificially
+;; Enter a loop of displaying the next set of jobs to run, artificially
 ;; forwarding the time to the next time point (instead of waiting for it to
 ;; occur as we would do in a normal run of mcron), and recurse around the loop
 ;; count times.
+;;
+;; Note that this has the effect of mutating the job timings. Thus the program
+;; must exit after calling this function; the internal data state will be left
+;; unusable.
 
 (define (get-schedule count)
   (with-output-to-string
@@ -219,6 +218,12 @@
 ;; ones to run (may be more than one). Set an alarm and go to sleep. When we
 ;; wake, run the jobs and reap any children (old jobs) that have
 ;; completed. Repeat ad infinitum.
+;;
+;; Note that, if we wake ahead of time, it can only mean that a signal has been
+;; sent by a crontab job to tell us to re-read a crontab file. In this case we
+;; break out of the loop here, and let the main procedure deal with the
+;; situation (it will eventually re-call this function, thus maintaining the
+;; loop).
 
 (define (run-job-loop . fd-list)
 
