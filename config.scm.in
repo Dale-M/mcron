@@ -20,7 +20,9 @@
 
 ;; Some constants set by the configuration process.
 
-(define config-debug @CONFIG_DEBUG@)
-(define config-package-string "@PACKAGE_STRING@")
-(define config-package-bugreport "@PACKAGE_BUGREPORT@")
-(define config-sendmail "@SENDMAIL@")
+(define-module (mcron config))
+
+(define-public config-debug @CONFIG_DEBUG@)
+(define-public config-package-string "@PACKAGE_STRING@")
+(define-public config-package-bugreport "@PACKAGE_BUGREPORT@")
+(define-public config-sendmail "@SENDMAIL@")

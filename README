@@ -1,8 +1,8 @@
-Copyright (C) 2003 Dale Mellor
+Copyright (C) 2003 Dale Mellor                        -*-text-*-
 See the end for copying conditions.
 
 
-This is version 0.99.2 of the mcron program (the second 1.0.0 release
+This is version 0.99.3 of the mcron program (the third 1.0.0 release
 candidate), designed and written by Dale Mellor, which replaces and hugely
 enhances Vixie cron. It is functionally complete, production quality code (did
 you expect less?), but has not received much testing yet. It has only been built
@@ -44,19 +44,23 @@ m.crontab.
 See the file INSTALL for generic building and installation instructions.
 
 After installation, read the info file for full instructions for use (type
-`info mcron' at the command line).
+`info mcron' at the command line). Notes for end users, sysadmins, and
+developers who wish to incorporate mcron into their own programs are included
+here.
 
 Known bugs are noted in the BUGS file, and features which might be implemented
 sometime sooner or later are noted in the TODO file.
 
-Please send all other bug reports either via Savannah at
+Please send all other bug reports either via Savannah (preferred) at
    https://savannah.nongnu.org/bugs/?func=addbug&group=mcron
-or by electronic mail to:
+or else by electronic mail to:
    dale_mellor@users.sourceforge.net
 
 Mcron is free software. See the file COPYING for copying conditions.
 
 The mcron development home page is at http://www.nongnu.org/mcron.
+
+
 
 
 _______________________________________________________________________________

@@ -17,15 +17,7 @@
 #
 #
 #
-e mcron.scm
-/\(load "config.scm"\)/d
--1r config.scm
-/\(load "vixie.scm"\)/d
--1r vixie.scm
-/\(load "email.scm"\)/d
--1r email.scm
-/\(load "environment.scm"\)/d
--1r environment.scm
+e main.scm
 /\(load "crontab.scm"\)/d
 -1r crontab.scm
 %s/\\/\\\\/g

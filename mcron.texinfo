@@ -7,9 +7,6 @@
 @syncodeindex fn cp
 
 @copying
-This file documents the @code{mcron} command for running jobs at
-scheduled times.
-
 Copyright (C) 2003 Dale Mellor
 This is free software. See the source files for the terms of the
 copyright.
@@ -54,7 +51,7 @@ by the Foundation.
 
 @page
 @vskip 0pt plus 1fill
-@insertcopying
+@c @insertcopying
 
 @end titlepage
 
@@ -64,7 +61,10 @@ by the Foundation.
 @node Top, Introduction, (dir), (dir)
 @top mcron
 
-@insertcopying
+This file documents the @code{mcron} command (Mellor's cron) for
+running jobs at scheduled times.
+
+@c @insertcopying
 @end ifnottex
 
 @menu
@@ -72,6 +72,7 @@ by the Foundation.
 * Simple examples::             How to use mcron 99.9% of the time.
 * Syntax::                      All the possibilities for configuring cron jobs.
 * Invoking::                    What happens when you run the mcron command.
+* Guile modules::               Incorporating mcron into another Guile program.
 * Index::                       The complete index.
 
 @detailmenu
@@ -108,6 +109,14 @@ Detailed invoking
 * Running cron or crond::       
 * Running crontab::             
 * Exit codes::                  
+
+Guile modules
+
+* The core module::             The job list and execution loop.
+* The redirect module::         Sending output of jobs to a mail box.
+* The vixie-time module::       Parsing vixie-style time specifications.
+* The job-specifier module::    All commands for scheme configuration files.
+* The vixie-specification module::  Commands for reading vixie-style crontabs.
 
 @end detailmenu
 @end menu
@@ -766,7 +775,7 @@ either).
 @end itemize
 
 
-@node Invoking, Index, Syntax, Top
+@node Invoking, Guile modules, Syntax, Top
 @chapter Detailed invoking
 @cindex invoking
 @cindex personality
@@ -1022,6 +1031,8 @@ become immediately effective.
 
 @end table
 
+
+
 @node Exit codes,  , Running crontab, Invoking
 @section Exit codes
 @cindex exit codes
@@ -1107,7 +1118,201 @@ Cron has been run by a user other than root.
 
 
 
-@node Index,  , Invoking, Top
+@node Guile modules, Index, Invoking, Top
+@chapter Guile modules
+Some of the key parts of mcron are implemented as modules so they can
+be incorporated into other Guile programs, or even into C-sourced
+programs if they are linked against libguile.
+
+It may be, for example, that a program needs to perform house-keeping
+functions at certain times of the day, in which case it can spawn
+(either fork or thread) a sub-process which uses a built-in
+mcron. Another example may be a program which must sleep until some
+non-absolute time specified on the Gregorian calendar (the first day
+of next week, for example). Finally, it may be the wish of the user to
+provide a program with the functionality of mcron plus a bit extra.
+
+The core module maintains mcron's internal job lists, and provides the
+main wait-run-wait loop that is mcron's main function. It also
+introduces the facilities for accumulating a set of environment
+modifiers, which take effect when jobs run.
+
+@menu
+* The core module::             The job list and execution loop.
+* The redirect module::         Sending output of jobs to a mail box.
+* The vixie-time module::       Parsing vixie-style time specifications.
+* The job-specifier module::    All commands for scheme configuration files.
+* The vixie-specification module::  Commands for reading vixie-style crontabs.
+@end menu
+
+@node The core module, The redirect module, Guile modules, Guile modules
+@section The core module
+@cindex guile module
+@cindex core module
+@cindex modules, core
+
+This module may be used by including @code{(use-modules (mcron core))}
+in a program. The main functions are @code{add-job} and
+@code{run-job-loop}, which allow a program to create a list of job
+specifications to run, and then to initiate the wait-run-wait loop
+firing the jobs off at the requisite times. However, before they are
+introduced two functions which manipulate the environment that takes
+effect when a job runs are defined.
+
+@cindex environment
+The environment is a set of name-value pairs which is built up
+incrementally. Each time the @code{add-job} function is called, the
+environment modifiers that have been accumulated up to that point are
+stored with the new job specification, and when the job actually runs
+these name-value pairs are used to modify the run-time environment in
+effect.
+
+@deffn{Scheme procedure} append-environment-mods name value
+When a job is run make sure the environment variable @var{name} has
+the value @var{value}.
+@end deffn
+
+@deffn{Scheme procedure} clear-environment-mods
+This procedure causes all the environment modifiers that have been
+specified so far to be forgotten.
+@end deffn
+
+@deffn{Scheme procedure} add-job time-proc action displayable configuration-time configuration-user
+This procedure adds a job specification to the list of all jobs to
+run. @var{time-proc} should be a procedure taking exactly one argument
+which will be a UNIX time. This procedure must compute the next time
+that the job should run, and return the result. @var{action} should be
+a procedure taking no arguments, and contains the instructions that
+actually get executed whenever the job is scheduled to
+run. @var{displayable} should be a string, and is only for the use of
+humans; it can be anything which identifies or simply gives a clue as
+to the purpose or function of this job. @var{configuration-time} is
+the time from which the first invokation of this job should be
+computed. Finally, @var{configuration-user} should be the passwd entry
+for the user under whose personality the job is to run.
+@end deffn
+
+@deffn{Scheme procedure} run-job-loop . fd-list
+@cindex file descriptors
+@cindex interrupting the mcron loop
+This procedure returns only under exceptional circumstances, but
+usually loops forever waiting for the next time to arrive when a job
+needs to run, running that job, recomputing the next run time, and
+then waiting again. However, the wait can be interrupted by data
+becoming available for reading on one of the file descriptors in the
+fd-list, if supplied. Only in this case will the procedure return to
+the calling program, which may then make modifications to the job list
+before calling the @code{run-job-loop} procedure again to resume execution of
+the mcron core.
+@end deffn
+
+@deffn{Scheme procedure} remove-user-jobs user
+
+The argument @var{user} should be a string naming a user (his
+login name), or an integer UID, or an object representing the user's passwd
+entry. All jobs on the current job list that are scheduled to be run
+under this personality are removed from the job list.
+@end deffn
+
+@deffn{Scheme procedure} get-schedule count
+@cindex schedule of jobs
+The argument @var{count} should be an integer value giving the number
+of time-points in the future to report that jobs will run as. Note
+that this procedure is disruptive; if @code{run-job-loop} is called
+after this procedure, the first job to run will be the one after the
+last job that was reported in the schedule report. The report itself
+is returned to the calling program as a string.
+@end deffn
+
+@node The redirect module, The vixie-time module, The core module, Guile modules
+@section The redirect module
+@cindex redirect module
+@cindex modules, redirect
+
+This module is introduced to a program with the command
+@code{(use-modules (mcron redirect))}.
+
+This module provides the @code{with-mail-out} function, described
+fully in @ref{Guile Syntax}. 
+
+@node The vixie-time module, The job-specifier module, The redirect module, Guile modules
+@section The vixie-time module
+@cindex vixie-time module
+@cindex modules, vixie-time
+
+This module is introduced to a program by @code{(use-modules (mcron
+vixie-time))}.
+
+This module provides a single method for converting a vixie-style time
+specification into a procedure which can be used as the
+@code{next-time-function} to the core @code{add-job} procedure, or to
+the @code{job-specifier} @code{job} procedure. See @ref{Vixie Syntax}
+for full details of the allowed format for the time string.
+
+@deffn{Scheme procedure} parse-vixie-time time-string
+The single argument @var{time-string} should be a string containing a
+vixie-style time specification, and the return value is the required
+procedure.
+@end deffn
+
+
+@node The job-specifier module, The vixie-specification module, The vixie-time module, Guile modules
+@section The job-specifier module
+@cindex job-specifier module
+@cindex modules, job-specifier
+
+This module is introduced to a program by @code{(use-modules (mcron
+job-specifier))}.
+
+This module provides all the functions available to user's Guile
+configuration files, namely @code{range}, @code{next-year-from},
+@code{next-year}, @code{next-month-from}, @code{next-month},
+@code{next-day-from}, @code{next-day}, @code{next-hour-from},
+@code{next-hour}, @code{next-minute-from}, @code{next-minute},
+@code{next-second-from}, @code{next-second},
+ and last but not least, @code{job}. See @ref{Guile Syntax} for full
+ details.
+
+Once this module is loaded, a scheme configuration file can be used to
+put jobs onto the job list simply by @code{load}ing the file.
+
+@node The vixie-specification module,  , The job-specifier module, Guile modules
+@section The vixie-specification module
+@cindex vixie-specification module
+@cindex modules, vixie-specification
+
+To use this module, put the command @code{(use-modules (mcron
+vixie-specification))} into your program.
+
+This module exports a couple of functions for adding jobs to the
+internal job list according to a Vixie-style crontab file.
+
+@deffn{Scheme procedure} read-vixie-port port . parse-line
+
+This procedure reads a crontab from the given port, and adds jobs to
+the job list accordingly, taking care of environment specifications
+and comments which may appear in such a file.
+
+@var{parse-line} should not normally be used, except that if you are
+parsing a (deprecated) @code{/etc/crontab} file with a slightly
+modified syntax, you may pass the value @var{parse-system-vixie-line}
+as the optional argument.
+
+@end deffn
+
+@deffn{Scheme procedure} read-vixie-file name . parse-line
+
+This procedure attempts to open the named file, and if it fails will
+return silently. Otherwise, the behaviour is identical to
+@code{read-vixie-port} above.
+
+@end deffn
+
+Once this module has been declared in a program, a crontab file can be
+used to augment the current job list with a call to
+@code{read-vixie-file}. 
+
+@node Index,  , Guile modules, Top
 @unnumbered Index
 
 @printindex cp

@@ -16,7 +16,8 @@
 ;;   USA.
 
 
-;; This file provides the (with-mail-out action . user) procedure. This
+
+;; This module provides the (with-mail-out action . user) procedure. This
 ;; procedure runs the action in a child process, allowing the user control over
 ;; the input and output (including standard error). The input is governed (only
 ;; in the case of a string action) by the placing of percentage signs in the
@@ -27,6 +28,12 @@
 ;; any, or else the owner of the action; if defined but empty then any output is
 ;; sunk to /dev/null; otherwise output is e-mailed to the address held in the
 ;; MAILTO variable.
+
+(define-module (mcron redirect)
+  #:export (with-mail-out)
+  #:use-module ((mcron config) :select (config-sendmail))
+  #:use-module (mcron vixie-time))
+
 
 
 ;; An action string consists of a sequence of characters forming a command

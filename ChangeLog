@@ -1,3 +1,14 @@
+2003-08-03  Dale Mellor <dale_mellor@users.sourceforge.net>
+
+        * Third cut, fully functional, modular, production quality, still
+	needs testing...
+	
+	* Pulled all functionality into modules, so it can be incorporated
+	into other programs.
+
+	* Bumped version to 0.99.3.
+	
+
 2003-07-20  Dale Mellor <dale_mellor@users.sourceforge.net>
 
         * Second cut, now _really_ fully functional (100% Vixie
@@ -21,6 +32,9 @@
 	* First cut, fully functional, production quality code, just needs
 	testing...
 
+	* Broken/incomplete Guile prevents vixie compatibility from
+	working - this has been disabled by default in the configuration.
+	
 	* Version set at 0.99.1
 
 

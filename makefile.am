@@ -18,15 +18,17 @@
 ## Process this file with automake to produce Makefile.in
 
 ED = @ED@
+CP = @CP@
 
 MAINTAINERCLEANFILES = configure makefile makefile.in \
                        install-sh missing mkinstalldirs texinfo.tex INSTALL \
                        aclocal.m4 compile depcomp COPYING
 
-CLEANFILES = mcron.c
+CLEANFILES = mcron.c core.scm
 
-EXTRA_DIST = makefile.ed config.scm mcron.scm vixie.scm environment.scm \
-             email.scm crontab.scm mcron.c.template
+EXTRA_DIST = makefile.ed main.scm mcron-core.scm vixie-specification.scm \
+             crontab.scm environment.scm job-specifier.scm redirect.scm \
+             vixie-time.scm mcron.c.template
 
 info_TEXINFOS = mcron.texinfo
 bin_PROGRAMS = mcron
@@ -34,8 +36,19 @@ mcron_SOURCES = mcron.c
 mcron_LDFLAGS = @GUILE_LDFLAGS@
 mcron_CFLAGS = @GUILE_CFLAGS@
 
-mcron.c : config.scm mcron.scm vixie.scm environment.scm email.scm crontab.scm \
-            makefile.ed mcron.c.template
+moddir = @GUILE_SITE@/mcron
+mod_DATA = core.scm environment.scm job-specifier.scm redirect.scm \
+           vixie-time.scm vixie-specification.scm config.scm
+
+
+# If you're wondering, the configure script keeps deleting all files with a name
+# like core.*, so we have to keep re-making it (I lost a good day's work because
+# of this).
+
+core.scm : mcron-core.scm
+	$(CP) mcron-core.scm core.scm
+
+mcron.c : main.scm crontab.scm makefile.ed mcron.c.template
 	@echo 'Building mcron.c...'
 	@$(ED) < makefile.ed > /dev/null 2>&1
 	@rm -f mcron.escaped.scm > /dev/null 2>&1
@@ -56,6 +69,8 @@ install-exec-hook:
 	$(INSTALL) --mode='u=rwxs,og=rx' mcron$(EXEEXT) $(fpp)crontab$(EXEEXT)
 	./mkinstalldirs -m 'u=rwx' /var/cron
 	./mkinstalldirs -m 'u=rwx,og=rx' /var/run
+	./mkinstalldirs -m 'u=rwx,og=rx' @GUILE_SITE@
+	./mkinstalldirs -m 'u=rwx,og=rx' @GUILE_SITE@/mcron
 
 uninstall-hook:
 	rm -f $(fpp){cron,crontab}$(EXEEXT)

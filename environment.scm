@@ -17,23 +17,33 @@
 
 
 
-;; This file defines the global variable current-environment-mods, and the
-;; procedures append-environment-mods (which is available to user configuration
-;; files), clear-environment-mods, modify-environment, and
-;; parse-vixie-environment. The idea is that the current-environment-mods is a
-;; list of pairs of environment names and values, and represents the cumulated
-;; environment settings in a configuration file. When a job definition is seen
-;; in a configuration file, the current-environment-mods are copied into the
-;; internal job description, and when the job actually runs these environment
-;; modifications are applied to the UNIX environment in which the job runs.
+;; This file defines the variable current-environment-mods, and the procedures
+;; append-environment-mods (which is available to user configuration files),
+;; clear-environment-mods and modify-environment. The idea is that the
+;; current-environment-mods is a list of pairs of environment names and values,
+;; and represents the cumulated environment settings in a configuration
+;; file. When a job definition is seen in a configuration file, the
+;; current-environment-mods are copied into the internal job description, and
+;; when the job actually runs these environment modifications are applied to the
+;; UNIX environment in which the job runs.
 
+
+
+
+(define-module (mcron environment)
+  #:export (modify-environment
+            clear-environment-mods
+            append-environment-mods
+            get-current-environment-mods-copy))
+            
+            
 
 
 ;; The env-alist is an association list of variable names and values. Variables
 ;; later in the list will take precedence over variables before. We return a
 ;; fixed-up version in which some variables are given specific default values
-;; (which the user can override), and one variable which the user is not allowed
-;; to control is added at the end of the list.
+;; (which the user can override), and two variables which the user is not
+;; allowed to control are added at the end of the list.
 
 (define (impose-default-environment env-alist passwd-entry)
   (append `(("HOME"    . ,(passwd:dir passwd-entry))
@@ -66,6 +76,13 @@
 
 
 
+;; Each time a job is added to the system, we take a snapshot of the current set
+;; of environment modifiers.
+
+(define (get-current-environment-mods-copy)
+  (list-copy current-environment-mods))
+
+
 
 ;; When we start to parse a new configuration file, we want to start with a
 ;; fresh environment (actually an umodified version of the pervading mcron
@@ -76,46 +93,12 @@
 
 
 
-
 ;; Procedure to add another environment setting to the alist above. This is used
 ;; both implicitly by the Vixie parser, and can be used directly by users in
 ;; scheme configuration files. The return value is purely for the convenience of
-;; the parse-vixie-environment procedure below.
+;; the parse-vixie-environment in the vixie-specification module (yuk).
 
 (define (append-environment-mods name value)
   (set! current-environment-mods (append current-environment-mods
                                          (list (cons name value))))
   #t)
-
-
-
-
-;; Procedure to act on an environment variable specification in a Vixie-style
-;; configuration file, by adding an entry to the alist above. Returns #t if the
-;; operation was successful, #f if the line could not be interpreted as an
-;; environment specification.
-
-(define parse-vixie-environment-regexp1
-  (make-regexp
-   "^[ \t]*([[:alpha:]_][[:alnum:]_]*)[ \t]*=[ \t]*\"(.*)\"[ \t]*$"))
-(define parse-vixie-environment-regexp2
-  (make-regexp
-   "^[ \t]*([[:alpha:]_][[:alnum:]_]*)[ \t]*=[ \t]*\'(.*)\'[ \t]*$"))
-(define parse-vixie-environment-regexp3
-  (make-regexp
-   "^[ \t]*([[:alpha:]_][[:alnum:]_]*)[ \t]*=[ \t]*(.*[^ \t])[ \t]*$"))
-(define parse-vixie-environment-regexp4
-  (make-regexp
-   "^[ \t]*([[:alpha:]_][[:alnum:]_]*)[ \t]*=[ \t]*$"))
-
-(use-modules (srfi srfi-2))
-
-(define (parse-vixie-environment string)
-  (let ((match (or (regexp-exec parse-vixie-environment-regexp1 string)
-                   (regexp-exec parse-vixie-environment-regexp2 string)
-                   (regexp-exec parse-vixie-environment-regexp3 string))))
-    (if match
-        (append-environment-mods (match:substring match 1)
-                                 (match:substring match 2))
-        (and-let* ((match (regexp-exec parse-vixie-environment-regexp4 string)))
-                  (append-environment-mods (match:substring match 1) #f)))))

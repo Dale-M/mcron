@@ -1,4 +1,4 @@
-Copyright (C) 2003 Dale Mellor
+Copyright (C) 2003 Dale Mellor                             -*-text-*-
 See the end for copying conditions.
 
 
@@ -9,12 +9,10 @@ Maybe in the near future...
 
     * Check POSIX compliance (should be okay if Vixie cron was okay).
 
-    * Work out how to give each user his own closure (or environment or module)
-       for his configuration files so that he can't mess the core or other
-       users' files up. Then allow scheme code in the system crontabs.
-
-    * Move the code into modules so that it can be incorporated directly into
-       other programs.
+    * Work out how to give each user his own closure (or environment or module
+       or continuation) for his configuration files so that he can't mess the
+       core or other users' files up. Then allow scheme code in the system
+       crontabs.
               
 
 
@@ -30,24 +28,17 @@ There are no plans to actually do the following any time soon...
 
 
 
-Quite likely to happen if version 2.0 ever materializes...
-
-    * Split program into Vixie and mcron separates (should streamline mcron code
-       by a factor of three; removes need for security audit).
+May happen if version 2.0 ever materializes...
 
     * UNIX or TCP socket will allow interrogation and control of a running
-       daemon (should be more reliable, efficient and useful than using the
-       SIGHUP-/var/cron/update method).
-
-
-
-May happen if version 2.0 ever materializes...
+       daemon (unrelated to, or maybe a major enhancement of, socket used for
+       communication from crontab process).
 
     * Add anacron functionality (run missed jobs if the daemon is stopped, for
        example if a personal computer does not run 24 hours a day).
 
     * TCP socket to allow control via HTTP (web browser interface). Or maybe
-       just CGI personality.
+       crontab-like CGI personality.
 
     * GTK+/Bononbo/Gnome2 interface.
     

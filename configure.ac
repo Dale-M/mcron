@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT(mcron, 0.99.2, dale_mellor@users.sourceforge.net)
+AC_INIT(mcron, 0.99.3, dale_mellor@users.sourceforge.net)
 AM_INIT_AUTOMAKE
 
 
@@ -24,6 +24,7 @@ AC_SUBST(CONFIG_DEBUG)
 AC_PROG_CC
 GUILE_PROGS
 GUILE_FLAGS
+GUILE_SITE_DIR
                        
 # Checks for programs.
 AC_CHECK_PROGS(ED, ed)
@@ -33,6 +34,10 @@ fi
 AC_CHECK_PROGS(WHICH, which)
 if test "x$ac_cv_prog_WHICH" = "x"; then
     AC_MSG_ERROR(which not found)
+fi
+AC_CHECK_PROGS(CP, cp)
+if test "x$ac_cv_prog_CP" = "x"; then
+    AC_MSG_ERROR(cp not found)
 fi
 
         

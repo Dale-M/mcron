@@ -17,7 +17,7 @@
 
 
 ;; Apart from the collecting of options and the handling of --help and --version
-;; (which are done in the mcron.scm file), this file provides all the
+;; (which are done in the main.scm file), this file provides all the
 ;; functionality of the crontab personality. It is designed to be loaded and run
 ;; once, and then the calling program can exit and the crontab program will have
 ;; completed its function.
@@ -25,8 +25,7 @@
 
 
 ;; Procedure to communicate with running cron daemon that a user has modified
-;; his crontab. The user name is placed in /var/cron/update, and the process
-;; whose PID is held in /var/run/cron.pid is sent a SIGHUP.
+;; his crontab. The user name is written to the /var/cron/socket UNIX socket.
 
 (define (hit-server user-name)
   (catch #t (lambda ()
@@ -74,19 +73,6 @@
 
 
 
-;; Iff the real user is root, he can use the -u option to access files of
-;; another user.
-
-(define crontab-user (option-ref options 'user crontab-real-user))
-
-
-
-;; So now we know which crontab file we will be manipulating.
-
-(define crontab-file (string-append "/var/cron/tabs/" crontab-user))
-
-
-
 ;; Check that no more than one of the mutually exclusive options are being used.
 
 (if (> (+ (if (option-ref options 'edit #f) 1 0)
@@ -105,6 +91,19 @@
          (option-ref options 'user #f))
     (begin (display "crontab: Only root can use the -u option.\n")
            (primitive-exit 8)))
+
+
+
+;; Iff the --user option is given, the crontab-user may be different from the
+;; real user.
+
+(define crontab-user (option-ref options 'user crontab-real-user))
+
+
+
+;; So now we know which crontab file we will be manipulating.
+
+(define crontab-file (string-append "/var/cron/tabs/" crontab-user))
 
 
 
