@@ -30,15 +30,10 @@
 
 (define (hit-server user-name)
   (catch #t (lambda ()
-              (let ((server-pid (with-input-from-file "/var/run/cron.pid"
-                                  (lambda () (string->number (read-line))))))
-                (catch #t (lambda ()
-                            (with-output-to-file "/var/cron/update" (lambda ()
-                              (display user-name)(newline))))
-                       (lambda (key . args)
-                         (display "Cannot write to /var/cron/update.\n")
-                         (primitive-exit 14)))
-                (kill server-pid SIGHUP)))
+              (let* ((socket (socket AF_UNIX SOCK_STREAM 0)))
+                (connect socket AF_UNIX "/var/cron/socket")
+                (display user-name socket)
+                (close socket)))
          (lambda (key . args)
            (display "Warning: a cron daemon is not running.\n"))))
 
@@ -145,14 +140,13 @@
  ;; crontab, wake the cron daemon up, and remove the temporary file.
 
  ((option-ref options 'edit #f)
-  (let ((temp-file (string-append "/tmp/crontab." (number->string (getpid))))
-        (editor (cond ((getenv "VISUAL") (getenv "VISUAL"))
-                      ((getenv "EDITOR") (getenv "EDITOR"))
-                      (else "vi"))))
+  (let ((temp-file (string-append "/tmp/crontab." (number->string (getpid)))))
     (catch #t (lambda () (copy-file crontab-file temp-file))
               (lambda (key . args) (with-output-to-file temp-file noop)))
     (chown temp-file (getuid) (getgid))
-    (system (string-append editor " " temp-file))
+    (system (string-append (or (getenv "VISUAL") (getenv "EDITOR") "vi")
+                           " "
+                           temp-file))
     (read-vixie-file temp-file)
     (copy-file temp-file crontab-file)
     (delete-file temp-file)

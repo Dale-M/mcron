@@ -85,6 +85,7 @@
                               (remove  (single-char #\r) (value #f))))
                       (else `((schedule (single-char #\s) (value optional))
                               (daemon   (single-char #\d) (value #f))
+                              (noetc    (single-char #\n) (value #f))
                               (stdin    (single-char #\i) (value #t)
                                         (predicate
                                          ,(lambda (value)
@@ -142,7 +143,9 @@ reading all the information in the users' crontabs and in /etc/crontab.\n
   -v, --version             Display version\n
   -h, --help                Display this help message\n
   -s, --schedule[=COUNT]    Display the next COUNT jobs (default 8) that\n
-                              will be run by cron")
+                              will be run by cron\n
+  -n, --noetc               Do not check /etc/crontab for updates (HIGHLY\n
+                              RECOMMENDED).")
   
   ('crontab
            (string-append " [-u user] file\n"
@@ -168,49 +171,10 @@ Report bugs to " config-package-bugreport ".\n
 ;; running.
 
 (define (delete-run-file)
-  (catch #t (lambda () (delete-file "/var/run/cron.pid"))
-            (lambda (key . args) #t))
+  (catch #t (lambda () (delete-file "/var/run/cron.pid")
+                       (delete-file "/var/cron/socket"))
+            noop)
   (quit))
-
-
-
-;; Every time a SIGHUP is received from a crontab process, we read the
-;; /var/cron/update file for a user name (he whose crontab has been modified)
-;; and add it to this list (thus it may be regarded as a deferred update list).
-
-(define hup-received-for '())
-
-
-
-;; Two arbiters to control access to the above list. When an interrupt is
-;; received, the list will only be modified if pending-lock is available. If it
-;; is not, then the interrupt routine will lock interrupt-required and return
-;; immediately to the system, which should at convenient times check this lock
-;; and send a SIGHUP to the process to re-run the interrupt routine (obviously,
-;; if the main program locks pending-lock (or leaves locked) and issues an
-;; interrupt the interrupt routine will be a no-op).
-
-(define pending-lock (make-arbiter "pending-lock"))
-(define interrupt-required (make-arbiter "interrupt-required"))
-
-
-
-;; This is called from the C front-end whenever a HUP signal is received. We
-;; read the name of the user whose crontab has been modified, add his name to
-;; the list of pending requests, and remove the update file as an
-;; acknowledgement that we received the signal.
-;;
-;; ! We should put a warning in a log file if we receive a HUP and the update
-;; file is not present.
-
-(define (process-hup)
-  (if (try-arbiter pending-lock)
-      (begin
-        (with-input-from-file "/var/cron/update" (lambda ()
-          (set! hup-received-for (append hup-received-for (list (read-line))))))
-        (delete-file "/var/cron/update")
-        (release-arbiter pending-lock))
-      (try-arbiter interrupt-required)))
 
 
 
@@ -409,7 +373,7 @@ Report bugs to " config-package-bugreport ".\n
 
 ;; The list of all jobs known to the system. Each element of the list is
 ;;
-;;  (vector user next-time-function action environment next-time)
+;;  (vector user next-time-function action environment displayable next-time)
 ;;
 ;; where action may be a string (indicating a shell command) or a list
 ;; (indicating scheme code) or a procedure, and the environment is an alist of
@@ -418,7 +382,8 @@ Report bugs to " config-package-bugreport ".\n
 ;; running of a cron process (i.e. all the others are set once and for all at
 ;; configuration time).
 
-(define job-list '())
+(define system-job-list '())
+(define user-job-list '())
 
 
 
@@ -428,8 +393,11 @@ Report bugs to " config-package-bugreport ".\n
 (define (job:next-time-function job)  (vector-ref job 1))
 (define (job:action job)              (vector-ref job 2))
 (define (job:environment job)         (vector-ref job 3))
-(define (job:next-time job)           (vector-ref job 4))
-(define (job:set-next-time! job time) (vector-set! job 4 time))
+(define (job:displayable job)         (vector-ref job 4))
+(define (job:next-time job)           (vector-ref job 5))
+(define (job:advance-time! job)
+  (set! current-action-time (job:next-time job))
+  (vector-set! job 5 ((job:next-time-function job) current-action-time)))
 
 
 
@@ -480,7 +448,9 @@ Report bugs to " config-package-bugreport ".\n
 ;; important so that the entries in the system crontab /etc/crontab finish up at
 ;; the front of the list when we scan that file).
 
-(define (job time-proc action)
+(define configuration-source 'user)
+
+(define (job time-proc action . displayable)
   (let ((action (cond ((procedure? action) action)
                       ((list? action) (lambda () (primitive-eval action)))
                       ((string? action) (lambda () (system action)))
@@ -498,14 +468,29 @@ Report bugs to " config-package-bugreport ".\n
 
           (display "job: invalid first argument (next-time-function; should ")
           (display "be function, string or list)")
-                    (primitive-exit 3)))))
-
-    (set! job-list (cons (vector configuration-user
-                                 time-proc
-                                 action
-                                 (list-copy current-environment-mods)
-                                 (time-proc current-action-time))
-                         job-list))))
+                    (primitive-exit 3))))
+        (displayable
+         (cond ((not (null? displayable)) (car displayable))
+               ((procedure? action) "Lambda function")
+               ((string? action) action)
+               ((list? action) (with-output-to-string
+                                 (lambda () (display action)))))))
+    (if (eq? configuration-source 'user)
+        (set! user-job-list (cons (vector configuration-user
+                                          time-proc
+                                          action
+                                          (list-copy current-environment-mods)
+                                          displayable
+                                          (time-proc current-action-time))
+                                  user-job-list))
+        (set! system-job-list (cons (vector configuration-user
+                                            time-proc
+                                            action
+                                            (list-copy current-environment-mods)
+                                            displayable
+                                     (time-proc current-action-time))
+                                    system-job-list)))))
+                                                        
 
 
 ;;----------------------------------------------------------------------
@@ -578,7 +563,7 @@ Report bugs to " config-package-bugreport ".\n
 
 
 
-;; Procedure to check that a user name is the the passwd database (it may happen
+;; Procedure to check that a user name is in the passwd database (it may happen
 ;; that a user is removed after creating a crontab). If the user name is valid,
 ;; the full passwd entry for that user is returned to the caller.
 
@@ -606,7 +591,7 @@ Report bugs to " config-package-bugreport ".\n
   (catch #t (lambda ()
               (let ((directory (opendir "/var/cron/tabs")))
                 (do ((file-name (readdir directory) (readdir directory)))
-                    ((eof-object? file-name) (closedir directory))
+                    ((eof-object? file-name))
                   (and-let* ((user (valid-user file-name)))
                             (set! configuration-user user)
                             (read-vixie-file (string-append "/var/cron/tabs/"
@@ -614,13 +599,6 @@ Report bugs to " config-package-bugreport ".\n
       (lambda (key . args)
         (display "You do not have permission to access the system crontabs.\n")
         (primitive-exit 4))))
-
-
-
-;; The head of the jobs list will contain the jobs specified in /etc/crontab,
-;; and this variable tells us how long that head is.
-
-(define system-jobs 0)
 
 
 
@@ -639,10 +617,24 @@ Report bugs to " config-package-bugreport ".\n
                         (option-ref options '() '()))))
  
   ('cron (process-files-in-system-directory)
-         (let ((start-length (length job-list)))
-           (read-vixie-file "/etc/crontab" parse-system-vixie-line)
-           (set! system-jobs (- (length job-list) start-length)))))
-  
+         (set! configuration-source 'system)
+         (read-vixie-file "/etc/crontab" parse-system-vixie-line)
+         (set! configuration-source 'user)))
+
+
+(if (eq? command-type 'cron)
+    (if (not (option-ref options 'noetc #f))
+        (begin
+          (display
+"WARNING: cron will check for updates to /etc/crontab EVERY MINUTE. If you do\n
+not use this file, or you are prepared to manually restart cron whenever you\n
+make a change, then it is HIGHLY RECOMMENDED that you use the --noetc\n
+option.\n")
+          (set! configuration-user (getpw "root"))
+          (job '(- (next-minute-from (next-minute)) 6)
+               check-system-crontab
+               "/etc/crontab update checker."))))
+
 
 
 ;;----------------------------------------------------------------------
@@ -670,27 +662,29 @@ Report bugs to " config-package-bugreport ".\n
 ;; recurse the list.
 
 (define (find-next-jobs)
+  (let ((job-list (append system-job-list user-job-list)))
+    
+    (if (null? job-list)
+        
+        (if (eq? command-type 'mcron)
+            (begin (display "Nothing to do.\n")
+                   (primitive-exit 5))
+            (cons #f '()))
+        
+        (let ((next-time 2000000000)
+              (next-jobs-list '()))
 
-  (if (null? job-list)
-      (if (eq? command-type 'mcron)
-          (begin (display "Nothing to do.\n")
-                 (primitive-exit 5))
-          (cons #f '()))
-  
-      (let ((next-time (job:next-time (car job-list)))
-            (next-jobs-list (list (car job-list))))
+          (for-each
+           (lambda (job)
+             (let ((this-time (job:next-time job)))
+               (cond ((< this-time next-time)
+                          (set! next-time this-time)
+                          (set! next-jobs-list (list job)))
+                     ((eqv? this-time next-time)
+                          (set! next-jobs-list (cons job next-jobs-list))))))
+           job-list)
 
-        (for-each
-            (lambda (job)
-                 (let ((this-time (job:next-time job)))
-                   (cond ((< this-time next-time)
-                             (set! next-time this-time)
-                             (set! next-jobs-list (list job)))
-                         ((eqv? this-time next-time)
-                             (set! next-jobs-list (cons job next-jobs-list))))))
-         (cdr job-list))
-
-        (cons next-time next-jobs-list))))
+          (cons next-time next-jobs-list)))))
 
 
 
@@ -715,8 +709,9 @@ Report bugs to " config-package-bugreport ".\n
             (let* ((next-jobs (find-next-jobs))
                    (date-string (strftime "%c\n" (localtime (car next-jobs)))))
               (for-each (lambda (job) (display date-string)
-                                      (write (job:action job))
-                                      (newline)(newline))
+                                      (display (job:displayable job))
+                                      (newline)(newline)
+                                      (job:advance-time! job))
                         (cdr next-jobs))))
           (quit))
     
@@ -748,9 +743,7 @@ Report bugs to " config-package-bugreport ".\n
                   (begin
                     (set! number-children (+ number-children 1))
                     (set! current-action-time (job:next-time job))
-                    (job:set-next-time! job
-                                        ((job:next-time-function job)
-                                                       current-action-time)))))
+                    (job:advance-time! job))))
             jobs-list))
 
 
@@ -770,6 +763,39 @@ Report bugs to " config-package-bugreport ".\n
 
 
 
+(define fd-list '())
+
+
+
+(if (eq? command-type 'cron)
+    (let ((socket (socket AF_UNIX SOCK_STREAM 0)))
+      (bind socket AF_UNIX "/var/cron/socket")
+      (listen socket 5)
+      (set! fd-list (list socket))))
+
+
+
+(define (process-update-request)
+  (let* ((socket (car (accept (car fd-list))))
+         (user-name (read-line socket)))
+    (close socket)
+    (set! configuration-time (current-time))
+    (if (string=? user-name "/etc/crontab")
+        (begin
+          (set! system-job-list '())
+          (set! configuration-source 'system)
+          (read-vixie-file "/etc/crontab" parse-system-vixie-line)
+          (set! configuration-source 'user))
+        (let ((user (getpw user-name)))
+          (set! user-job-list
+                (remove (lambda (job) (eqv? (passwd:uid user)
+                                            (passwd:uid (job:user job))))
+                        user-job-list))
+          (set! configuration-user user)
+          (read-vixie-file (string-append "/var/cron/tabs/" user-name))))))
+
+
+
 ;; Now the main loop. Take the current time. Loop over all job specifications,
 ;; get a list of the next ones to run (may be more than one). Set an alarm and
 ;; go to sleep. When we wake, run the jobs. Repeat ad infinitum.
@@ -778,36 +804,6 @@ Report bugs to " config-package-bugreport ".\n
 
 (let main-loop ()
 
-  (release-arbiter pending-lock)
-  
-  ;; Check for any pending updates to the configuration files (as notified by
-  ;; crontab). If one is seen, remove all work from the job-list that belongs to
-  ;; this user, set up the global variables current-action-time and
-  ;; configuration-user appropriately, and then process the new configuration
-  ;; file for the user.
-
-  (do () ((and (if (release-arbiter interrupt-required)
-                   (begin (kill (getpid) SIGHUP) #f)
-                   #t)
-               (null? hup-received-for)))
-    (try-arbiter pending-lock)
-    (let ((user (car hup-received-for)))
-      (set! hup-received-for (cdr hup-received-for))
-      (release-arbiter pending-lock)
-      (set! configuration-user (getpw user))
-      (let ((uid (passwd:uid configuration-user))
-            (old-job-list job-list))
-        (set! current-action-time (current-time))
-        (set! job-list
-              (append
-               (list-head old-job-list system-jobs)
-               (begin (set! job-list '())
-                      (read-vixie-file (string-append "/var/cron/tabs/" user))
-                      job-list)
-               (remove (lambda (job) (eqv? (passwd:uid (job:user job)) uid))
-                       (list-tail old-job-list system-jobs)))))))
-  
-  
   ;; Compute the amount of time that we must sleep until the next job is due to
   ;; run.
   
@@ -817,27 +813,13 @@ Report bugs to " config-package-bugreport ".\n
          (sleep-time     (if next-time (- next-time (current-time))
                                        #f)))
 
-    
-    ;; If an update signal has just come in, or there are no current jobs and a
-    ;; pause operation has been interrupted (presumably by a SIGHUP), or the
-    ;; sleep operation has been interrupted (presumably by a SIGHUP), then undo
-    ;; the latest time calculations and jump back to the top of the loop where
-    ;; the pending updates will be dealt with.
-    ;;
-    ;; Otherwise, when we wake from our sleep, first try to collect as many
-    ;; child zombies as possible from previous job runs, then run the current
-    ;; set of jobs (on the next-jobs-list).
-    
-    (if (and (null? hup-received-for)
-                                  ;; ! If a signal occurs now, we won't see it
-                                  ;; until the next signal.
-             (eqv? 0 (cond ((not sleep-time) (pause) 1)
-                           ((> sleep-time 0) (sleep sleep-time))
-                           (else 0))))
+    (if (and (or (not sleep-time) (> sleep-time 0))
+             (not (null? (car (select fd-list '() '() sleep-time)))))
+        (process-update-request)
         (run-jobs next-jobs-list)))
   
-    (do () ((or (<= number-children 0)
-                (eqv? (car (waitpid WAIT_ANY WNOHANG)) 0)))
-      (set! number-children (- number-children 1)))
+  (do () ((or (<= number-children 0)
+              (eqv? (car (waitpid WAIT_ANY WNOHANG)) 0)))
+    (set! number-children (- number-children 1)))
 
-    (main-loop))
+  (main-loop))

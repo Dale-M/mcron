@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT(mcron, 0.99.1, dale_mellor@users.sourceforge.net)
+AC_INIT(mcron, 0.99.2, dale_mellor@users.sourceforge.net)
 AM_INIT_AUTOMAKE
 
 
@@ -21,25 +21,6 @@ fi
 AC_SUBST(CONFIG_DEBUG)
 
 
-AC_MSG_CHECKING([whether the (broken) Vixie programs are requested])
-AC_ARG_ENABLE(vixie,
-              AC_HELP_STRING([--enable-vixie],
-                            [enable installation of cron and crontab programs]),
-                             CONFIG_ENABLE_VIXIE=$enableval,
-                             CONFIG_ENABLE_VIXIE=no)
-AC_MSG_RESULT($CONFIG_ENABLE_VIXIE)
-AC_SUBST(CONFIG_ENABLE_VIXIE)
-
-
-# We substitute the following commands into the makefile by configure, because
-# automake is confused by the ifeq command.
-  
-IFEQ_VIXIE="ifeq (\$(CONFIG_ENABLE_VIXIE), yes)"
-AC_SUBST(IFEQ_VIXIE)
-ENDIF="endif"
-AC_SUBST(ENDIF)
-
-        
 AC_PROG_CC
 GUILE_PROGS
 GUILE_FLAGS
@@ -76,7 +57,9 @@ else
 fi
 SENDMAIL=$ac_cv_prog_SENDMAIL
 
-                
+
+# This is to support `make DESTDIR=...'
+                        
 real_program_prefix=`echo $program_prefix | sed s/NONE//`
 AC_SUBST(real_program_prefix)
 

@@ -10,12 +10,6 @@
 This file documents the @code{mcron} command for running jobs at
 scheduled times.
 
-IMPORTANT NOTICE:
-IT IS VERY LIKELY THAT THE CRON AND CRONTAB PROGRAMS DESCRIBED IN THIS
-MANUAL HAVE NOT BEEN INSTALLED IN YOUR SYSTEM (THEY ARE CURRENTLY
-BROKEN). THUS, ONLY THE MCRON PERSONALITY IS CURRENTLY AVAILABLE FOR
-USE.
-
 Copyright (C) 2003 Dale Mellor
 This is free software. See the source files for the terms of the
 copyright.
@@ -254,7 +248,7 @@ then run the command @code{mcron}.
 Alternatively (full compatibility with Vixie cron), set your
 environment variable @code{EDITOR} to your favorite editor, run
 @code{crontab -e}, put the above line into the edit buffer, save and
-exit. For this to work the @code{crond} daemon must be already running
+exit. For this to work the @code{cron} daemon must be already running
 on your system, by root.
 
 @node Syntax, Invoking, Simple examples, Top
@@ -272,8 +266,9 @@ on your system, by root.
 @findex job
 In Guile-formatted configuration files each command that needs
 executing is introduced with the @code{job} function. This function
-always takes exactly two arguments, the first a time specification,
-and the second a command specification.
+always takes two arguments, the first a time specification, and the
+second a command specification. An optional third argument may contain
+a string to display when this job is listed in a schedule.
 
 @cindex time specification, procedure
 @cindex procedure time specification
@@ -521,23 +516,19 @@ there is a bug in the program. This section is also copied verbatim
 from Paul Vixie's documentation for his cron program, and his
 copyright notice is duly reproduced below.
 
-@cindex /etc/crontab
-@cindex system crontab
-@cindex incompatibility
-@cindex vixie incompatibility
-There is one single exception to the above. @strong{Mcron does not
-notice changes made to /etc/crontab}. If a change is made, then it is
-necessary to kill the cron daemon and restart it for the change to
-take effect.
-
 There are three problems with this specification.
 
 @cindex zero'th day of month
 @cindex 0'th day of month
 1. It is allowed to specify days of the month in the range 0-31. What
-does it mean to specify day 0? Well, if I'm not mistaken mcron will
-run the command on the last day of the previous month (but don't rely
-on this). I don't know what Vixie cron would have done.
+does it mean to specify day 0? Looking at the Vixie source code, it
+seems that if this date appears as part of a list, it has no
+effect. However, if it appears on its own, the effect is to say
+``don't run on any particular day of the month, only take the week-day
+specification into account.'' Mcron has been coded to mimic this
+behaviour as a special case (unmodified mcron logic implies that this
+date specification would cause jobs to run on the last day of the
+previous month).
 
 @cindex thirteenth month of year
 @cindex 13th month of year
@@ -901,21 +892,19 @@ standard output.
 @cindex running crond
 @cindex /var/cron/tabs
 @cindex /var/run/cron.pid
-If the program runs by the name of cron or crond, then it will read
-all the files in /var/cron/tabs (which should only be readable by
-root) and the file /etc/crontab, and then detaches itself from the
-terminal to live forever as a daemon process. Additionally, it puts
-its PID into /var/run/cron.pid, and listens for SIGHUPs, in which case
-it will look for a file /var/cron/update which should contain a single
-username, and the program will re-read that user's crontab. This is
-for correct functioning with the crontab program.
+If the program runs by the name of @code{cron} or @code{crond}, then
+it will read all the files in @code{/var/cron/tabs} (which should only
+be readable by root) and the file @code{/etc/crontab}, and then
+detaches itself from the terminal to live forever as a daemon
+process. Additionally, it creates a UNIX socket at
+@code{/var/cron/socket}, and listens for messages sent to that socket
+consisting of a user name whose crontabs have been changed. In this
+case, the program will re-read that user's crontab. This is for
+correct functioning with the crontab program.
 
-@cindex /etc/crontab
-@cindex incompatibility
-@strong{NOTE} that it does not detect changes in /etc/crontab; if this file
-is ever changed then it will be necessary to kill and then restart the
-daemon. This is the one and only incompatibility with Vixie's cron
-program.
+Further, if the @code{--noetc} option was not used, a job is scheduled
+to run every minute to check if /etc/crontab has been modified
+recently. If so, this file will also be re-read.
 
 The options which may be used with this program are as follows.
 
@@ -938,6 +927,32 @@ information about the version and copyright for the current program.
 @itemx --help
 This causes a short but complete usage message to be displayed on
 standard output.
+
+@item -s [count]
+@itemx --schedule[=count]
+@cindex printout of jobs schedule
+@cindex schedule of jobs, listing
+@cindex options, schedule
+@cindex options, -s
+@cindex -s option
+@cindex --schedule option
+With this option specified no commands are run. Instead, the program
+computes the times the commands would be run and prints the
+information to the screen, and then immediately exits.
+
+The count, if supplied, indicates the number of commands to
+display. The default value is 8.
+
+@cindex -n option
+@cindex --noetc option
+@cindex options, -n
+@cindex options, --noetc
+@item -n
+@itemx --noetc
+This tells cron not to add a job to the system which wakes up every
+minute to check for modifications to @code{/etc/crontab}. It is
+recommended that this option be used (and further that the
+@code{/etc/crontab} file be taken off the system altogether!)
 
 @end table
 

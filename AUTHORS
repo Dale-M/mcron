@@ -1,1 +1,8 @@
 Dale Mellor (dale_mellor@users.sourceforge.net)
+    wrote everything from scratch, with some reference to Paul Vixie's code,
+    with the exceptions noted below.
+
+The section of the manual which describes in detail the syntax for Vixie-style
+    configuration files is copied verbatim from Paul Vixie's own distribution,
+    on the understanding that this is permitted under his copyright notice,
+    which is reproduced in its entirety in this section of the manual.

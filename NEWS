@@ -6,6 +6,17 @@ See the end for copying conditions.
 Please send bug reports to dale_mellor@users.sourceforge.net.
 
 
+Sunday, 20th July 2003
+    Released version 0.99.2. (Now fully functional). The CVS tag is
+    release_0-99-2 (no branch).
+
+
+Sunday, 20th July 2003
+    It has been a long and painful journey, but we have at last worked out how
+    to work around all the faults in Guile (an implementation with no threads
+    and no UNIX signals!). The code is now really 100% Vixie compatible.
+
+
 Saturday, 5th July 2003
     Released version 0.99.1, with installation of cron and crontab disabled by
     default (suspect problems with Guile internals are preventing these from
@@ -20,9 +31,7 @@ Friday, 4th July 2003
 
 
 
-----------------------------------------------------------------------
-Copyright information:
-
+____________________________________________________________________________
 Copyright (C) 2003 Dale Mellor
 
    Permission is granted to anyone to make or distribute verbatim copies

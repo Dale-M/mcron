@@ -1,47 +1,66 @@
-                                                           -*-text-*-
+Copyright (C) 2003 Dale Mellor
+See the end for copying conditions.
+
+
 
 Maybe in the near future...
 
-    *  Logging.
+    * Logging.
 
-    *  Check POSIX compliance.
+    * Check POSIX compliance (should be okay if Vixie cron was okay).
 
+    * Work out how to give each user his own closure (or environment or module)
+       for his configuration files so that he can't mess the core or other
+       users' files up. Then allow scheme code in the system crontabs.
+
+    * Move the code into modules so that it can be incorporated directly into
+       other programs.
+              
 
 
 There are no plans to actually do the following any time soon...
 
-    *  Develop at, batch modes of operation.
+    * Develop at and batch modes of operation.
 
-    *  Make compatibilities with other crons (BSD, SYSV, Solaris, Dillon's, ...)
+    * Make compatibilities with other crons (BSD, SYSV, Solaris, Dillon's, ...)
 
-    *  Port to BSD, other operating systems.
+    * Port to BSD, other operating systems.
 
-    *  Full security audit for Vixie mode.
-
-    *  Move internal functions into a namespace, or provide alternative
-       environments, such that configuration files cannot interfere with mcron
-       itself.
+    * Full security audit for Vixie mode.
 
 
 
 Quite likely to happen if version 2.0 ever materializes...
 
-    *  Split program into Vixie and mcron separates (should streamline mcron
-       code by a factor of three; removes need for security audit).
+    * Split program into Vixie and mcron separates (should streamline mcron code
+       by a factor of three; removes need for security audit).
 
-    *  UNIX or TCP socket will allow interrogation and control of a running
+    * UNIX or TCP socket will allow interrogation and control of a running
        daemon (should be more reliable, efficient and useful than using the
-       SIGHUP-/var/cron/update method). (I did already try this but, as with
-       processes, Guile's use of threads falls over.)
+       SIGHUP-/var/cron/update method).
 
 
 
 May happen if version 2.0 ever materializes...
 
-    *  Add anacron functionality (run missed jobs if the daemon is stopped, for
+    * Add anacron functionality (run missed jobs if the daemon is stopped, for
        example if a personal computer does not run 24 hours a day).
 
-    *  TCP socket to allow control via HTTP (web browser interface). Or maybe
+    * TCP socket to allow control via HTTP (web browser interface). Or maybe
        just CGI personality.
 
-    *  GTK+/Bononbo interface.
+    * GTK+/Bononbo/Gnome2 interface.
+    
+
+
+________________________________________________________________________________
+Copyright (C) 2003 Dale Mellor
+
+   Permission is granted to anyone to make or distribute verbatim copies of this
+   document as received, in any medium, provided that the copyright notice and
+   this permission notice are preserved, thus giving the recipient permission to
+   redistribute in turn.
+
+   Permission is granted to distribute modified versions of this document, or of
+   portions of it, under the above conditions, provided also that they carry
+   prominent notices stating who last changed them.

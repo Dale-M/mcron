@@ -25,7 +25,8 @@
 
 
 
-(use-modules (ice-9 regex) (ice-9 rdelim) (srfi srfi-13) (srfi srfi-14))
+(use-modules (ice-9 regex) (ice-9 rdelim)
+             (srfi srfi-1) (srfi srfi-13) (srfi srfi-14))
 
 
 
@@ -136,7 +137,7 @@
 (define (interpolate-weekdays mday-list wday-list month year)
   (let ((t (localtime 0)))
     (set-tm:mday  t 1)
-    (set-tm:mon t month)
+    (set-tm:mon   t month)
     (set-tm:year  t year)
     (let ((first-day (tm:wday (cdr (mktime t)))))
       (apply append
@@ -278,7 +279,9 @@
 ;; which references to a time-spec-list will be bound. It will be used by the
 ;; returned procedure [3] to compute the next time a function should run. Any
 ;; 7's in the weekday component of the list (the last one) are folded into 0's
-;; (both values represent sunday) [2].
+;; (both values represent sunday) [2]. Any 0's in the month-day component of the
+;; list are removed (this allows a solitary zero to be used to indicate that
+;; jobs should only run on certain days of the _week_) [2.1].
 ;;
 ;; The returned procedure itself:-
 ;;
@@ -306,8 +309,8 @@
                                               (list-ref tokens (vector-ref x 0))
                                             (vector-ref x 1)
                                             (vector-ref x 2))
-                                   (vector-ref x 3)
-                                   (vector-ref x 4)))
+                                            (vector-ref x 3)
+                                            (vector-ref x 4)))
                     ;; token range-top+1   getter    setter
                  `( #( 0     0     60      ,tm:min   ,set-tm:min   )
                     #( 1     0     24      ,tm:hour  ,set-tm:hour  )
@@ -320,6 +323,12 @@
                  (map (lambda (time-spec)
                         (if (eqv? time-spec 7) 0 time-spec))
                       (vector-ref (car (last-pair time-spec-list)) 0)))  ;; [2]
+
+    (vector-set! (caddr time-spec-list)
+                 0
+                 (remove (lambda (day) (eqv? day 0))
+                         (vector-ref (caddr time-spec-list) 0)))  ;; [2.1]
+                 
     
     (lambda (current-time)     ;; [3]
       (let ((time (localtime current-time)))  ;; [4]
@@ -328,15 +337,17 @@
                          (time-spec:list (cadddr time-spec-list))))
             (begin
               (nudge-month! time (cdddr time-spec-list))
-              (set-tm:mday  time 0)
-              (set-tm:hour time -1)
-              (set-tm:min  time -1)))
-        (if (not (member (tm:mday time)  ;; !!
-                         (time-spec:list (caddr time-spec-list))))
+              (set-tm:mday  time 0)))
+        (if (or (eqv? (tm:mday time) 0)
+                (not (member (tm:mday time)
+                             (interpolate-weekdays
+                                 (time-spec:list (caddr time-spec-list))
+                                 (time-spec:list (caddr (cddr time-spec-list)))
+                                 (tm:mon time)
+                                 (tm:year time)))))
             (begin
               (nudge-day! time (cddr time-spec-list))
-              (set-tm:hour time -1)
-              (set-tm:min time -1)))
+              (set-tm:hour time -1)))
         (if (not (member (tm:hour time)
                          (time-spec:list (cadr time-spec-list))))
             (begin
@@ -367,7 +378,8 @@
     (if (not match) (begin (display "Bad job line in Vixie file.\n")
                            (primitive-exit 10)))
     (job (match:substring match 1)
-         (lambda () (with-mail-out (match:substring match 3))))))
+         (lambda () (with-mail-out (match:substring match 3)))
+         (match:substring match 3))))
 
 
 
@@ -379,13 +391,14 @@
                               "([[:alpha:]][[:alnum:]_]*)[[:space:]]+(.*)$")))
 
 (define (parse-system-vixie-line line)
-  (let ((match (regexp-exec parse-user-vixie-line-regexp line)))
+  (let ((match (regexp-exec parse-system-vixie-line-regexp line)))
     (if (not match) (begin (display "Bad job line in /etc/crontab.\n")
                            (primitive-exit 11)))
-    (set! configuration-user (passwd (match:substring match 3)))
+    (set! configuration-user (getpw (match:substring match 3)))
     (job (match:substring match 1)
          (lambda () (with-mail-out (match:substring match 4)
-                                   (passwd:name configuration-user))))))
+                                   (passwd:name configuration-user)))
+         (match:substring match 4))))
 
 
 
@@ -416,10 +429,10 @@
             ((eof-object? line))
           
           ;; If the line ends with \, append the next line.
-          (while ((and (>= (string-length line) 1)
-                       (char=? (string-ref line
-                                           (- (string-length line) 1))
-                               #\\)))
+          (while (and (>= (string-length line) 1)
+                      (char=? (string-ref line
+                                          (- (string-length line) 1))
+                               #\\))
             (let ((next-line (read-line port)))
               (if (eof-object? next-line)
                   (set! next-line ""))
@@ -449,3 +462,20 @@
               (read-vixie-port port)
               (read-vixie-port port (car parse-vixie-line)))
           (close port)))))
+
+
+
+;; A procedure which determines if the /etc/crontab file has been recently
+;; modified, and, if so, signals the main routine to re-read the file. We run
+;; under the with-mail-to command so that the process runs as a child,
+;; preventing lockup. If cron is supposed to check for updates to /etc/crontab,
+;; then this procedure will be called about 5 seconds before every minute.
+
+(define (check-system-crontab)
+  (with-mail-out (lambda ()
+                  (let ((mtime (stat:mtime (stat "/etc/crontab"))))
+                    (if (> mtime (- (current-time) 60))
+                        (let ((socket (socket AF_UNIX SOCK_STREAM 0)))
+                          (connect socket AF_UNIX "/var/cron/socket")
+                          (display "/etc/crontab" socket)
+                          (close socket)))))))

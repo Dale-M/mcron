@@ -1,13 +1,13 @@
-                                                  -*-text-*-
+Copyright (C) 2003 Dale Mellor
+See the end for copying conditions.
 
-This is version 0.99.1 of the mcron program, designed and written by Dale
-Mellor, which replaces and hugely enhances Vixie cron. It is functionally
-complete, production quality code (did you expect less?), but has not received
-much testing yet and contains known bugs. It has only been built on a GNU/Linux
-system, and will most likely fail on others (but you never know...).
 
-Mcron is supposed to be 100% Vixie compatible. However, in the current release
-this is broken, and by default only 50% compatibility is installed.
+This is version 0.99.2 of the mcron program (the second 1.0.0 release
+candidate), designed and written by Dale Mellor, which replaces and hugely
+enhances Vixie cron. It is functionally complete, production quality code (did
+you expect less?), but has not received much testing yet. It has only been built
+on a GNU/Linux system, and will most likely fail on others (but you never
+know...).
 
 
 ----------------------------------------------------------------------
@@ -15,41 +15,33 @@ IMPORTANT NOTICES
 
 Read the BUGS file.
 
-By default, the cron and crontab programs are not installed, and mcron will
-happiliy coexist alongside any existing cron programs you have on your
-system. The Vixie-style programs can be installed by specifying --enable-vixie
-to the configure command, in which case you must take heed of the following
-notes.
+Do not (yet) install this software on a machine which relies for its functioning
+on its current set of crontabs.
 
+The package must be installed by root.
 
-    Do not (yet) install this software on a machine which relies for its
-    functioning on its current set of crontabs.
+Before installing this package for the first time, it is necessary to terminate
+any running cron daemons on your system. If your old cron is not Vixie or
+accurately Vixie compatible (files in /var/cron/tabs*, /var/cron/allow,
+/var/cron/deny, /etc/crontab, /var/run/cron.pid) then you will need to clear out
+all old crontabs and make new ones afresh.
 
-    The package must be installed by root.
+If your old cron is Vixie, or very similar, mcron should fall right into place
+where your old cron was (the binaries cron and crontab will be replaced), and
+you should be able to continue to use your existing crontabs without noticing
+any changes. Bear in mind that if you use /etc/crontab, then changes to this
+file will *not* take immediate effect (this is the 1% incompatibility between
+mcron and Vixie cron); you may want to add a comment to this file with a note to
+this effect. Alternatively, use the new mcron program, it's better!
 
-    Before installing this package for the first time, it is necessary to
-    terminate any running cron daemons on your system. If your old cron is not
-    accurately Vixie compatible (files in /var/cron/tabs*, /var/cron/allow,
-    /var/cron/deny, /etc/crontab, /var/run/cron.pid) then you will need to clear
-    out all old crontabs and make new ones afresh.
-
-    If your old cron is Vixie, or very similar, mcron should fall right into
-    place where your old cron was (the binaries cron and crontab will be
-    replaced), and you should be able to continue to use your existing crontabs
-    without noticing any changes. Bear in mind that if you use /etc/crontab,
-    then changes to this file will *not* take immediate effect (this is the 1%
-    incompatibility between mcron and Vixie cron); you may want to add a comment
-    to this file with a note to this effect. Alternatively, use the new mcron
-    program, it's better!
-
-    If you don't want to clobber your existing cron executables, you can specify
-    the --program-prefix option to configure with a prefix ending in a
-    non-alphabetic character, for example "m.", and then run the programs as
-    m.mcron, m.cron and m.crontab.
+If you don't want to clobber your existing cron executables, you can specify the
+--program-prefix option to configure with a prefix ending in a non-alphabetic
+character, for example "m.", and then run the programs as m.mcron, m.cron and
+m.crontab.
 ----------------------------------------------------------------------
 
 
-See the file INSTALL for building and installation instructions.
+See the file INSTALL for generic building and installation instructions.
 
 After installation, read the info file for full instructions for use (type
 `info mcron' at the command line).
@@ -57,7 +49,25 @@ After installation, read the info file for full instructions for use (type
 Known bugs are noted in the BUGS file, and features which might be implemented
 sometime sooner or later are noted in the TODO file.
 
-Please send all other bug reports by electronic mail to:
+Please send all other bug reports either via Savannah at
+   https://savannah.nongnu.org/bugs/?func=addbug&group=mcron
+or by electronic mail to:
    dale_mellor@users.sourceforge.net
 
 Mcron is free software. See the file COPYING for copying conditions.
+
+The mcron development home page is at http://www.nongnu.org/mcron.
+
+
+_______________________________________________________________________________
+Copyright (C) 2003 Dale Mellor
+
+   Permission is granted to anyone to make or distribute verbatim copies
+   of this document as received, in any medium, provided that the
+   copyright notice and this permission notice are preserved,
+   thus giving the recipient permission to redistribute in turn.
+
+   Permission is granted to distribute modified versions
+   of this document, or of portions of it,
+   under the above conditions, provided also that they
+   carry prominent notices stating who last changed them.

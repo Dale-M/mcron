@@ -41,27 +41,21 @@ mcron.c : config.scm mcron.scm vixie.scm environment.scm email.scm crontab.scm \
 	@rm -f mcron.escaped.scm > /dev/null 2>&1
 
 install-exec-local:
-@IFEQ_VIXIE@
 	@if [ `id -u` -ne 0 ]; then \
 	    echo "*** MUST BE ROOT TO INSTALL MCRON ***"; \
 	    exit 1; \
 	fi
-@ENDIF@
 
 #full program prefix
 fpp = $(DESTDIR)$(bindir)/@real_program_prefix@
 
 install-exec-hook:
-@IFEQ_VIXIE@
-	@rm -f $(fpp)cron$(EXEEXT) > /dev/null 2>&1
-	@$(INSTALL) --mode='u=rwx' mcron$(EXEEXT) $(fpp)cron$(EXEEXT)
-	@rm -f $(fpp)crontab$(EXEEXT) > /dev/null 2>&1
-	@$(INSTALL) --mode='u=rwxs,og=rx' mcron$(EXEEXT) $(fpp)crontab$(EXEEXT)
-@ENDIF@
+	rm -f $(fpp)cron$(EXEEXT) > /dev/null 2>&1
+	$(INSTALL) --mode='u=rwx' mcron$(EXEEXT) $(fpp)cron$(EXEEXT)
+	rm -f $(fpp)crontab$(EXEEXT) > /dev/null 2>&1
+	$(INSTALL) --mode='u=rwxs,og=rx' mcron$(EXEEXT) $(fpp)crontab$(EXEEXT)
 	./mkinstalldirs -m 'u=rwx' /var/cron
 	./mkinstalldirs -m 'u=rwx,og=rx' /var/run
 
 uninstall-hook:
-@IFEQ_VIXIE@
-	@rm -f $(fpp){cron,crontab}$(EXEEXT)
-@ENDIF@
+	rm -f $(fpp){cron,crontab}$(EXEEXT)

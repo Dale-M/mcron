@@ -1,3 +1,4 @@
+/*                                                   -*-c-*- */
 /*
  *   Copyright (C) 2003 Dale Mellor
  * 
@@ -69,16 +70,6 @@ void react_to_terminal_signal (int sig)
 
 
 
-/* This is a function designed to be installed as a signal handler. It calls the
-   scheme procedure to do all the work (see mcron.scm for details). */
-
-void react_to_hup_signal (int sig)
-{
-    scm_eval_string (scm_take0str ("(process-hup)") );
-}
-
-
-
 /* This is a function designed to be callable from scheme, and sets up all the
    signal handlers required by the cron personality.  */
 
@@ -90,10 +81,7 @@ SCM set_cron_signals ()
     sigaction (SIGTERM, &sa, 0);
     sigaction (SIGINT,  &sa, 0);
     sigaction (SIGQUIT, &sa, 0);
-
-    static struct sigaction hup; hup = sa;
-    hup.sa_handler = react_to_hup_signal;
-    sigaction (SIGHUP, &hup, 0);
+    sigaction (SIGHUP,  &sa, 0);
     
     return SCM_BOOL_T;
 }

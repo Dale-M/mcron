@@ -1,8 +1,20 @@
-2003-07-05  Dale Mellor <dale_mellor@users.sourceforge.net>
+2003-07-20  Dale Mellor <dale_mellor@users.sourceforge.net>
 
-	* configure.ac, makefile.am: Disabled installation of cron,
-	crontab programs by default as they are broken.
-	
+        * Second cut, now _really_ fully functional (100% Vixie
+	compatible), production quality code, still needs lots of testing
+	doing...
+
+	* Converted from SIGUP-/var/cron/update to select-/var/cron/socket
+	method of communication between crontab and cron.
+
+	* Added implicit job which checks every minute for updates to
+	/etc/crontab.
+
+	* Removed --enable-vixie configuration option - the Vixie programs
+	are built and installed by default now.
+
+	* Bumped version to 0.99.2.
+
 
 2003-06-28  Dale Mellor <dale_mellor@users.sourceforge.net>
 
@@ -10,3 +22,21 @@
 	testing...
 
 	* Version set at 0.99.1
+
+
+
+
+
+
+________________________________________________________________________________
+Copyright (C) 2003 Dale Mellor
+
+	Permission is granted to anyone to make or distribute verbatim
+	copies of this document as received, in any medium, provided that
+	the copyright notice and this permission notice are preserved,
+	thus giving the recipient permission to redistribute in turn.
+
+	Permission is granted to distribute modified versions of this
+	document, or of portions of it, under the above conditions,
+	provided also that they carry prominent notices stating who last
+	changed them.
