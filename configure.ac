@@ -1,15 +1,14 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.57)
-AC_INIT(mcron, 1.0.1, dale_mellor@users.sourceforge.net)
+AC_PREREQ(2.59)
+AC_INIT([mcron],[1.0.2],[dale_mellor@users.sourceforge.net])
 AM_INIT_AUTOMAKE
 
 
 AC_MSG_CHECKING([whether debugging is requested])
 AC_ARG_ENABLE(debug,
-              AC_HELP_STRING([--enable-debug],
-                             [enable debugging and traceback on error]),
+              AS_HELP_STRING(--enable-debug,enable debugging and traceback on error),
               CONFIG_DEBUG=$enableval,
               CONFIG_DEBUG=no)
 AC_MSG_RESULT($CONFIG_DEBUG)
@@ -90,8 +89,7 @@ SENDMAIL=$ac_cv_prog_SENDMAIL
 
 AC_MSG_CHECKING([which spool directory to use])
 AC_ARG_WITH(spool-dir,
-            AC_HELP_STRING([--with-spool-dir],
-                           [the crontab spool directory (/var/cron/tabs)]),
+            AS_HELP_STRING(--with-spool-dir,the crontab spool directory (/var/cron/tabs)),
               CONFIG_SPOOL_DIR=$withval,
               CONFIG_SPOOL_DIR=[/var/cron/tabs])
 AC_MSG_RESULT($CONFIG_SPOOL_DIR)
@@ -99,8 +97,7 @@ AC_SUBST(CONFIG_SPOOL_DIR)
 
 AC_MSG_CHECKING([name of socket])
 AC_ARG_WITH(socket-file,
-            AC_HELP_STRING([--with-socket-file],
-                           [unix pathname for cron socket (/var/cron/socket)]),
+            AS_HELP_STRING(--with-socket-file,unix pathname for cron socket (/var/cron/socket)),
               CONFIG_SOCKET_FILE=$withval,
               CONFIG_SOCKET_FILE=[/var/cron/socket])
 AC_MSG_RESULT($CONFIG_SOCKET_FILE)
@@ -108,8 +105,7 @@ AC_SUBST(CONFIG_SOCKET_FILE)
 
 AC_MSG_CHECKING([name of allow file])
 AC_ARG_WITH(allow-file,
-            AC_HELP_STRING([--with-allow-file],
-                           [the file of allowed users (/var/cron/allow)]),
+            AS_HELP_STRING(--with-allow-file,the file of allowed users (/var/cron/allow)),
               CONFIG_ALLOW_FILE=$withval,
               CONFIG_ALLOW_FILE=[/var/cron/allow])
 AC_MSG_RESULT($CONFIG_ALLOW_FILE)
@@ -117,8 +113,7 @@ AC_SUBST(CONFIG_ALLOW_FILE)
 
 AC_MSG_CHECKING([name of deny file])
 AC_ARG_WITH(deny-file,
-            AC_HELP_STRING([--with-deny-file],
-                           [the file of barred users (/var/cron/deny)]),
+            AS_HELP_STRING(--with-deny-file,the file of barred users (/var/cron/deny)),
               CONFIG_DENY_FILE=$withval,
               CONFIG_DENY_FILE=[/var/cron/deny])
 AC_MSG_RESULT($CONFIG_DENY_FILE)
@@ -126,8 +121,7 @@ AC_SUBST(CONFIG_DENY_FILE)
 
 AC_MSG_CHECKING([name of PID file])
 AC_ARG_WITH(pid-file,
-            AC_HELP_STRING([--with-pid-file],
-                           [the file to record cron's PID (/var/run/cron.pid)]),
+            AS_HELP_STRING(--with-pid-file,the file to record cron's PID (/var/run/cron.pid)),
               CONFIG_PID_FILE=$withval,
               CONFIG_PID_FILE=[/var/run/cron.pid])
 AC_MSG_RESULT($CONFIG_PID_FILE)
@@ -135,8 +129,7 @@ AC_SUBST(CONFIG_PID_FILE)
 
 AC_MSG_CHECKING([directory to hold temporary files])
 AC_ARG_WITH(tmp-dir,
-            AC_HELP_STRING([--with-tmp-dir],
-                           [directory to hold temporary files (/tmp)]),
+            AS_HELP_STRING(--with-tmp-dir,directory to hold temporary files (/tmp)),
               CONFIG_TMP_DIR=$withval,
               CONFIG_TMP_DIR=[/tmp])
 AC_MSG_RESULT($CONFIG_TMP_DIR)
