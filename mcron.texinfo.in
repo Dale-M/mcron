@@ -1,13 +1,13 @@
 \input texinfo
 @c %**start of header
 @setfilename mcron.info
-@settitle mcron 1.0.0
+@settitle mcron 1.0.1
 @c %**end of header
 
 @syncodeindex fn cp
 
 @copying
-Copyright (C) 2003 Dale Mellor
+Copyright (C) 2003  Dale Mellor
 This is free software. See the source files for the terms of the
 copyright.
 
@@ -178,7 +178,7 @@ more flexibility, and complete compatibility with Vixie cron.
 @end itemize
 
 A full discussion of the design and philosophy of mcron can be found
-in the white paper at http://rdmp.org:20202/mcron.html.
+in the white paper at http://www.gnu.org/software/mcron/design.html.
 
 
 @node Simple examples, Syntax, Introduction, Top

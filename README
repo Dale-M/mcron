@@ -2,12 +2,12 @@ Copyright (C) 2003 Dale Mellor                        -*-text-*-
 See the end for copying conditions.
 
 
-This is version 1.0.0 of the mcron program, and is the first release as part of
-the GNU system. It is designed and written by Dale Mellor, and replaces and
-hugely enhances Vixie cron. It is functionally complete, production quality code
-(did you expect less?), but has not received much testing yet. It has only been
-built on a GNU/Linux system, and will most likely fail on others (but you never
-know...).
+This is version 1.0.1 of the mcron program, and is the first release as part of
+the GNU system which is actually homed at gnu.org. It is designed and written by
+Dale Mellor, and replaces and hugely enhances Vixie cron. It is functionally
+complete, production quality code (did you expect less?), but has not received
+much testing yet. It has only been built on a GNU/Linux system, and will most
+likely fail on others (but you never know...).
 
 
 ----------------------------------------------------------------------
@@ -57,16 +57,15 @@ are included here.
 Known bugs are noted in the BUGS file, and features which might be implemented
 sometime sooner or later are noted in the TODO file.
 
-Please send all other bug reports to bugs-mcron@gnu.org. Other mailing lists you
+Please send all other bug reports to bug-mcron@gnu.org. Other mailing lists you
 could subscribe to are help-mcron@gnu.org (for help and advice from the
 community, including the author) and info-mcron@gnu.org (for news as it
 happens).
 
 Mcron is free software. See the file COPYING for copying conditions.
 
-The mcron development home page is at http://www.gnu.org/software/mcron (also
-temporarily at http://rdmp.org/mcron), and can be obtained from
-ftp://ftp.gnu.org/mcron (or temporarily from ftp://rdmp.org/mcron).
+The mcron development home page is at http://www.gnu.org/software/mcron, and it
+can be obtained from ftp://ftp.gnu.org/pub/gnu/mcron.
 
 
 

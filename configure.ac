@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT(mcron, 1.0.0, dale_mellor@users.sourceforge.net)
+AC_INIT(mcron, 1.0.1, dale_mellor@users.sourceforge.net)
 AM_INIT_AUTOMAKE
 
 

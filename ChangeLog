@@ -1,3 +1,11 @@
+2004-05-15  Dale Mellor <dale_mellor@users.sourceforge.net>
+
+	* Modified all auxiliary files to reflect that the package is now
+	properly homed at www.gnu.org.
+
+	* Bumped version to 1.0.1.
+	
+
 2003-12-11  Dale Mellor <dale_mellor@users.sourceforge.net>
 
 	* Modified all auxiliary files to reflect that we are now a GNU

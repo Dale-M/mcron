@@ -3,7 +3,13 @@ Historic moments in the life of mcron.                        -*-text-*-
 Copyright (C) 2003 Dale Mellor
 See the end for copying conditions.
 
-Please send bug reports to bugs-mcron@gnu.org.
+Please send bug reports to bug-mcron@gnu.org.
+
+
+Saturday, 15th May 2004
+    Set up Savannah and the mailing lists so that we are now homed properly at
+    gnu.org. Released version 1.0.1 to reflect this, with CVS tag release_1-0-1
+    (no branch). Hopefully we will now get some feedback!
 
 
 Friday, 12th December 2003
