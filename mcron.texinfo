@@ -104,7 +104,7 @@ Extended Guile examples
 
 Vixie
 
-* Paul Dixie's copyright::      
+* Paul Vixie's copyright::      
 * Crontab file::                
 * Incompatibilities with old Unices::  
 
@@ -518,7 +518,7 @@ second-to-last day of every month.
 @emph{NOTE} that this section is definitive. If there is a difference in
 behaviour between the mcron program and this part of the manual, then
 there is a bug in the program. This section is also copied verbatim
-from Paul Dixie's documentation for his cron program, and his
+from Paul Vixie's documentation for his cron program, and his
 copyright notice is duly reproduced below.
 
 @cindex /etc/crontab
@@ -556,16 +556,16 @@ the variable and runs the command in the user's default shell, as
 advertised by the /etc/passwd file.
 
 @menu
-* Paul Dixie's copyright::      
+* Paul Vixie's copyright::      
 * Crontab file::                
 * Incompatibilities with old Unices::  
 @end menu
 
 
-@node Paul Dixie's copyright, Crontab file, Vixie Syntax, Vixie Syntax
-@subsection Paul Dixie's copyright
-@cindex copyright, Paul Dixie's
-@cindex Paul Dixie's copyright
+@node Paul Vixie's copyright, Crontab file, Vixie Syntax, Vixie Syntax
+@subsection Paul Vixie's copyright
+@cindex copyright, Paul Vixie's
+@cindex Paul Vixie's copyright
 @quotation
 Copyright 1988,1990,1993,1994 by Paul Vixie
 All rights reserved
@@ -583,7 +583,7 @@ user.
 
 
 
-@node  Crontab file, Incompatibilities with old Unices, Paul Dixie's copyright, Vixie Syntax
+@node  Crontab file, Incompatibilities with old Unices, Paul Vixie's copyright, Vixie Syntax
 @subsection Crontab files.
 @cindex crontab file
 @cindex vixie crontab file
