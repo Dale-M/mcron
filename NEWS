@@ -1,9 +1,21 @@
-Historic moments in the life of mcron.
+Historic moments in the life of mcron.                        -*-text-*-
 
-Copyright (C) 1992, 1993, 1995-2002 Free Software Foundation, Inc.
+Copyright (C) 2003 Dale Mellor
 See the end for copying conditions.
 
 Please send bug reports to dale_mellor@users.sourceforge.net.
+
+
+Saturday, 5th July 2003
+    Released version 0.99.1, with installation of cron and crontab disabled by
+    default (suspect problems with Guile internals are preventing these from
+    working properly). The CVS tag is release_0-99-1 (no branch has been created
+    for it).
+
+
+Friday, 4th July 2003
+    We have been accepted as a Savannah project. A CVS repository and web home
+    page have been created. We're still waiting for acceptance as a GNU project.
 
 
 

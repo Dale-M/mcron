@@ -10,6 +10,12 @@
 This file documents the @code{mcron} command for running jobs at
 scheduled times.
 
+IMPORTANT NOTICE:
+IT IS VERY LIKELY THAT THE CRON AND CRONTAB PROGRAMS DESCRIBED IN THIS
+MANUAL HAVE NOT BEEN INSTALLED IN YOUR SYSTEM (THEY ARE CURRENTLY
+BROKEN). THUS, ONLY THE MCRON PERSONALITY IS CURRENTLY AVAILABLE FOR
+USE.
+
 Copyright (C) 2003 Dale Mellor
 This is free software. See the source files for the terms of the
 copyright.

@@ -1,3 +1,5 @@
+                                                           -*-text-*-
+
 Maybe in the near future...
 
     *  Logging.
@@ -16,8 +18,9 @@ There are no plans to actually do the following any time soon...
 
     *  Full security audit for Vixie mode.
 
-    *  Move internal functions into a namespace such that configuration files
-       cannot interfere with mcron itself.
+    *  Move internal functions into a namespace, or provide alternative
+       environments, such that configuration files cannot interfere with mcron
+       itself.
 
 
 
@@ -28,7 +31,8 @@ Quite likely to happen if version 2.0 ever materializes...
 
     *  UNIX or TCP socket will allow interrogation and control of a running
        daemon (should be more reliable, efficient and useful than using the
-       SIGHUP-/var/cron/update method).
+       SIGHUP-/var/cron/update method). (I did already try this but, as with
+       processes, Guile's use of threads falls over.)
 
 
 

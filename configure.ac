@@ -20,30 +20,41 @@ else
 fi
 AC_SUBST(CONFIG_DEBUG)
 
-                
+
+AC_MSG_CHECKING([whether the (broken) Vixie programs are requested])
+AC_ARG_ENABLE(vixie,
+              AC_HELP_STRING([--enable-vixie],
+                            [enable installation of cron and crontab programs]),
+                             CONFIG_ENABLE_VIXIE=$enableval,
+                             CONFIG_ENABLE_VIXIE=no)
+AC_MSG_RESULT($CONFIG_ENABLE_VIXIE)
+AC_SUBST(CONFIG_ENABLE_VIXIE)
+
+
+# We substitute the following commands into the makefile by configure, because
+# automake is confused by the ifeq command.
+  
+IFEQ_VIXIE="ifeq (\$(CONFIG_ENABLE_VIXIE), yes)"
+AC_SUBST(IFEQ_VIXIE)
+ENDIF="endif"
+AC_SUBST(ENDIF)
+
+        
 AC_PROG_CC
 GUILE_PROGS
 GUILE_FLAGS
                        
 # Checks for programs.
-  # AC_CHECK_PROG(CHMOD, chmod, chmod)
-AC_CHECK_PROGS(CHMOD, chmod)
-if test "x$ac_cv_prog_CHMOD" = "x"; then
-   AC_MSG_ERROR(chmod not found)
-fi
 AC_CHECK_PROGS(ED, ed)
 if test "x$ac_cv_prog_ED" = "x"; then
    AC_MSG_ERROR(ed not found)
-fi
-AC_CHECK_PROGS(CAT, cat)
-if test "x$ac_cv_prog_CAT" = "x"; then
-   AC_MSG_ERROR(cat not found)
 fi
 AC_CHECK_PROGS(WHICH, which)
 if test "x$ac_cv_prog_WHICH" = "x"; then
     AC_MSG_ERROR(which not found)
 fi
 
+        
 # Now find a sendmail or equivalent.
 
 AC_CHECK_PROGS(SENDMAIL, sendmail)
@@ -66,14 +77,6 @@ fi
 SENDMAIL=$ac_cv_prog_SENDMAIL
 
                 
-# Checks for libraries.
-
-# Checks for header files.
-
-# Checks for typedefs, structures, and compiler characteristics.
-
-# Checks for library functions.
-
 real_program_prefix=`echo $program_prefix | sed s/NONE//`
 AC_SUBST(real_program_prefix)
 

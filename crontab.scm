@@ -82,8 +82,7 @@
 ;; Iff the real user is root, he can use the -u option to access files of
 ;; another user.
 
-(define crontab-user
-  (option-ref options 'user crontab-real-user))
+(define crontab-user (option-ref options 'user crontab-real-user))
 
 
 
@@ -147,12 +146,11 @@
 
  ((option-ref options 'edit #f)
   (let ((temp-file (string-append "/tmp/crontab." (number->string (getpid))))
-        (editor (if (getenv "VISUAL") (getenv "VISUAL")
-                    (if (getenv "EDITOR") (getenv "EDITOR")
-                        "vi"))))
-    (catch #t
-           (lambda () (copy-file crontab-file temp-file))
-           (lambda (key . args) (with-output-to-file temp-file (lambda () #t))))
+        (editor (cond ((getenv "VISUAL") (getenv "VISUAL"))
+                      ((getenv "EDITOR") (getenv "EDITOR"))
+                      (else "vi"))))
+    (catch #t (lambda () (copy-file crontab-file temp-file))
+              (lambda (key . args) (with-output-to-file temp-file noop)))
     (chown temp-file (getuid) (getgid))
     (system (string-append editor " " temp-file))
     (read-vixie-file temp-file)
@@ -167,7 +165,7 @@
  ((option-ref options 'remove #f)
   (catch #t (lambda () (delete-file crontab-file)
                        (hit-server crontab-user))
-         (lambda (key . args) #t)))
+            noop))
 
 
  ;; In the case of the replace personality we loop over all the arguments on the
@@ -194,6 +192,5 @@
  ;; used to put out, for total compatibility.
 
  (else
-  (display
-   "crontab: usage error: file name must be specified for replace.\n")
+  (display "crontab: usage error: file name must be specified for replace.\n")
   (primitive-exit 15)))

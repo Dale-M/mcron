@@ -36,14 +36,14 @@
 ;; to control is added at the end of the list.
 
 (define (impose-default-environment env-alist passwd-entry)
-  (append (list (cons "HOME" (passwd:dir passwd-entry))
-                (cons "CWD" (passwd:dir passwd-entry))
-                (cons "SHELL" (passwd:shell passwd-entry))
-                '("TERM" . #f)
-                '("TERMCAP" . #f))
+  (append `(("HOME"    . ,(passwd:dir passwd-entry))
+            ("CWD"     . ,(passwd:dir passwd-entry))
+            ("SHELL"   . ,(passwd:shell passwd-entry))
+            ("TERM"    . #f)
+            ("TERMCAP" . #f))
           env-alist
-          (list (cons "LOGNAME" (passwd:name passwd-entry))
-                (cons "USER" (passwd:name passwd-entry)))))
+          `(("LOGNAME" . ,(passwd:name passwd-entry))
+            ("USER"    . ,(passwd:name passwd-entry)))))
 
 
 

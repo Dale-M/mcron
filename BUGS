@@ -1,4 +1,4 @@
-                                    -*-text-*-
+                                                     -*-text-*-
 
 * If two users modify their crontabs simultaneously, there will be contention
    for /var/cron/update between themselves and with the main daemon.
@@ -9,5 +9,7 @@
    Coordinated Time (UTC).
 
    
+   
 * As often as not the cron daemon crashes (segfaults) when crontab sends it a
-   SIGHUP.
+   SIGHUP. For this reason, the current release does not install cron or
+   crontab.

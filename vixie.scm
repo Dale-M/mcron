@@ -416,11 +416,10 @@
             ((eof-object? line))
           
           ;; If the line ends with \, append the next line.
-          (do ()
-              ((or (< (string-length line) 1)
-                   (not (char=? (string-ref line
-                                            (- (string-length line) 1))
-                                #\\))))
+          (while ((and (>= (string-length line) 1)
+                       (char=? (string-ref line
+                                           (- (string-length line) 1))
+                               #\\)))
             (let ((next-line (read-line port)))
               (if (eof-object? next-line)
                   (set! next-line ""))

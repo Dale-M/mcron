@@ -1,23 +1,7 @@
-2003-06-30  hydro23  <Dale Mellor <dale@dmellor.dabsol.co.uk>>
+2003-07-05  Dale Mellor <dale_mellor@users.sourceforge.net>
 
-	* mcron.scm: Introduced arbiters to marshall access to updates
-	structure between main routing and HUP signal action procedure.
-
-	* crontab.scm: When an empty /tmp file is produced for editing,
-	make it owned by the real user (so he can edit it).
-
-	* mcron.scm, makefile.am: Check explicitly for root user when
-	running cron personality. Install with only root execute
-	permission.
-
-	* mcron.scm: Don't create /var/run/cron.pid if the -s option has
-	been used (this is an undocumented possibility).
-
-	* configure.ac, config.scm.in: Added configure option
-	--enable-debug to determine whether debugging and traceback should
-	be turned on.
-	
-        * Version bumped to 0.99.2.
+	* configure.ac, makefile.am: Disabled installation of cron,
+	crontab programs by default as they are broken.
 	
 
 2003-06-28  Dale Mellor <dale_mellor@users.sourceforge.net>
@@ -26,5 +10,3 @@
 	testing...
 
 	* Version set at 0.99.1
-
-

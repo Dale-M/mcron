@@ -239,8 +239,7 @@ Report bugs to " config-package-bugreport ".\n
             (display "   /var/run/cron.pid.)\n")
             (primitive-exit 1)))
       (if (not (option-ref options 'schedule #f))
-          (with-output-to-file "/var/run/cron.pid"
-            (lambda () #t)))
+          (with-output-to-file "/var/run/cron.pid" noop))
       (setenv "MAILTO" #f)
       (c-set-cron-signals)))
 
@@ -604,19 +603,17 @@ Report bugs to " config-package-bugreport ".\n
 (use-modules (srfi srfi-2))
 
 (define (process-files-in-system-directory)
-;;;   (catch #t (lambda ()
+  (catch #t (lambda ()
               (let ((directory (opendir "/var/cron/tabs")))
                 (do ((file-name (readdir directory) (readdir directory)))
                     ((eof-object? file-name) (closedir directory))
                   (and-let* ((user (valid-user file-name)))
                             (set! configuration-user user)
                             (read-vixie-file (string-append "/var/cron/tabs/"
-                                                           file-name)))))
-;;;               )
-;;;        (lambda (key . args)
-;;;          (display "You do not have permission to access the system crontabs.\n")
-;;;          (primitive-exit 4)))
-              )
+                                                            file-name))))))
+      (lambda (key . args)
+        (display "You do not have permission to access the system crontabs.\n")
+        (primitive-exit 4))))
 
 
 

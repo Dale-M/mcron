@@ -24,4 +24,3 @@
 (define config-package-string "@PACKAGE_STRING@")
 (define config-package-bugreport "@PACKAGE_BUGREPORT@")
 (define config-sendmail "@SENDMAIL@")
-(define config-cat "@CAT@")
