@@ -1,0 +1,61 @@
+## Makefile for the toplevel directory of mcron.
+## Copyright (C) 2003 Dale Mellor
+##
+## This program is free software; you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation; either version 2, or (at your option)
+## any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program; if not, write to the Free Software
+## Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+## Process this file with automake to produce Makefile.in
+
+ED = @ED@
+
+MAINTAINERCLEANFILES = configure makefile makefile.in \
+                       install-sh missing mkinstalldirs texinfo.tex INSTALL \
+                       aclocal.m4 compile depcomp COPYING
+
+CLEANFILES = mcron.c
+
+EXTRA_DIST = makefile.ed config.scm mcron.scm vixie.scm environment.scm \
+             email.scm crontab.scm mcron.c.template
+
+info_TEXINFOS = mcron.texinfo
+bin_PROGRAMS = mcron
+mcron_SOURCES = mcron.c
+mcron_LDFLAGS = @GUILE_LDFLAGS@
+mcron_CFLAGS = @GUILE_CFLAGS@
+
+mcron.c : config.scm mcron.scm vixie.scm environment.scm email.scm crontab.scm \
+            makefile.ed mcron.c.template
+	@echo 'Building mcron.c...'
+	@$(ED) < makefile.ed > /dev/null 2>&1
+	@rm -f mcron.escaped.scm > /dev/null 2>&1
+
+install-exec-local:
+	@if [ `id -u` -ne 0 ]; then \
+	    echo "*** MUST BE ROOT TO INSTALL MCRON ***"; \
+	    exit 1; \
+	fi
+
+#full program prefix
+fpp = $(DESTDIR)$(bindir)/@real_program_prefix@
+
+install-exec-hook:
+	@rm -f $(fpp)cron$(EXEEXT) > /dev/null 2>&1
+	@$(INSTALL) --mode='u=rwx' mcron$(EXEEXT) $(fpp)cron$(EXEEXT)
+	@rm -f $(fpp)crontab$(EXEEXT) > /dev/null 2>&1
+	@$(INSTALL) --mode='u=rwxs,og=rx' mcron$(EXEEXT) $(fpp)crontab$(EXEEXT)
+	./mkinstalldirs -m 'u=rwx' /var/cron
+	./mkinstalldirs -m 'u=rwx,og=rx' /var/run
+
+uninstall-hook:
+	@rm -f $(fpp){cron,crontab}$(EXEEXT)

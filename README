@@ -1,0 +1,50 @@
+This is version 0.99.1 of the mcron program, designed and written by Dale
+Mellor, which replaces and hugely enhances Vixie cron. It is functionally
+complete, production quality code (did you expect less?), but has not received
+much testing yet and contains known bugs. It has only been built on a GNU/Linux
+system, and will most likely fail on others (but you never know...).
+
+
+----------------------------------------------------------------------
+IMPORTANT NOTICES
+
+Read the BUGS file.
+
+Do not (yet) install this software on a machine which relies for its functioning
+on its current set of crontabs.
+
+The package must be installed by root.
+
+Before installing this package for the first time, it is necessary to terminate
+any running cron daemons on your system. If your old cron is not accurately
+Vixie compatible (files in /var/cron/tabs*, /var/cron/allow, /var/cron/deny,
+/etc/crontab, /var/run/cron.pid) then you will need to clear out all old
+crontabs and make new ones afresh.
+
+If your old cron is Vixie, or very similar, mcron should fall right into place
+where your old cron was (the binaries cron and crontab will be replaced), and
+you should be able to continue to use your existing crontabs without noticing
+any changes. Bear in mind that if you use /etc/crontab, then changes to this
+file will *not* take immediate effect (this is the 1% incompatibility between
+mcron and Vixie cron); you may want to add a comment to this file with a note to
+this effect. Alternatively, use the new mcron program, it's better!
+
+If you don't want to clobber your existing cron executables, you can specify the
+--program-prefix option to configure with a prefix ending in a non-alphabetic
+character, for example "m.", and then run the programs as m.mcron, m.cron and
+m.crontab.
+----------------------------------------------------------------------
+
+
+See the file INSTALL for building and installation instructions.
+
+After installation, read the info file for full instructions for use (type
+`info mcron' at the command line).
+
+Known bugs are noted in the BUGS file, and features which might be implemented
+sometime sooner or later are noted in the TODO file.
+
+Please send all other bug reports by electronic mail to:
+   dale_mellor@users.sourceforge.net
+
+Mcron is free software. See the file COPYING for copying conditions.

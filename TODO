@@ -1,0 +1,43 @@
+Maybe in the near future...
+
+    *  Logging.
+
+    *  Check POSIX compliance.
+
+
+
+There are no plans to actually do the following any time soon...
+
+    *  Develop at, batch modes of operation.
+
+    *  Make compatibilities with other crons (BSD, SYSV, Solaris, Dillon's, ...)
+
+    *  Port to BSD, other operating systems.
+
+    *  Full security audit for Vixie mode.
+
+    *  Move internal functions into a namespace such that configuration files
+       cannot interfere with mcron itself.
+
+
+
+Quite likely to happen if version 2.0 ever materializes...
+
+    *  Split program into Vixie and mcron separates (should streamline mcron
+       code by a factor of three; removes need for security audit).
+
+    *  UNIX or TCP socket will allow interrogation and control of a running
+       daemon (should be more reliable, efficient and useful than using the
+       SIGHUP-/var/cron/update method).
+
+
+
+May happen if version 2.0 ever materializes...
+
+    *  Add anacron functionality (run missed jobs if the daemon is stopped, for
+       example if a personal computer does not run 24 hours a day).
+
+    *  TCP socket to allow control via HTTP (web browser interface). Or maybe
+       just CGI personality.
+
+    *  GTK+/Bononbo interface.
