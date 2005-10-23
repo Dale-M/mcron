@@ -243,7 +243,6 @@
                ((list? time-proc)      (lambda (current-time)
                                          (primitive-eval time-proc)))
                (else
-
           (display "job: invalid first argument (next-time-function; should ")
           (display "be function, string or list)")
                     (primitive-exit 3))))
@@ -254,7 +253,7 @@
                ((list? action) (with-output-to-string
                                  (lambda () (display action)))))))
     (add-job (lambda (current-time)
-               (set! current-action-time current-time)
+               (set! current-action-time current-time)  ;; ?? !!!!
                (time-proc current-time))
              action
              displayable

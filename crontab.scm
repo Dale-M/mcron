@@ -163,6 +163,8 @@
             noop))
 
 
+ ;; !!!!  This comment is wrong.
+ 
  ;; In the case of the replace personality we loop over all the arguments on the
  ;; command line, and for each one parse the file to make sure it is parseable
  ;; (but subsequently ignore the configuration), and all being well we copy it

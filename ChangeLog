@@ -1,3 +1,20 @@
+2005-09-02  hydro23  <Dale Mellor <dale@dmellor.dabsol.co.uk>>
+
+	* makefile.am, mcron.c.template (main): Modified install-exec-hook
+	so that a proper installation of a Vixie-compatible cron only
+	takes place if we are root - otherwise only mcron is installed as
+	a user-owned program.  The guile modules are now installed under
+	mcron's shared data directory, not guile's global directories.
+
+	* mcron-core.scm: Removed job:advance-time, put the code inline
+	where it was called, and changed the instance in the main loop to
+	compute the new time based on the current-time, rather than the
+	previous job time (this makes things behave more reasonably when a
+	laptop awakes from suspend mode).
+
+	* Bumped version to 1.0.2.
+	
+
 2004-05-15  Dale Mellor <dale_mellor@users.sourceforge.net>
 
 	* Modified all auxiliary files to reflect that the package is now

@@ -17,7 +17,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-ED = @ED@
+ED = @ED@   # !!!! Are these needed?
 CP = @CP@
 
 MAINTAINERCLEANFILES = configure makefile makefile.in \
@@ -28,17 +28,16 @@ CLEANFILES = mcron.c core.scm
 
 EXTRA_DIST = makefile.ed main.scm mcron-core.scm vixie-specification.scm \
              crontab.scm environment.scm job-specifier.scm redirect.scm \
-             vixie-time.scm mcron.c.template
+             vixie-time.scm mcron.c.template BUGS
 
 info_TEXINFOS = mcron.texinfo
 bin_PROGRAMS = mcron
 mcron_SOURCES = mcron.c
 mcron_LDFLAGS = @GUILE_LDFLAGS@
-mcron_CFLAGS = @GUILE_CFLAGS@
+mcron_CFLAGS = @GUILE_CFLAGS@ -DGUILE_LOAD_PATH=\"$(datadir)\"
 
-moddir = @GUILE_SITE@/mcron
-mod_DATA = core.scm environment.scm job-specifier.scm redirect.scm \
-           vixie-time.scm vixie-specification.scm config.scm
+pkgdata_DATA = core.scm environment.scm job-specifier.scm redirect.scm \
+               vixie-time.scm vixie-specification.scm config.scm
 
 
 # If you're wondering, the configure script keeps deleting all files with a name
@@ -53,24 +52,35 @@ mcron.c : main.scm crontab.scm makefile.ed mcron.c.template
 	@$(ED) < makefile.ed > /dev/null 2>&1
 	@rm -f mcron.escaped.scm > /dev/null 2>&1
 
-install-exec-local:
-	@if [ `id -u` -ne 0 ]; then \
-	    echo "*** MUST BE ROOT TO INSTALL MCRON ***"; \
-	    exit 1; \
-	fi
+
+# !!!! Want to be able to install as non-root.
+
+# install-exec-local:
+# 	@if [ `id -u` -ne 0 ]; then \
+# 	    echo "*** MUST BE ROOT TO INSTALL MCRON ***"; \
+# 	    exit 1; \
+# 	fi
 
 #full program prefix
 fpp = $(DESTDIR)$(bindir)/@real_program_prefix@
 
 install-exec-hook:
-	rm -f $(fpp)cron$(EXEEXT) > /dev/null 2>&1
-	$(INSTALL) --mode='u=rwx' mcron$(EXEEXT) $(fpp)cron$(EXEEXT)
-	rm -f $(fpp)crontab$(EXEEXT) > /dev/null 2>&1
-	$(INSTALL) --mode='u=rwxs,og=rx' mcron$(EXEEXT) $(fpp)crontab$(EXEEXT)
-	./mkinstalldirs -m 'u=rwx' /var/cron
-	./mkinstalldirs -m 'u=rwx,og=rx' /var/run
-	./mkinstalldirs -m 'u=rwx,og=rx' @GUILE_SITE@
-	./mkinstalldirs -m 'u=rwx,og=rx' @GUILE_SITE@/mcron
+	@if [ "`id -u`" -eq "0" ]; then \
+	   rm -f $(fpp)cron$(EXEEXT) > /dev/null 2>&1; \
+	   $(INSTALL) --mode='u=rwx' mcron$(EXEEXT) $(fpp)cron$(EXEEXT); \
+	   rm -f $(fpp)crontab$(EXEEXT) > /dev/null 2>&1; \
+	   $(INSTALL) --mode='u=rwxs,og=rx' mcron$(EXEEXT) $(fpp)crontab$(EXEEXT); \
+	   ./mkinstalldirs -m 'u=rwx' /var/cron; \
+	   ./mkinstalldirs -m 'u=rwx,og=rx' /var/run; \
+	   ./mkinstalldirs -m 'u=rwx,og=rx' @GUILE_SITE@; \
+	   ./mkinstalldirs -m 'u=rwx,og=rx' @GUILE_SITE@/mcron; \
+    else \
+       echo "+++ WARNING: NON-ROOT INSTALL: ONLY mcron WILL BE INSTALLED, NOT ANY OF THE VIXIE REPLACEMENT PROGRAMS"; \
+	fi
+
 
 uninstall-hook:
-	rm -f $(fpp){cron,crontab}$(EXEEXT)
+	if [ "`id -u`" -eq "0" ]; then \
+	    rm -f $(fpp){cron,crontab}$(EXEEXT); \
+	fi
+

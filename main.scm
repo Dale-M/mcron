@@ -298,8 +298,9 @@ Report bugs to " config-package-bugreport ".\n
                 (do ((file-name (readdir directory) (readdir directory)))
                     ((eof-object? file-name))
                   (and-let* ((user (valid-user file-name)))
-                            (set-configuration-user user)
+                            (set-configuration-user user)         ;; / ?? !!!!
                             (read-vixie-file (string-append config-spool-dir
+                                                            "/"
                                                             file-name))))))
       (lambda (key . args)
         (display "You do not have permission to access the system crontabs.\n")

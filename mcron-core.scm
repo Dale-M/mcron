@@ -70,8 +70,6 @@
 (define (job:environment job)         (vector-ref job 3))
 (define (job:displayable job)         (vector-ref job 4))
 (define (job:next-time job)           (vector-ref job 5))
-(define (job:advance-time! job)
-  (vector-set! job 5 ((job:next-time-function job) (job:next-time job))))
 
 
 
@@ -99,21 +97,15 @@
 
 (define (add-job time-proc action displayable configuration-time
                  configuration-user)
-  (if (eq? configuration-source 'user)
-      (set! user-job-list (cons (vector configuration-user
-                                        time-proc
-                                        action
-                                        (get-current-environment-mods-copy)
-                                        displayable
-                                        (time-proc configuration-time))
-                                user-job-list))
-      (set! system-job-list (cons (vector configuration-user
-                                          time-proc
-                                          action
-                                          (get-current-environment-mods-copy)
-                                          displayable
-                                          (time-proc configuration-time))
-                                  system-job-list))))
+  (let ((entry (vector configuration-user
+                       time-proc
+                       action
+                       (get-current-environment-mods-copy)
+                       displayable
+                       (time-proc configuration-time))))
+    (if (eq? configuration-source 'user)
+      (set! user-job-list (cons entry user-job-list))
+      (set! system-job-list (cons entry system-job-list)))))
 
 
 
@@ -176,10 +168,14 @@
         (and-let* ((next-jobs (find-next-jobs))
                    (time (car next-jobs))
                    (date-string (strftime "%c\n" (localtime time))))
-          (for-each (lambda (job) (display date-string)
-                                  (display (job:displayable job))
-                                  (newline)(newline)
-                                  (job:advance-time! job))
+          (for-each (lambda (job)
+                      (display date-string)
+                      (display (job:displayable job))
+                      (newline)(newline)
+                      (vector-set! job
+                                   5
+                                   ((job:next-time-function job)
+                                                          (job:next-time job))))
                     (cdr next-jobs)))))))
 
 
@@ -202,6 +198,7 @@
   (for-each (lambda (job)
               (if (eqv? (primitive-fork) 0)
                   (begin
+                    (setgid (passwd:gid (job:user job)))
                     (setuid (passwd:uid (job:user job)))
                     (chdir (passwd:dir (job:user job)))
                     (modify-environment (job:environment job) (job:user job))
@@ -209,7 +206,10 @@
                     (primitive-exit 0))
                   (begin
                     (set! number-children (+ number-children 1))
-                    (job:advance-time! job))))
+                    (vector-set! job
+                                 5
+                                 ((job:next-time-function job)
+                                                            (current-time))))))
             jobs-list))
 
 

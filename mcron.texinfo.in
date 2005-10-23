@@ -1,13 +1,13 @@
 \input texinfo
 @c %**start of header
 @setfilename mcron.info
-@settitle mcron 1.0.1
+@settitle mcron 1.0.2
 @c %**end of header
 
 @syncodeindex fn cp
 
 @copying
-Copyright (C) 2003  Dale Mellor
+Copyright (C) 2003, 2005  Dale Mellor
 This is free software. See the source files for the terms of the
 copyright.
 
@@ -107,7 +107,8 @@ Detailed invoking
 
 * Running mcron::               
 * Running cron or crond::       
-* Running crontab::             
+* Running crontab::
+* Behaviour on laptops::
 * Exit codes::                  
 
 Guile modules
@@ -809,7 +810,8 @@ place in the part which implements the mcron personality.
 @menu
 * Running mcron::               
 * Running cron or crond::       
-* Running crontab::             
+* Running crontab::
+* Behaviour on laptops::
 * Exit codes::                  
 @end menu
 
@@ -965,7 +967,7 @@ recommended that this option be used (and further that the
 
 @end table
 
-@node Running crontab, Exit codes, Running cron or crond, Invoking
+@node Running crontab, Behaviour on laptops, Running cron or crond, Invoking
 @section Running crontab
 @cindex crontab, invoking
 @cindex running crontab
@@ -1032,8 +1034,23 @@ become immediately effective.
 @end table
 
 
+@node Behaviour on laptops, Exit codes, Running crontab, Invoking
+@section Behaviour on laptops
+@cindex laptops
+@cindex power suspend
+While mcron has not been designed to work anachronistically, the behaviour of
+mcron when a laptop emerges from a suspended state is well defined, and the
+following description explains what happens in this situation.
 
-@node Exit codes,  , Running crontab, Invoking
+When a laptop awakes from a suspended state, all jobs which would have run while
+the laptop was suspended will run exactly once immediately (and simultaneously)
+when the laptop awakes, and then the next time that those jobs run will be
+computed based on the time the laptop was awoken.  Any jobs which would not have
+run during the suspense period will be unaffected, and will still run at their
+proper times.
+
+
+@node Exit codes,  , Behaviour on laptops, Invoking
 @section Exit codes
 @cindex exit codes
 @cindex error conditions

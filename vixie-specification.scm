@@ -29,6 +29,7 @@
             read-vixie-port
             read-vixie-file
             check-system-crontab)
+  #:use-module ((mcron config) :select (config-socket-file))
   #:use-module (mcron core)
   #:use-module (mcron job-specifier)
   #:use-module (mcron redirect)

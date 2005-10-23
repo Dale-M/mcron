@@ -1,14 +1,34 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
+  
+#     Copyright (C) 2003, 2005  Dale Mellor
+#   
+#     This program is free software; you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation; either version 2, or (at your option)
+#     any later version.
+#   
+#     This program is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#   
+#     You should have received a copy of the GNU General Public License
+#     along with this program; if not, write to the Free Software
+#     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+#     USA.
+
+
 AC_PREREQ(2.59)
-AC_INIT([mcron],[1.0.2],[dale_mellor@users.sourceforge.net])
+AC_INIT([mcron], [1.0.2rc1], [dale_mellor@users.sourceforge.net])
 AM_INIT_AUTOMAKE
 
 
 AC_MSG_CHECKING([whether debugging is requested])
 AC_ARG_ENABLE(debug,
-              AS_HELP_STRING(--enable-debug,enable debugging and traceback on error),
+              AC_HELP_STRING([--enable-debug],
+                             [enable debugging and traceback on error]),
               CONFIG_DEBUG=$enableval,
               CONFIG_DEBUG=no)
 AC_MSG_RESULT($CONFIG_DEBUG)
@@ -76,7 +96,7 @@ else
    AC_CHECK_PROGS(SENDMAIL, mail)
    if test "x$ac_cv_prog_SENDMAIL" != "x"; then
       AC_MSG_CHECKING(mail path)
-      ac_cv_prog_SENDMAIL="`$ac_cv_prog_WHICH sendmail` -d "
+      ac_cv_prog_SENDMAIL="`$ac_cv_prog_WHICH mail` -d "
       AC_MSG_RESULT($ac_cv_prog_SENDMAIL)
    else
       AC_MSG_RESULT(No mail program found)
@@ -89,7 +109,8 @@ SENDMAIL=$ac_cv_prog_SENDMAIL
 
 AC_MSG_CHECKING([which spool directory to use])
 AC_ARG_WITH(spool-dir,
-            AS_HELP_STRING(--with-spool-dir,the crontab spool directory (/var/cron/tabs)),
+            AC_HELP_STRING([--with-spool-dir],
+                           [the crontab spool directory (/var/cron/tabs)]),
               CONFIG_SPOOL_DIR=$withval,
               CONFIG_SPOOL_DIR=[/var/cron/tabs])
 AC_MSG_RESULT($CONFIG_SPOOL_DIR)
@@ -97,7 +118,8 @@ AC_SUBST(CONFIG_SPOOL_DIR)
 
 AC_MSG_CHECKING([name of socket])
 AC_ARG_WITH(socket-file,
-            AS_HELP_STRING(--with-socket-file,unix pathname for cron socket (/var/cron/socket)),
+            AC_HELP_STRING([--with-socket-file],
+                           [unix pathname for cron socket (/var/cron/socket)]),
               CONFIG_SOCKET_FILE=$withval,
               CONFIG_SOCKET_FILE=[/var/cron/socket])
 AC_MSG_RESULT($CONFIG_SOCKET_FILE)
@@ -105,7 +127,8 @@ AC_SUBST(CONFIG_SOCKET_FILE)
 
 AC_MSG_CHECKING([name of allow file])
 AC_ARG_WITH(allow-file,
-            AS_HELP_STRING(--with-allow-file,the file of allowed users (/var/cron/allow)),
+            AC_HELP_STRING([--with-allow-file],
+                           [the file of allowed users (/var/cron/allow)]),
               CONFIG_ALLOW_FILE=$withval,
               CONFIG_ALLOW_FILE=[/var/cron/allow])
 AC_MSG_RESULT($CONFIG_ALLOW_FILE)
@@ -113,7 +136,8 @@ AC_SUBST(CONFIG_ALLOW_FILE)
 
 AC_MSG_CHECKING([name of deny file])
 AC_ARG_WITH(deny-file,
-            AS_HELP_STRING(--with-deny-file,the file of barred users (/var/cron/deny)),
+            AC_HELP_STRING([--with-deny-file],
+                           [the file of barred users (/var/cron/deny)]),
               CONFIG_DENY_FILE=$withval,
               CONFIG_DENY_FILE=[/var/cron/deny])
 AC_MSG_RESULT($CONFIG_DENY_FILE)
@@ -121,7 +145,8 @@ AC_SUBST(CONFIG_DENY_FILE)
 
 AC_MSG_CHECKING([name of PID file])
 AC_ARG_WITH(pid-file,
-            AS_HELP_STRING(--with-pid-file,the file to record cron's PID (/var/run/cron.pid)),
+            AC_HELP_STRING([--with-pid-file],
+                           [the file to record cron's PID (/var/run/cron.pid)]),
               CONFIG_PID_FILE=$withval,
               CONFIG_PID_FILE=[/var/run/cron.pid])
 AC_MSG_RESULT($CONFIG_PID_FILE)
@@ -129,7 +154,8 @@ AC_SUBST(CONFIG_PID_FILE)
 
 AC_MSG_CHECKING([directory to hold temporary files])
 AC_ARG_WITH(tmp-dir,
-            AS_HELP_STRING(--with-tmp-dir,directory to hold temporary files (/tmp)),
+            AC_HELP_STRING([--with-tmp-dir],
+                           [directory to hold temporary files (/tmp)]),
               CONFIG_TMP_DIR=$withval,
               CONFIG_TMP_DIR=[/tmp])
 AC_MSG_RESULT($CONFIG_TMP_DIR)

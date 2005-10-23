@@ -62,10 +62,11 @@
    which are supposed to initiate shutdown of this program. It calls the scheme
    procedure (see mcron.scm for details) to do all the work, and then exits. */
 
-void react_to_terminal_signal (int sig)
+void
+react_to_terminal_signal (int sig)
 {
-    scm_eval_string (scm_take0str ("(delete-run-file)") );
-    exit (1);
+  scm_eval_string (scm_take0str ("(delete-run-file)") );
+  exit (1);
 }
 
 
@@ -73,17 +74,18 @@ void react_to_terminal_signal (int sig)
 /* This is a function designed to be callable from scheme, and sets up all the
    signal handlers required by the cron personality.  */
 
-SCM set_cron_signals ()
+SCM
+set_cron_signals ()
 {
-    static struct sigaction sa;
-    memset (&sa, 0, sizeof (sa));
-    sa.sa_handler = react_to_terminal_signal;
-    sigaction (SIGTERM, &sa, 0);
-    sigaction (SIGINT,  &sa, 0);
-    sigaction (SIGQUIT, &sa, 0);
-    sigaction (SIGHUP,  &sa, 0);
-    
-    return SCM_BOOL_T;
+  static struct sigaction sa;
+  memset (&sa, 0, sizeof (sa));
+  sa.sa_handler = react_to_terminal_signal;
+  sigaction (SIGTERM, &sa, 0);
+  sigaction (SIGINT,  &sa, 0);
+  sigaction (SIGQUIT, &sa, 0);
+  sigaction (SIGHUP,  &sa, 0);
+  
+  return SCM_BOOL_T;
 }
 
 
@@ -92,21 +94,26 @@ SCM set_cron_signals ()
    register the function above with the guile system, and then execute the mcron
    guile program. */
 
-void inner_main ()
+void
+inner_main ()
 {
-    scm_c_define_gsubr ("c-set-cron-signals", 0, 0, 0, set_cron_signals);
+  scm_c_define_gsubr ("c-set-cron-signals", 0, 0, 0, set_cron_signals);
     
-    scm_eval_string (scm_take0str (
-                                    GUILE_PROGRAM_GOES_HERE
-                                                            ) );
+  scm_eval_string (scm_take0str (
+                                  GUILE_PROGRAM_GOES_HERE
+                                                          ) );
 }
 
 
 
 /* The real main function. Does nothing but start up the guile subsystem. */
 
-int main (int argc, char **argv)
+int
+main (int argc, char **argv)
 {
-    scm_boot_guile (argc, argv, inner_main, 0);
-    return 0;
+  setenv ("GUILE_LOAD_PATH", GUILE_LOAD_PATH, 1);
+  
+  scm_boot_guile (argc, argv, inner_main, 0);
+  
+  return 0;
 }
