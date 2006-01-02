@@ -8,7 +8,7 @@
 
 @copying
 Copyright (C) 2003, 2005  Dale Mellor
-This is free software. See the source files for the terms of the
+This is free software.  See the source files for the terms of the
 copyright.
 
 @ignore
@@ -128,45 +128,45 @@ Guile modules
 @cindex mcron
 The mcron program represents a complete re-think of the cron concept
 originally found in the Berkeley and AT&T unices, and subsequently
-rationalized by Paul Vixie. The original idea was to have a daemon
+rationalized by Paul Vixie.  The original idea was to have a daemon
 that wakes up every minute, scans a set of files under a special
 directory, and determines from those files if any shell commands
 should be executed in this minute.
 
 The new idea is to read the required command instructions, work out
 which command needs to be executed next, and then sleep until the
-inferred time has arrived. On waking the commands are run, and the
-time of the next command is computed. Furthermore, the specifications
+inferred time has arrived.  On waking the commands are run, and the
+time of the next command is computed.  Furthermore, the specifications
 are written in scheme, allowing at the same time simple command
 execution instructions and very much more flexible ones to be composed
-than the original Vixie format. This has several useful advantages
+than the original Vixie format.  This has several useful advantages
 over the original idea.
 
 @cindex advantages of mcron
 @itemize @bullet
 @item
-Does not consume CPU resources when not needed. Many cron daemons only
+Does not consume CPU resources when not needed.  Many cron daemons only
 run jobs once an hour, or even just once a day.
 @item
 Can easily allow for finer time-points to be specified,
-i.e. seconds. In principle this could be extended to microseconds, but
+i.e. seconds.  In principle this could be extended to microseconds, but
 this is not implemented.
 @item
-Times can be more or less regular. For example, a job that runs
+Times can be more or less regular.  For example, a job that runs
 every 17 hours can be specified, or a job that runs on the first
 Sunday of every month.
 @item
-Times can be dynamic. Arbitrary Guile (scheme) code can be provided to
-compute the next time that a command needs to be run. This could, for
+Times can be dynamic.  Arbitrary Guile (scheme) code can be provided to
+compute the next time that a command needs to be run.  This could, for
 example, take the system load into consideration.
 @item
 Turns out to be easy to provide complete backwards compatibility with
 Vixie cron.
 @item
-Each user looks after his own files in his own directory. He can use
+Each user looks after his own files in his own directory.  He can use
 more than one to break up complicated cron specifications.
 @item
-Each user can run his own daemon. This removes the need for suid
+Each user can run his own daemon.  This removes the need for suid
 programs to manipulate the crontabs, and eliminates many security
 concerns that surround all existing cron programs.
 @item
@@ -185,8 +185,8 @@ in the white paper at http://www.gnu.org/software/mcron/design.html.
 @node Simple examples, Syntax, Introduction, Top
 @chapter Simple examples
 The vast majority of uses of cron are sublimely simple: run a program
-every hour, or every day. With this in mind the design of mcron has
-been to allow such simple specifications to be made easily. The
+every hour, or every day.  With this in mind the design of mcron has
+been to allow such simple specifications to be made easily.  The
 examples show how to create the command descriptions, and subsequently
 how to run mcron to make them happen.
 @menu
@@ -200,7 +200,7 @@ how to run mcron to make them happen.
 @cindex examples, guile
 @cindex example, run a program every hour
 You have an executable @code{my-program} in your home directory, which
-you want to run every hour. Create a file @code{job.guile} in directory
+you want to run every hour.  Create a file @code{job.guile} in directory
 @code{~/.cron} with the following contents
 
 @example
@@ -233,7 +233,7 @@ and run the @code{mcron} command.
 
 If you want to run other jobs, you can either add more lines to this
 file, or you can create other files in your @code{.cron} directory
-with the @code{.guile} extension. Alternatively, you can use any file
+with the @code{.guile} extension.  Alternatively, you can use any file
 you want and pass it as an argument to @code{mcron}, or even pipe the
 commands into the standard input.
 
@@ -244,7 +244,7 @@ commands into the standard input.
 @cindex examples, vixie
 @cindex vixie examples
 You have an executable @code{my-program} in your home directory, which
-you want to run every hour. Create a file @code{job.vixie} in directory
+you want to run every hour.  Create a file @code{job.vixie} in directory
 @code{~/.cron} with the following contents
 
 @example
@@ -258,7 +258,7 @@ then run the command @code{mcron}.
 Alternatively (full compatibility with Vixie cron), set your
 environment variable @code{EDITOR} to your favorite editor, run
 @code{crontab -e}, put the above line into the edit buffer, save and
-exit. For this to work the @code{cron} daemon must be already running
+exit.  For this to work the @code{cron} daemon must be already running
 on your system, by root.
 
 @node Syntax, Invoking, Simple examples, Top
@@ -275,26 +275,26 @@ on your system, by root.
 @cindex syntax, guile
 @findex job
 In Guile-formatted configuration files each command that needs
-executing is introduced with the @code{job} function. This function
+executing is introduced with the @code{job} function.  This function
 always takes two arguments, the first a time specification, and the
-second a command specification. An optional third argument may contain
+second a command specification.  An optional third argument may contain
 a string to display when this job is listed in a schedule.
 
 @cindex time specification, procedure
 @cindex procedure time specification
-The first argument can be a procedure, a list, or a string. If a
+The first argument can be a procedure, a list, or a string.  If a
 function is supplied, it must take exactly one argument, which will be
 the ``current'' time in UNIX format, and the return value of the
 function must be the time in UNIX format when this action should next
-be run. The following functions are available to facilitate the
+be run.  The following functions are available to facilitate the
 computation:
 
 @findex next-second-from
 @code{(next-second-from time . args)} without arguments this
-returns the second after the current one. With the extra arguments,
+returns the second after the current one.  With the extra arguments,
 these form a list of seconds in the minute when the action should run,
 and the function will return the time of the next allowed second
-(which may be in the next minute of the hour). @footnote{Note that
+(which may be in the next minute of the hour).  @footnote{Note that
 while commands can be scheduled to run at any second, it is unlikely
 that they will be executed then but some time shortly thereafter,
 depending on the load on the system and the number of jobs that mcron
@@ -313,7 +313,7 @@ Similarly to @code{next-second-from}, there are also
 @findex range
 Furthermore, the optional argument can be fulfilled by the function
 @code{(range start end . step)}, which will provide a list of values
-from start to (but not including) end, with the step if given. For
+from start to (but not including) end, with the step if given.  For
 example @code{(range 0 10 2)} will yield the list @code{'(0 2 4 6 8)}.
 
 @findex next-second
@@ -339,18 +339,18 @@ list is eval'd).
 @cindex time specification, vixie-style
 @cindex vixie-style time specification
 If the first argument to the @code{job} function is a string, it is
-expected to be a Vixie cron-style time specification. See the section
+expected to be a Vixie cron-style time specification.  See the section
 on Vixie syntax for this.
 
 @cindex job execution
 @cindex command execution
 @cindex execution
 The second argument to the @code{(job)} function can be either a
-string, a list, or a function. In all cases the command is executed in
-the user's home directory, under the user's own UID. If a string is
+string, a list, or a function.  In all cases the command is executed in
+the user's home directory, under the user's own UID.  If a string is
 passed, it is assumed to be shell script and is executed with the
-user's default shell. If a list is passed it is assumed to be scheme
-code and is eval'd as such. A supplied function should take exactly
+user's default shell.  If a list is passed it is assumed to be scheme
+code and is eval'd as such.  A supplied function should take exactly
 zero arguments, and will be called at the pertinent times.
 
 @subsection Sending output as e-mail
@@ -360,10 +360,10 @@ zero arguments, and will be called at the pertinent times.
 @findex with-mail-out
 When jobs are specified in a vixie-style configuration, the command is
 broken at a percentage sign, and the stuff that comes after this is
-sent into the command's standard input. Furthermore, any output from
-the command is mailed to the user. This functionality is provided for
+sent into the command's standard input.  Furthermore, any output from
+the command is mailed to the user.  This functionality is provided for
 compatibility with Vixie cron, but it is also available to scheme
-configuration files. The command (with-mail-out action . user) can be
+configuration files.  The command (with-mail-out action . user) can be
 used to direct output from the action (which may be a procedure, list,
 or string) into an e-mail to the user.
 
@@ -376,10 +376,10 @@ the shell command's standard input.
 @cindex setting environment variables
 @findex append-environment-mods
 Also for compatibility with Vixie cron, mcron has the ability to set
-environment variables in configuration files. To access this
+environment variables in configuration files.  To access this
 functionality from a scheme configuration file, use the command
 (append-environment-mods name value), where name is the name of an
-environment variable, and value is the value put to it. A value of #f
+environment variable, and value is the value put to it.  A value of #f
 will remove the variable from the environment.
 
 Note that environment modifications are accumulated as the
@@ -394,7 +394,7 @@ before the job specification in the configuration file.
 @cindex extended guile examples
 While Guile gives you flexibility to do anything, and the power to
 represent complex requirements succinctly, things are not always as
-they seem. The following examples illustrate some pitfalls, and
+they seem.  The following examples illustrate some pitfalls, and
 demonstrate how to code around them.
 
 @menu
@@ -410,23 +410,17 @@ demonstrate how to code around them.
 @cindex at command
 The current implementation of mcron does not provide for an at command
 (a command-line program that allows the user to specify that a job
-runs exactly once at a certain time). This can, however, be achieved.
+runs exactly once at a certain time).  This can, however, be achieved.
 
 Suppose the program @code{my-program} needs to be run at midnight
-tonight. A Guile script like the following should work. FIXME: TEST
-THIS EXAMPLE.
+tonight.  A Guile script like the following would work (but a printed
+schedule, obtained with the @code{--schedule} option, will show
+superfluous entries).
 
 @example
-(define my-program-flag #t)
-
-(job (lambda (current-time)
-        (if my-program-flag
-            (begin
-               (set! my-program-flag #f)
-               (next-day-from current-time))
-            99999999))
+(job '(next-day)
      (lambda () (system "my-program")
-                (kill (getppid))))
+                (kill (getppid) SIGINT)))
 @end example
 
 @node Every second Sunday, Two hours every day, AT commands, Extended Guile examples
@@ -434,7 +428,7 @@ THIS EXAMPLE.
 @cindex examples, every second sunday
 To run @code{my-program} on the second Sunday of every month, a Guile
 script like the following should suffice (it is left as an exercise to
-the student to understand how this works!). FIXME: TEST THIS EXAMPLE.
+the student to understand how this works!).
 
 @example
 (job (lambda (current-time)
@@ -442,10 +436,21 @@ the student to understand how this works!). FIXME: TEST THIS EXAMPLE.
               (first-day (tm:wday (localtime next-month)))
               (second-sunday (if (eqv? first-day 0)
                                  8
-                                 (- 15 first-day))))
+                                 (- 14 first-day))))
          (+ next-month (* 24 60 60 second-sunday))))
      "my-program")
 @end example
+
+@cindex daylight savings time
+Note that this example is also instructive in that it demonstrates
+mcron's indeterminacy when the clocks are adjusted for summertime; use
+the @code{-s 12} option to @code{mcron}, and see the off-by-one hour
+error that occurs twice a year.  This is a known problem, that
+daylight savings time shifts are not taken into account very well.  If
+things are critical, your best bet is to set your TZ environment
+variable to `:Universal', and express all your configuration files in
+Universal Coordinated Time (UTC).
+
 
 
 @node Two hours every day, Missing the first appointment, Every second Sunday, Extended Guile examples
@@ -461,10 +466,10 @@ effect.
 @end example
 
 Rather than running the my-program program at one o'clock and two
-o'clock every day, it will only run it at one o'clock. This is because
+o'clock every day, it will only run it at one o'clock.  This is because
 each time mcron has to compute the next time to run the command, it
 first obtains the next day, and then finds the earliest hour in that
-day to run at. Thus, after running the command at one o'clock, the
+day to run at.  Thus, after running the command at one o'clock, the
 program first skips forwards to the next midnight (missing the two
 o'clock appointment), and then finds the next one o'clock schedule.
 
@@ -488,7 +493,7 @@ The command
 @end example
 
 will run @code{my-program} every day at four o'clock in the
-afternoon. However, if mcron is started with this script at midday,
+afternoon.  However, if mcron is started with this script at midday,
 the first time the command will run will be four o'clock tomorrow;
 today's appointment will be missed (one time only).
 
@@ -520,9 +525,9 @@ second-to-last day of every month.
 @cindex vixie definition
 @cindex vixie compatibility
 @cindex compatibility, vixie
-@emph{NOTE} that this section is definitive. If there is a difference in
+@emph{NOTE} that this section is definitive.  If there is a difference in
 behaviour between the mcron program and this part of the manual, then
-there is a bug in the program. This section is also copied verbatim
+there is a bug in the program.  This section is also copied verbatim
 from Paul Vixie's documentation for his cron program, and his
 copyright notice is duly reproduced below.
 
@@ -530,10 +535,10 @@ There are three problems with this specification.
 
 @cindex zero'th day of month
 @cindex 0'th day of month
-1. It is allowed to specify days of the month in the range 0-31. What
+1.  It is allowed to specify days of the month in the range 0-31.  What
 does it mean to specify day 0? Looking at the Vixie source code, it
 seems that if this date appears as part of a list, it has no
-effect. However, if it appears on its own, the effect is to say
+effect.  However, if it appears on its own, the effect is to say
 ``don't run on any particular day of the month, only take the week-day
 specification into account.'' Mcron has been coded to mimic this
 behaviour as a special case (unmodified mcron logic implies that this
@@ -542,17 +547,17 @@ previous month).
 
 @cindex thirteenth month of year
 @cindex 13th month of year
-2. Similarly to the above (but different), months of the year can be
-specified in the range 0-12. In the case of mcron (don't know what
+2.  Similarly to the above (but different), months of the year can be
+specified in the range 0-12.  In the case of mcron (don't know what
 Vixie cron did) month 12 will cause the program to wait until January
 of the following year (but don't rely on this).
 
 @cindex shell
 @cindex environment variables, shell
 @cindex /etc/passwd
-3. Somewhere it says that cron sets the SHELL environment variable to
+3.  Somewhere it says that cron sets the SHELL environment variable to
 /bin/sh, and elsewhere it implies that the default behaviour is for
-the user's default shell to be used to execute commands. Mcron sets
+the user's default shell to be used to execute commands.  Mcron sets
 the variable and runs the command in the user's default shell, as
 advertised by the /etc/passwd file.
 
@@ -624,7 +629,7 @@ trailing blanks.
 @cindex HOME environment variable
 @cindex /etc/passwd
 Several environment variables are set up automatically by the
-@code{cron} daemon. SHELL is set to /bin/sh, and LOGNAME and HOME are
+@code{cron} daemon.  SHELL is set to /bin/sh, and LOGNAME and HOME are
 set from the /etc/passwd line of the crontab's owner.  HOME and SHELL
 may be overridden by settings in the crontab; LOGNAME may not.
 
@@ -653,7 +658,7 @@ followed by a user name if this is the system crontab file,
 followed by a command.  Commands are executed by @code{cron}
 when the minute, hour, and month of year fields match the current
 time, @strong{and} when at least one of the two day fields (day of month, or day of week)
-match the current time (see ``Note'' below). @code{cron} examines cron entries once every minute.
+match the current time (see ``Note'' below).  @code{cron} examines cron entries once every minute.
 The time and date fields are:
 
 @cindex vixie time specification fields
@@ -693,7 +698,7 @@ hours'', just use ``*/2''.
 Names can also be used for the ``month'' and ``day of week''
 fields.  Use the first three letters of the particular
 day or month (case doesn't matter).  Ranges or
-lists of names are not allowed. @footnote{Mcron allows any alphabetic
+lists of names are not allowed.  @footnote{Mcron allows any alphabetic
 characters after a name, so full names of days or months are also valid.}
 
 @cindex % character on vixie-style commands
@@ -785,14 +790,14 @@ either).
 @cindex crond program
 @cindex crontab program
 The program adopts one of three different personalities depending on
-the name used to invoke it. In a standard installation, the program is
+the name used to invoke it.  In a standard installation, the program is
 installed in the system under the names mcron, cron and crontab
 (installed SUID).
 
 The recommended way to invoke the program is via the mcron personality
-described in the next section. The program can also be run as cron by
+described in the next section.  The program can also be run as cron by
 root, and by the SUID program crontab by individual users to gain
-backwards compatibility with Vixie cron. However, due to the fact that
+backwards compatibility with Vixie cron.  However, due to the fact that
 this daemon process is shared by, and under control of, all the users
 of the system it is possible (though very unlikely) that it may become
 unusable, hence the recommendation to use the mcron personality.
@@ -800,7 +805,7 @@ unusable, hence the recommendation to use the mcron personality.
 @cindex deprecated, vixie personality
 Furthermore, the Vixie personality is considered deprecated by this
 author (it offers not a single advantage over the mcron personality,
-and bloats the code by a factor of three). It is unlikely that this
+and bloats the code by a factor of three).  It is unlikely that this
 personality will ever actually go away, but the program may in future
 be split into two distinct parts, and new developments will only take
 place in the part which implements the mcron personality.
@@ -822,17 +827,20 @@ place in the part which implements the mcron personality.
 @cindex mcron arguments
 @cindex command line, mcron
 @cindex mcron command line
-Mcron should be run by the user who wants to schedule his jobs. It may
-be made a background job using the facilities of the shell. The basic
+Mcron should be run by the user who wants to schedule his jobs.  It may
+be made a background job using the facilities of the shell.  The basic
 command is
 @code{mcron [OPTION ...] [file ...]}
 which has the effect of reading all the configuration files specified
 (subject to the options) and then waiting until it is time to execute
-some command. If no files are given on the command line, then mcron
-will look in the user's ~/.cron directory. In either case, files which
+some command.  If no files are given on the command line, then mcron
+will look in the user's ~/.cron directory.  In either case, files which
 end in the extension .vixie or .vix will be assumed to contain
 Vixie-style crontabs, and files ending .guile or .gle will be assumed
-to contain scheme code and will be executed as such.
+to contain scheme code and will be executed as such; ANY OTHER FILES
+WILL BE IGNORED - specify a file name of ``-'' and then pipe the files
+into the standard input if you really want to read them, possibly
+using the @code{stdin} option to specify the type of file.
 
 The program accepts the following options.
 
@@ -845,12 +853,12 @@ The program accepts the following options.
 @cindex options, -s
 @cindex -s option
 @cindex --schedule option
-With this option specified no commands are run. Instead, the program
+With this option specified no commands are run.  Instead, the program
 computes the times the commands would be run and prints the
 information to the screen, and then immediately exits.
 
 The count, if supplied, indicates the number of commands to
-display. The default value is 8.
+display.  The default value is 8.
 
 @cindex daemon option
 @cindex options, daemon
@@ -873,7 +881,7 @@ terminal and run as a daemon process.
 @itemx --stdin=(vixie|guile)
 This option is used to indicate whether the configuration information
 being passed on the standard input is in Vixie format or Guile
-format. Guile is the default.
+format.  Guile is the default.
 
 @cindex -v option
 @cindex --version option
@@ -903,19 +911,23 @@ standard output.
 @cindex running crond
 @cindex @CONFIG_SPOOL_DIR@
 @cindex @CONFIG_SOCKET_FILE@
+NOTE THAT THIS SECTION ONLY APPLIES IF THE @code{cron} or
+@code{crond}, and @code{crontab} PROGRAMS HAVE BEEN INSTALLED BY THE
+SYSTEM ADMINISTRATOR.
+
 If the program runs by the name of @code{cron} or @code{crond}, then
 it will read all the files in @code{@CONFIG_SPOOL_DIR@} (which should only
 be readable by root) and the file @code{/etc/crontab}, and then
 detaches itself from the terminal to live forever as a daemon
-process. Additionally, it creates a UNIX socket at
+process.  Additionally, it creates a UNIX socket at
 @code{@CONFIG_SOCKET_FILE@}, and listens for messages sent to that socket
-consisting of a user name whose crontabs have been changed. In this
-case, the program will re-read that user's crontab. This is for
+consisting of a user name whose crontabs have been changed.  In this
+case, the program will re-read that user's crontab.  This is for
 correct functioning with the crontab program.
 
 Further, if the @code{--noetc} option was not used, a job is scheduled
 to run every minute to check if /etc/crontab has been modified
-recently. If so, this file will also be re-read.
+recently.  If so, this file will also be re-read.
 
 The options which may be used with this program are as follows.
 
@@ -947,12 +959,12 @@ standard output.
 @cindex options, -s
 @cindex -s option
 @cindex --schedule option
-With this option specified no commands are run. Instead, the program
+With this option specified no commands are run.  Instead, the program
 computes the times the commands would be run and prints the
 information to the screen, and then immediately exits.
 
 The count, if supplied, indicates the number of commands to
-display. The default value is 8.
+display.  The default value is 8.
 
 @cindex -n option
 @cindex --noetc option
@@ -961,7 +973,7 @@ display. The default value is 8.
 @item -n
 @itemx --noetc
 This tells cron not to add a job to the system which wakes up every
-minute to check for modifications to @code{/etc/crontab}. It is
+minute to check for modifications to @code{/etc/crontab}.  It is
 recommended that this option be used (and further that the
 @code{/etc/crontab} file be taken off the system altogether!)
 
@@ -972,9 +984,9 @@ recommended that this option be used (and further that the
 @cindex crontab, invoking
 @cindex running crontab
 This program is run by individual users to inspect or modify their
-crontab files. If a change is made to the file, then the root daemon
+crontab files.  If a change is made to the file, then the root daemon
 process will be given a kick, and will immediately read the new
-configuration. A warning will be issued to standard output if it
+configuration.  A warning will be issued to standard output if it
 appears that a cron daemon is not running.
 
 The command is used as
@@ -986,7 +998,7 @@ or
 @code{crontab [-u user] ( -l | -e | -r )}
 
 Only the root user can use the -u option, to specify the manipulation
-of another user's crontab file. In the first instance, the entire
+of another user's crontab file.  In the first instance, the entire
 crontab file of the user is replaced with the contents of the
 specified file, or standard input if the file is ``-''.
 
@@ -1025,7 +1037,7 @@ Delete the user's crontab file, and exit.
 @item -e
 @item --edit
 Using the editor specified in the user's VISUAL or EDITOR environment
-variables, allow the user to edit his crontab. Once the user exits the
+variables, allow the user to edit his crontab.  Once the user exits the
 editor, the crontab is checked for parseability, and if it is okay
 then it is installed as the user's new crontab and the daemon is
 notified that a change has taken place, so that the new file will
@@ -1064,25 +1076,25 @@ No problems.
 
 @item 1
 An attempt has been made to start cron but there is already a
-@CONFIG_PID_FILE@ file. If there really is no other cron daemon
+@CONFIG_PID_FILE@ file.  If there really is no other cron daemon
 running (this does not include invokations of mcron) then you should
 remove this file before attempting to run cron.
 
 @item 2
 In parsing a guile configuration file, a @code{job} command has been
 seen but the second argument is neither a procedure, list or
-string. This argument is the job's action, and needs to be specified
+string.  This argument is the job's action, and needs to be specified
 in one of these forms.
 
 @item 3
 In parsing a guile configuration file, a @code{job} command has been
 seen but the first argument is neither a procedure, list or
-string. This argument is the job's next-time specification, and needs
+string.  This argument is the job's next-time specification, and needs
 to be specified in one of these forms.
 
 @item 4
 An attempt to run cron has been made by a user who does not have
-permission to access the crontabs in @CONFIG_SPOOL_DIR@. These files
+permission to access the crontabs in @CONFIG_SPOOL_DIR@.  These files
 should be readable only by root, and the cron daemon must be run as
 root.
 
@@ -1096,11 +1108,11 @@ the files @CONFIG_ALLOW_FILE@ and @CONFIG_DENY_FILE@.
 
 @item 7
 Crontab has been run with more than one of the arguments @code{-l},
-@code{-r}, @code{-e}. These are mutually exclusive options.
+@code{-r}, @code{-e}.  These are mutually exclusive options.
 
 @item 8
 Crontab has been run with the -u option by a user other than
-root. Only root is allowed to use this option.
+root.  Only root is allowed to use this option.
 
 @item 9
 An invalid vixie-style time specification has been supplied.
@@ -1120,12 +1132,12 @@ Either the ~/.cron directory does not exist, or there is a problem
 reading the files there.
 
 @c @item 14
-@c There is a problem writing to /var/cron/update. This is probably
+@c There is a problem writing to /var/cron/update.  This is probably
 @c because the crontab program is not installed SUID root, as it should
 @c be.
 
 @item 15
-Crontab has been run without any arguments at all. There is no default
+Crontab has been run without any arguments at all.  There is no default
 behaviour in this case.
 
 @item 16
@@ -1144,13 +1156,13 @@ programs if they are linked against libguile.
 It may be, for example, that a program needs to perform house-keeping
 functions at certain times of the day, in which case it can spawn
 (either fork or thread) a sub-process which uses a built-in
-mcron. Another example may be a program which must sleep until some
+mcron.  Another example may be a program which must sleep until some
 non-absolute time specified on the Gregorian calendar (the first day
-of next week, for example). Finally, it may be the wish of the user to
+of next week, for example).  Finally, it may be the wish of the user to
 provide a program with the functionality of mcron plus a bit extra.
 
 The core module maintains mcron's internal job lists, and provides the
-main wait-run-wait loop that is mcron's main function. It also
+main wait-run-wait loop that is mcron's main function.  It also
 introduces the facilities for accumulating a set of environment
 modifiers, which take effect when jobs run.
 
@@ -1169,16 +1181,16 @@ modifiers, which take effect when jobs run.
 @cindex modules, core
 
 This module may be used by including @code{(use-modules (mcron core))}
-in a program. The main functions are @code{add-job} and
+in a program.  The main functions are @code{add-job} and
 @code{run-job-loop}, which allow a program to create a list of job
 specifications to run, and then to initiate the wait-run-wait loop
-firing the jobs off at the requisite times. However, before they are
+firing the jobs off at the requisite times.  However, before they are
 introduced two functions which manipulate the environment that takes
 effect when a job runs are defined.
 
 @cindex environment
 The environment is a set of name-value pairs which is built up
-incrementally. Each time the @code{add-job} function is called, the
+incrementally.  Each time the @code{add-job} function is called, the
 environment modifiers that have been accumulated up to that point are
 stored with the new job specification, and when the job actually runs
 these name-value pairs are used to modify the run-time environment in
@@ -1196,16 +1208,16 @@ specified so far to be forgotten.
 
 @deffn{Scheme procedure} add-job time-proc action displayable configuration-time configuration-user
 This procedure adds a job specification to the list of all jobs to
-run. @var{time-proc} should be a procedure taking exactly one argument
-which will be a UNIX time. This procedure must compute the next time
-that the job should run, and return the result. @var{action} should be
+run.  @var{time-proc} should be a procedure taking exactly one argument
+which will be a UNIX time.  This procedure must compute the next time
+that the job should run, and return the result.  @var{action} should be
 a procedure taking no arguments, and contains the instructions that
 actually get executed whenever the job is scheduled to
-run. @var{displayable} should be a string, and is only for the use of
+run.  @var{displayable} should be a string, and is only for the use of
 humans; it can be anything which identifies or simply gives a clue as
-to the purpose or function of this job. @var{configuration-time} is
+to the purpose or function of this job.  @var{configuration-time} is
 the time from which the first invokation of this job should be
-computed. Finally, @var{configuration-user} should be the passwd entry
+computed.  Finally, @var{configuration-user} should be the passwd entry
 for the user under whose personality the job is to run.
 @end deffn
 
@@ -1215,9 +1227,9 @@ for the user under whose personality the job is to run.
 This procedure returns only under exceptional circumstances, but
 usually loops forever waiting for the next time to arrive when a job
 needs to run, running that job, recomputing the next run time, and
-then waiting again. However, the wait can be interrupted by data
+then waiting again.  However, the wait can be interrupted by data
 becoming available for reading on one of the file descriptors in the
-fd-list, if supplied. Only in this case will the procedure return to
+fd-list, if supplied.  Only in this case will the procedure return to
 the calling program, which may then make modifications to the job list
 before calling the @code{run-job-loop} procedure again to resume execution of
 the mcron core.
@@ -1227,17 +1239,17 @@ the mcron core.
 
 The argument @var{user} should be a string naming a user (his
 login name), or an integer UID, or an object representing the user's passwd
-entry. All jobs on the current job list that are scheduled to be run
+entry.  All jobs on the current job list that are scheduled to be run
 under this personality are removed from the job list.
 @end deffn
 
 @deffn{Scheme procedure} get-schedule count
 @cindex schedule of jobs
 The argument @var{count} should be an integer value giving the number
-of time-points in the future to report that jobs will run as. Note
+of time-points in the future to report that jobs will run as.  Note
 that this procedure is disruptive; if @code{run-job-loop} is called
 after this procedure, the first job to run will be the one after the
-last job that was reported in the schedule report. The report itself
+last job that was reported in the schedule report.  The report itself
 is returned to the calling program as a string.
 @end deffn
 
@@ -1250,7 +1262,7 @@ This module is introduced to a program with the command
 @code{(use-modules (mcron redirect))}.
 
 This module provides the @code{with-mail-out} function, described
-fully in @ref{Guile Syntax}. 
+fully in @ref{Guile Syntax}.  
 
 @node The vixie-time module, The job-specifier module, The redirect module, Guile modules
 @section The vixie-time module
@@ -1263,7 +1275,7 @@ vixie-time))}.
 This module provides a single method for converting a vixie-style time
 specification into a procedure which can be used as the
 @code{next-time-function} to the core @code{add-job} procedure, or to
-the @code{job-specifier} @code{job} procedure. See @ref{Vixie Syntax}
+the @code{job-specifier} @code{job} procedure.  See @ref{Vixie Syntax}
 for full details of the allowed format for the time string.
 
 @deffn{Scheme procedure} parse-vixie-time time-string
@@ -1287,7 +1299,7 @@ configuration files, namely @code{range}, @code{next-year-from},
 @code{next-day-from}, @code{next-day}, @code{next-hour-from},
 @code{next-hour}, @code{next-minute-from}, @code{next-minute},
 @code{next-second-from}, @code{next-second},
- and last but not least, @code{job}. See @ref{Guile Syntax} for full
+ and last but not least, @code{job}.  See @ref{Guile Syntax} for full
  details.
 
 Once this module is loaded, a scheme configuration file can be used to
@@ -1320,7 +1332,7 @@ as the optional argument.
 @deffn{Scheme procedure} read-vixie-file name . parse-line
 
 This procedure attempts to open the named file, and if it fails will
-return silently. Otherwise, the behaviour is identical to
+return silently.  Otherwise, the behaviour is identical to
 @code{read-vixie-port} above.
 
 @end deffn

@@ -21,7 +21,7 @@
 
 
 AC_PREREQ(2.59)
-AC_INIT([mcron], [1.0.2rc1], [dale_mellor@users.sourceforge.net])
+AC_INIT([mcron], [1.0.2], [dale_mellor@users.sourceforge.net])
 AM_INIT_AUTOMAKE
 
 
