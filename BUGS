@@ -6,12 +6,7 @@ Please send bug reports to bug-mcron@gnu.org.
 
 The currently-known bugs are:-
 
-* Daylight savings time shifts are not taken into account very well. If things
-   are critical, your best bet is to set your TZ environment variable to
-   `:Universal', and express all your configuration files in Universal
-   Coordinated Time (UTC).
-
-
+  -NONE-
 
 
 _______________________________________________________________________________

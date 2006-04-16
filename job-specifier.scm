@@ -233,9 +233,10 @@
                       ((list? action) (lambda () (primitive-eval action)))
                       ((string? action) (lambda () (system action)))
                       (else 
-           (display "job: invalid second argument (action; should be lamdba")
-           (display "function, string or list)\n")
-                         (primitive-exit 2))))
+           (throw 'mcron-error 
+                  2
+                  "job: invalid second argument (action; should be lambda"
+                  " function, string or list)"))))
 
         (time-proc
          (cond ((procedure? time-proc) time-proc)
@@ -243,9 +244,10 @@
                ((list? time-proc)      (lambda (current-time)
                                          (primitive-eval time-proc)))
                (else
-          (display "job: invalid first argument (next-time-function; should ")
-          (display "be function, string or list)")
-                    (primitive-exit 3))))
+          (throw 'mcron-error 
+                 3       
+                 "job: invalid first argument (next-time-function; should ")
+                 "be function, string or list)")))
         (displayable
          (cond ((not (null? displayable)) (car displayable))
                ((procedure? action) "Lambda function")
@@ -253,8 +255,17 @@
                ((list? action) (with-output-to-string
                                  (lambda () (display action)))))))
     (add-job (lambda (current-time)
-               (set! current-action-time current-time)  ;; ?? !!!!
-               (time-proc current-time))
+               (set! current-action-time current-time)  ;; ?? !!!!  Code
+               
+               ;; Contributed by Sergey Poznyakoff to allow for daylight savings
+               ;; time changes.
+               (let* ((next (time-proc current-time))
+                      (gmtoff (tm:gmtoff (localtime next)))
+                      (d (+ next (- gmtoff
+                                    (tm:gmtoff (localtime current-time))))))
+                 (if (eqv? (tm:gmtoff (localtime d)) gmtoff)
+                     d
+                     next)))
              action
              displayable
              configuration-time

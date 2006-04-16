@@ -2,8 +2,7 @@ Copyright (C) 2003 Dale Mellor                        -*-text-*-
 See the end for copying conditions.
 
 
-This is version 1.0.1 of the mcron program, and is the first release as part of
-the GNU system which is actually homed at gnu.org. It is designed and written by
+This is version 1.0.3 of the GNU mcron program.  It is designed and written by
 Dale Mellor, and replaces and hugely enhances Vixie cron. It is functionally
 complete, production quality code (did you expect less?), but has not received
 much testing yet. It has only been built on a GNU/Linux system, and will most
@@ -18,7 +17,8 @@ Read the BUGS file.
 Do not (yet) install this software on a machine which relies for its
 functioning on its current set of crontabs.
 
-The package must be installed by root.
+For use as a replacement cron daemon on a system, the package must be installed
+by root.
 
 Before installing this package for the first time, it is necessary to terminate
 any running cron daemons on your system. If your old cron is not Vixie or

@@ -53,6 +53,7 @@
 
 
 
+#include <string.h>
 #include <signal.h>
 #include <libguile.h>
 

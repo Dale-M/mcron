@@ -21,7 +21,7 @@
 
 
 AC_PREREQ(2.59)
-AC_INIT([mcron], [1.0.2], [dale_mellor@users.sourceforge.net])
+AC_INIT([mcron], [1.0.3], [dale_mellor@users.sourceforge.net])
 AM_INIT_AUTOMAKE
 
 
@@ -74,12 +74,12 @@ fi
 
 # Check the Guile version.
         
-AC_MSG_CHECKING(for guile version >= 1.6.4)
+AC_MSG_CHECKING(for guile version >= 1.8.0)
 if [$GUILE --version | $HEAD -1 | $AWK '{print $2}' | \
-     $EGREP -q '^(1\.(6\.([4-9]|[1-3][^.])|[7-9]|[1-5][^.])|[2-9])']; then 
+     $EGREP -q '^1\.8\.']; then 
    AC_MSG_RESULT(OK)
 else
-   AC_MSG_ERROR([Sorry, Guile 1.6.4 or greater is needed to run mcron])
+   AC_MSG_ERROR([Sorry, Guile 1.8.0 or greater is needed to run mcron])
 fi
 
                                                            

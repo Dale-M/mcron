@@ -1,36 +1,28 @@
 \input texinfo
 @c %**start of header
 @setfilename mcron.info
-@settitle mcron 1.0.2
+@settitle mcron @VERSION@
 @c %**end of header
 
 @syncodeindex fn cp
 
-@copying
-Copyright (C) 2003, 2005  Dale Mellor
-This is free software.  See the source files for the terms of the
-copyright.
+@copying This manual is for GNU mcron (version @VERSION@), which is a
+program for running jobs at scheduled times.
 
-@ignore
-Permission is granted to make and distribute verbatim copies of
-this manual provided the copyright notice and this permission notice
-are preserved on all copies.
+Copyright @copyright{} 2003, 2005, 2006 Dale Mellor
 
-Permission is granted to process this file through TeX and print the
-results, provided the printed document carries copying permission
-notice identical to this one except for the removal of this paragraph
-(this paragraph not being relevant to the printed manual).
+@quotation
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, with the Front-Cover Texts being ``A GNU Manual,''
+and with the Back-Cover Texts as in (a) below.  A copy of the
+license is included in the section entitled ``GNU Free Documentation
+License.''
 
-Permission is granted to copy and distribute modified versions of this
-manual under the conditions for verbatim copying, provided that the entire
-resulting derived work is distributed under the terms of a permission
-notice identical to this one.
-
-Permission is granted to copy and distribute translations of this manual
-into another language, under the above conditions for modified versions,
-except that this permission notice may be stated in a translation approved
-by the Foundation.
-@end ignore
+(a) The FSF's Back-Cover Text is: ``You have freedom to copy and modify
+this GNU Manual, like GNU software.''
+@end quotation
 @end copying
 
 
@@ -105,9 +97,9 @@ Vixie
 
 Detailed invoking
 
-* Running mcron::               
-* Running cron or crond::       
-* Running crontab::
+* Invoking mcron::               
+* Invoking cron or crond::       
+* Invoking crontab::
 * Behaviour on laptops::
 * Exit codes::                  
 
@@ -140,7 +132,10 @@ time of the next command is computed.  Furthermore, the specifications
 are written in scheme, allowing at the same time simple command
 execution instructions and very much more flexible ones to be composed
 than the original Vixie format.  This has several useful advantages
-over the original idea.
+over the original idea.  (Changes to user crontabs are signalled
+directly to mcron by the crontab program; cron must still scan the
+/etc/crontab file once every minute, although use of this file is
+highly discouraged and this behaviour can be turned off).
 
 @cindex advantages of mcron
 @itemize @bullet
@@ -179,7 +174,8 @@ more flexibility, and complete compatibility with Vixie cron.
 @end itemize
 
 A full discussion of the design and philosophy of mcron can be found
-in the white paper at http://www.gnu.org/software/mcron/design.html.
+in the white paper at
+@url{http://www.gnu.org/software/mcron/design.html}.
 
 
 @node Simple examples, Syntax, Introduction, Top
@@ -259,7 +255,7 @@ Alternatively (full compatibility with Vixie cron), set your
 environment variable @code{EDITOR} to your favorite editor, run
 @code{crontab -e}, put the above line into the edit buffer, save and
 exit.  For this to work the @code{cron} daemon must be already running
-on your system, by root.
+on your system, as root.
 
 @node Syntax, Invoking, Simple examples, Top
 @chapter Full available syntax
@@ -441,17 +437,6 @@ the student to understand how this works!).
      "my-program")
 @end example
 
-@cindex daylight savings time
-Note that this example is also instructive in that it demonstrates
-mcron's indeterminacy when the clocks are adjusted for summertime; use
-the @code{-s 12} option to @code{mcron}, and see the off-by-one hour
-error that occurs twice a year.  This is a known problem, that
-daylight savings time shifts are not taken into account very well.  If
-things are critical, your best bet is to set your TZ environment
-variable to `:Universal', and express all your configuration files in
-Universal Coordinated Time (UTC).
-
-
 
 @node Two hours every day, Missing the first appointment, Every second Sunday, Extended Guile examples
 @subsection Two hours every day
@@ -590,7 +575,7 @@ user.
 
 
 @node  Crontab file, Incompatibilities with old Unices, Paul Vixie's copyright, Vixie Syntax
-@subsection Crontab files.
+@subsection Crontab files
 @cindex crontab file
 @cindex vixie crontab file
 A @code{crontab} file contains instructions to the @code{cron} daemon
@@ -745,7 +730,7 @@ MAILTO=paul
 @end example
 
 @node  Incompatibilities with old Unices,  , Crontab file, Vixie Syntax
-@subsection Extensions and incompatibilities.
+@subsection Extensions and incompatibilities
 @cindex incompatibilities with old Unices
 @cindex extensions, vixie over old Unices
 This section lists differences between Paul Vixie's cron and the
@@ -813,15 +798,15 @@ place in the part which implements the mcron personality.
 
 
 @menu
-* Running mcron::               
-* Running cron or crond::       
-* Running crontab::
+* Invoking mcron::               
+* Invoking cron or crond::       
+* Invoking crontab::
 * Behaviour on laptops::
 * Exit codes::                  
 @end menu
 
-@node Running mcron, Running cron or crond, Invoking, Invoking
-@section Running mcron
+@node Invoking mcron, Invoking cron or crond, Invoking, Invoking
+@section Invoking mcron
 @cindex invoking mcron
 @cindex mcron options
 @cindex mcron arguments
@@ -903,12 +888,12 @@ standard output.
 
 @end table
 
-@node Running cron or crond, Running crontab, Running mcron, Invoking
-@section Running cron or crond
+@node Invoking cron or crond, Invoking crontab, Invoking mcron, Invoking
+@section Invoking cron or crond
 @cindex cron, invokation
-@cindex running cron
+@cindex invoking cron
 @cindex crond, invokation
-@cindex running crond
+@cindex invoking crond
 @cindex @CONFIG_SPOOL_DIR@
 @cindex @CONFIG_SOCKET_FILE@
 NOTE THAT THIS SECTION ONLY APPLIES IF THE @code{cron} or
@@ -979,10 +964,10 @@ recommended that this option be used (and further that the
 
 @end table
 
-@node Running crontab, Behaviour on laptops, Running cron or crond, Invoking
-@section Running crontab
+@node Invoking crontab, Behaviour on laptops, Invoking cron or crond, Invoking
+@section Invoking crontab
 @cindex crontab, invoking
-@cindex running crontab
+@cindex invoking crontab
 This program is run by individual users to inspect or modify their
 crontab files.  If a change is made to the file, then the root daemon
 process will be given a kick, and will immediately read the new
@@ -1046,7 +1031,7 @@ become immediately effective.
 @end table
 
 
-@node Behaviour on laptops, Exit codes, Running crontab, Invoking
+@node Behaviour on laptops, Exit codes, Invoking crontab, Invoking
 @section Behaviour on laptops
 @cindex laptops
 @cindex power suspend

@@ -92,8 +92,8 @@
                             1))  ;; [1]
       (let ((match (regexp-exec parse-vixie-subelement-regexp string)))
         (cond ((not match)
-               (display "Error: Bad Vixie-style time specification.\n")
-               (primitive-exit 9))
+               (throw 'mcron-error 9 
+                      "Bad Vixie-style time specification."))
               ((match:substring match 5)
                (range (string->number (match:substring match 1))
                       (+ 1 (string->number (match:substring match 3)))
@@ -271,7 +271,14 @@
 ;;
 ;; We start by computing a list of time-spec objects (described above) for the
 ;; minute, hour, date, month, year and weekday components of the overall time
-;; specification [1]. When we create the return procedure, it is this list to
+;; specification [1]. Special care is taken to produce proper values for
+;; fields 2 and 4: according to Vixie specification "If both fields are
+;; restricted (ie, aren't *), the command will be run when _either_ field
+;; matches the current time." This implies that if one of these fields is *,
+;; while the other is not, its value should be '() [0], otherwise
+;; interpolate-weekdays below will produce incorrect results.
+
+;; When we create the return procedure, it is this list to
 ;; which references to a time-spec-list will be bound. It will be used by the
 ;; returned procedure [3] to compute the next time a function should run. Any
 ;; 7's in the weekday component of the list (the last one) are folded into 0's
@@ -296,61 +303,84 @@
 ;;   through the higher components if necessary [6]. We now have the next time
 ;;   the command needs to run.
 ;;
-;;   The new time is then converted back into a UNIX time, and returned [7].
+;;   The new time is then converted back into a UNIX time and returned [7].
 
 (define (parse-vixie-time string)
-  (let* ((tokens (string-tokenize (vixie-substitute-parse-symbols string)))
-         (time-spec-list
-          (map-in-order (lambda (x) (vector (parse-vixie-element
-                                              (list-ref tokens (vector-ref x 0))
-                                            (vector-ref x 1)
-                                            (vector-ref x 2))
-                                            (vector-ref x 3)
-                                            (vector-ref x 4)))
-                    ;; token range-top+1   getter    setter
+  (let ((tokens (string-tokenize (vixie-substitute-parse-symbols string))))
+    (cond
+     ((> (length tokens) 5)
+      (throw 'mcron-error 9
+             "Too many fields in Vixie-style time specification"))
+     ((< (length tokens) 5)
+      (throw 'mcron-error 9
+             "Not enough fields in Vixie-style time specification")))
+    (let ((time-spec-list
+           (map-in-order (lambda (x) (vector
+                                      (let* ((n (vector-ref x 0))
+                                             (tok (list-ref tokens n)))
+                                        (cond
+                                         ((and (= n 4)
+                                               (string=? tok "*")
+                                               (not (string=?
+                                                     (list-ref tokens 2) "*")))
+                                          '())
+                                         ((and (= n 2)
+                                               (string=? tok "*")
+                                               (not (string=?
+                                                     (list-ref tokens 4) "*")))
+                                          '())
+                                         (else
+                                          (parse-vixie-element
+                                           tok
+                                           (vector-ref x 1)
+                                           (vector-ref x 2)))))  ; [0]
+                                      (vector-ref x 3)
+                                      (vector-ref x 4)))
+                 ;; token range-top+1   getter    setter
                  `( #( 0     0     60      ,tm:min   ,set-tm:min   )
                     #( 1     0     24      ,tm:hour  ,set-tm:hour  )
                     #( 2     1     32      ,tm:mday  ,set-tm:mday  )
                     #( 3     0     12      ,tm:mon   ,set-tm:mon   )
-                    #( 4     0      7      ,tm:wday  ,set-tm:wday  ))))) ;; [1]
+                    #( 4     0      7      ,tm:wday  ,set-tm:wday  )))))  ;; [1]
 
-    (vector-set! (car (last-pair time-spec-list))
-                 0
-                 (map (lambda (time-spec)
-                        (if (eqv? time-spec 7) 0 time-spec))
-                      (vector-ref (car (last-pair time-spec-list)) 0)))  ;; [2]
+      (vector-set! (car (last-pair time-spec-list))
+                   0
+                   (map (lambda (time-spec)
+                          (if (eqv? time-spec 7) 0 time-spec))
+                        (vector-ref (car (last-pair time-spec-list)) 0))) ;; [2]
 
-    (vector-set! (caddr time-spec-list)
-                 0
-                 (remove (lambda (day) (eqv? day 0))
-                         (vector-ref (caddr time-spec-list) 0)))  ;; [2.1]
-                 
-    
-    (lambda (current-time)     ;; [3]
-      (let ((time (localtime current-time)))  ;; [4]
-        
-        (if (not (member (tm:mon time)
-                         (time-spec:list (cadddr time-spec-list))))
-            (begin
-              (nudge-month! time (cdddr time-spec-list))
-              (set-tm:mday  time 0)))
-        (if (or (eqv? (tm:mday time) 0)
-                (not (member (tm:mday time)
-                             (interpolate-weekdays
-                                 (time-spec:list (caddr time-spec-list))
-                                 (time-spec:list (caddr (cddr time-spec-list)))
-                                 (tm:mon time)
-                                 (tm:year time)))))
-            (begin
-              (nudge-day! time (cddr time-spec-list))
-              (set-tm:hour time -1)))
-        (if (not (member (tm:hour time)
-                         (time-spec:list (cadr time-spec-list))))
-            (begin
-              (nudge-hour! time (cdr time-spec-list))
-              (set-tm:min time -1)))   ;; [5]
+      (vector-set! (caddr time-spec-list)
+                   0
+                   (remove (lambda (day) (eqv? day 0))
+                           (vector-ref (caddr time-spec-list) 0)))  ;; [2.1]
 
-        (set-tm:sec time 0)
-        (nudge-min! time time-spec-list)  ;; [6]
 
-        (car (mktime time))))))   ;; [7]
+      (lambda (current-time)     ;; [3]
+        (let ((time (localtime current-time)))  ;; [4]
+
+          (if (not (member (tm:mon time)
+                           (time-spec:list (cadddr time-spec-list))))
+              (begin
+                (nudge-month! time (cdddr time-spec-list))
+                (set-tm:mday  time 0)))
+          (if (or (eqv? (tm:mday time) 0)
+                  (not (member (tm:mday time)
+                               (interpolate-weekdays
+                                (time-spec:list (caddr time-spec-list))
+                                (time-spec:list (caddr (cddr time-spec-list)))
+                                (tm:mon time)
+                                (tm:year time)))))
+              (begin
+                (nudge-day! time (cddr time-spec-list))
+                (set-tm:hour time -1)))
+          (if (not (member (tm:hour time)
+                           (time-spec:list (cadr time-spec-list))))
+              (begin
+                (nudge-hour! time (cdr time-spec-list))
+                (set-tm:min time -1)))   ;; [5]
+
+          (set-tm:sec time 0)
+          (nudge-min! time time-spec-list)  ;; [6]
+          (car (mktime time))))))) ;; [7]
+
+

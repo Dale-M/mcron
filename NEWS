@@ -1,9 +1,18 @@
 Historic moments in the life of mcron.                        -*-text-*-
 
-Copyright (C) 2003 Dale Mellor
+Copyright (C) 2003, 2006 Dale Mellor
 See the end for copying conditions.
 
 Please send bug reports to bug-mcron@gnu.org.
+
+
+Sunday, 16th April 2006
+    Released version 1.0.3.  Incorporated many coding suggestions by Sergey
+    Poznyakoff, which makes the program work with daylight savings time shifts,
+    fixes a bug in parsing Vixie-style input files, allows a user the
+    opportunity to correct a crontab entry instead of just wiping out the file.
+    Made it work with Guile 1.8.  Updated the manual with GFDL and some minor
+    suggestions from Karl Berry.
 
 
 Monday, 2nd January 2006
@@ -60,9 +69,8 @@ Friday, 4th July 2003
 
 
 
-
 ____________________________________________________________________________
-Copyright (C) 2003 Dale Mellor
+Copyright (C) 2003, 2006 Dale Mellor
 
    Permission is granted to anyone to make or distribute verbatim copies
    of this document as received, in any medium, provided that the

@@ -43,10 +43,36 @@
 ;; backwards for the first non-alphabetic character. This allows names like
 ;; in.cron to be accepted as an invocation of the cron command.
 
-(use-modules (ice-9 regex))
+(use-modules (ice-9 regex) (ice-9 rdelim))
 
 (define command-name (match:substring (regexp-exec (make-regexp "[[:alpha:]]*$")
                                                    (car (command-line)))))
+
+
+
+;; Code contributed by Sergey Poznyakoff.  Print an error message (made up from
+;; the parts of rest), and if the error is fatal (present and non-zero) then
+;; exit to the system with this code.
+
+(define (mcron-error exit-code . rest)
+  (with-output-to-port (current-error-port)
+    (lambda ()
+      (for-each display (append (list command-name ": ") rest))
+      (newline)))
+  (if (and exit-code (not (eq? exit-code 0)))
+      (primitive-exit exit-code)))
+
+
+
+;; Code contributed by Sergey Poznyakoff.  Execute body. If an 'mcron-error
+;; exception occurs, print its diagnostics and exit with its error code.
+
+(defmacro catch-mcron-error (. body)
+  `(catch 'mcron-error
+          (lambda ()
+            ,@body)
+          (lambda (key exit-code . msg)
+            (apply mcron-error exit-code msg))))
 
 
 
@@ -58,8 +84,7 @@
                                 (string=? command-name "crond")) 'cron)
                            ((string=? command-name "crontab") 'crontab)
                            (else
-                            (display "The command name is invalid.\n")
-                            (primitive-exit 12))))
+                            (mcron-error 12 "The command name is invalid."))))
 
 
 
@@ -70,26 +95,34 @@
 (use-modules (ice-9 getopt-long))
 
 (define options
-  (getopt-long (command-line)
-               (append
-                (case command-type ('crontab
-                            '((user     (single-char #\u) (value #t))
-                              (edit     (single-char #\e) (value #f))
-                              (list     (single-char #\l) (value #f))
-                              (remove   (single-char #\r) (value #f))))
-                      (else `((schedule (single-char #\s) (value optional))
-                              (daemon   (single-char #\d) (value #f))
-                              (noetc    (single-char #\n) (value #f))
-                              (stdin    (single-char #\i) (value #t)
-                                        (predicate
-                                         ,(lambda (value)
+  (catch
+   'misc-error
+   (lambda ()
+     (getopt-long (command-line)
+                  (append
+                   (case command-type
+                     ((crontab)
+                      '((user     (single-char #\u) (value #t))
+                        (edit     (single-char #\e) (value #f))
+                        (list     (single-char #\l) (value #f))
+                        (remove   (single-char #\r) (value #f))))
+                     (else `((schedule (single-char #\s)
+                                       (value optional)
+                                       (predicate ;; Added by Sergey Poznyakoff.
+                                        ,(lambda (value)
+                                           (or (eq? value #t)
+                                               (string->number value)))))
+                             (daemon   (single-char #\d) (value #f))
+                             (noetc    (single-char #\n) (value #f))
+                             (stdin    (single-char #\i) (value #t)
+                                       (predicate
+                                        ,(lambda (value)
                                            (or (string=? "vixie" value)
                                                (string=? "guile" value))))))))
-                '((version  (single-char #\v) (value #f))
-                  (help     (single-char #\h) (value #f))))))
-
-
-
+                   '((version  (single-char #\v) (value #f))
+                     (help     (single-char #\h) (value #f))))))
+   (lambda (key func fmt args . rest)
+     (mcron-error 1 (apply format (append (list #f fmt) args))))))
 
 ;; If the user asked for the version of this program, give it to him and get
 ;; out.
@@ -100,7 +133,7 @@
 " command-name "  (" config-package-string ")\n
 Written by Dale Mellor\n
 \n
-Copyright (C) 2003  Dale Mellor\n
+Copyright (C) 2003, 2006  Dale Mellor\n
 This is free software; see the source for copying conditions.  There is NO\n
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n
 "))
@@ -114,7 +147,9 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n
     (begin
       (display (string-append "
 Usage: " (car (command-line))
-(case command-type ('mcron
+(case command-type
+
+  ((mcron)
 " [OPTIONS] [FILES]\n
 Run an mcron process according to the specifications in the FILES (`-' for\n
 standard input), or use all the files in ~/.cron with .guile or .vixie\n
@@ -126,10 +161,10 @@ extensions.\n
                               will be run by mcron\n
   -d, --daemon              Immediately detach the program from the terminal and\n
                               run as a daemon process\n
-  -i, --stdin=(guile|vixie) Format of data passed as standard input\n
-                              (default guile)")
+  -i, --stdin=(guile|vixie) Format of data passed as standard input or\n
+                              file arguments (default guile)")
 
-  ('cron
+  ((cron)
 " [OPTIONS]\n
 Unless an option is specified, run a cron daemon as a detached process, \n
 reading all the information in the users' crontabs and in /etc/crontab.\n
@@ -141,13 +176,15 @@ reading all the information in the users' crontabs and in /etc/crontab.\n
   -n, --noetc               Do not check /etc/crontab for updates (HIGHLY\n
                               RECOMMENDED).")
   
-  ('crontab
+  ((crontab)
            (string-append " [-u user] file\n"
            "       " (car (command-line)) " [-u user] { -e | -l | -r }\n"
            "               (default operation is replace, per 1003.2)\n"
            "       -e      (edit user's crontab)\n"
            "       -l      (list user's crontab)\n"
-           "       -r      (delete user's crontab)\n")))
+           "       -r      (delete user's crontab)\n"))
+
+  (else "rubbish"))
 
 "\n\n
 Report bugs to " config-package-bugreport ".\n
@@ -158,7 +195,7 @@ Report bugs to " config-package-bugreport ".\n
 
 ;; This is called from the C front-end whenever a terminal signal is
 ;; received. We remove the /var/run/cron.pid file so that crontab and other
-;; invokations of cron don't get the wrong idea that a daemon is currently
+;; invocations of cron don't get the wrong idea that a daemon is currently
 ;; running.
 
 (define (delete-run-file)
@@ -183,16 +220,16 @@ Report bugs to " config-package-bugreport ".\n
 (if (eq? command-type 'cron)
     (begin
       (if (not (eqv? (getuid) 0))
-          (begin
-            (display "This program must be run by the root user (and should ")
-            (display "have been installed as such).\n")
-            (primitive-exit 16)))
+          (mcron-error 16
+                       "This program must be run by the root user (and should "
+                       "have been installed as such)."))
       (if (access? config-pid-file F_OK)
-          (begin
-            (display "A cron daemon is already running.\n")
-            (display "  (If you are sure this is not true, remove the file\n")
-            (display "   " config-pid-file ".)\n")
-            (primitive-exit 1)))
+          (mcron-error 1
+		       "A cron daemon is already running.\n"
+		       "  (If you are sure this is not true, remove the file\n"
+		       "   "
+		       config-pid-file
+		       ".)"))
       (if (not (option-ref options 'schedule #f))
           (with-output-to-file config-pid-file noop))
       (setenv "MAILTO" #f)
@@ -230,6 +267,19 @@ Report bugs to " config-package-bugreport ".\n
 
 
 
+;; Code contributed by Sergey Poznyakoff.  Determine if the given file is a
+;; regular file or not.
+
+(define (regular-file? file)
+  (catch 'system-error
+	 (lambda ()
+	   (eq? (stat:type (stat file)) 'regular))
+	 (lambda (key call fmt args . rest)
+	   (mcron-error 0 (apply format (append (list #f fmt) args)))
+	   #f)))
+
+
+
 ;; Procedure which processes any configuration file according to the
 ;; extension. If a file is not recognized, it is silently ignored (this deals
 ;; properly with most editors' backup files, for instance).
@@ -259,12 +309,12 @@ Report bugs to " config-package-bugreport ".\n
                      (directory (opendir dir-path)))
                 (do ((file-name (readdir directory) (readdir directory)))
                     ((eof-object? file-name) (closedir directory))
-                    (process-user-file (string-append dir-path
-                                                      "/"
-                                                      file-name)))))
+                  (process-user-file (string-append dir-path
+                                                    "/"
+                                                    file-name)))))
          (lambda (key . args)
-           (display "Cannot read files in your ~/.cron directory.\n")
-           (primitive-exit 13))))
+           (mcron-error 13 "Cannot read files in your ~/.cron directory."))))
+
 
 
 
@@ -293,18 +343,21 @@ Report bugs to " config-package-bugreport ".\n
 (use-modules (srfi srfi-2))  ;; For and-let*.
 
 (define (process-files-in-system-directory)
-  (catch #t (lambda ()
-              (let ((directory (opendir config-spool-dir)))
-                (do ((file-name (readdir directory) (readdir directory)))
-                    ((eof-object? file-name))
-                  (and-let* ((user (valid-user file-name)))
-                            (set-configuration-user user)         ;; / ?? !!!!
-                            (read-vixie-file (string-append config-spool-dir
-                                                            "/"
-                                                            file-name))))))
-      (lambda (key . args)
-        (display "You do not have permission to access the system crontabs.\n")
-        (primitive-exit 4))))
+  (catch #t
+         (lambda ()
+           (let ((directory (opendir config-spool-dir)))
+             (do ((file-name (readdir directory) (readdir directory)))
+                 ((eof-object? file-name))
+               (and-let* ((user (valid-user file-name)))
+                         (set-configuration-user user)         ;; / ?? !!!!
+                         (catch-mcron-error
+                          (read-vixie-file (string-append config-spool-dir
+                                                          "/"
+                                                          file-name)))))))
+         (lambda (key . args)
+           (mcron-error
+            4
+            "You do not have permission to access the system crontabs."))))
 
 
 
@@ -316,27 +369,28 @@ Report bugs to " config-package-bugreport ".\n
 ;; /var/cron/tabs directory and also the /etc/crontab file.
 
 (case command-type
-  ('mcron (if (null? (option-ref options '() '()))
-              (process-files-in-user-directory)
-              (for-each (lambda (file-path)
-                          (process-user-file file-path))
-                        (option-ref options '() '()))))
- 
-  ('cron (process-files-in-system-directory)
-         (use-system-job-list)
-         (read-vixie-file "/etc/crontab" parse-system-vixie-line)
-         (use-user-job-list)
-         (if (not (option-ref options 'noetc #f))
-             (begin
-               (display
-"WARNING: cron will check for updates to /etc/crontab EVERY MINUTE. If you do\n
+  ((mcron) (if (null? (option-ref options '() '()))
+                (process-files-in-user-directory)
+                (for-each (lambda (file-path)
+                            (process-user-file file-path))
+                          (option-ref options '() '()))))
+  
+  ((cron) (process-files-in-system-directory)
+   (use-system-job-list)
+   (catch-mcron-error
+    (read-vixie-file "/etc/crontab" parse-system-vixie-line))
+   (use-user-job-list)
+   (if (not (option-ref options 'noetc #f))
+       (begin
+         (display
+          "WARNING: cron will check for updates to /etc/crontab EVERY MINUTE. If you do\n
 not use this file, or you are prepared to manually restart cron whenever you\n
 make a change, then it is HIGHLY RECOMMENDED that you use the --noetc\n
 option.\n")
-               (set-configuration-user "root")
-               (job '(- (next-minute-from (next-minute)) 6)
-                    check-system-crontab
-                    "/etc/crontab update checker.")))))
+         (set-configuration-user "root")
+         (job '(- (next-minute-from (next-minute)) 6)
+              check-system-crontab
+              "/etc/crontab update checker.")))))
 
 
 
@@ -380,10 +434,18 @@ option.\n")
 (define fd-list '())
 
 (if (eq? command-type 'cron)
-    (let ((socket (socket AF_UNIX SOCK_STREAM 0)))
-      (bind socket AF_UNIX config-socket-file)
-      (listen socket 5)
-      (set! fd-list (list socket))))
+    (catch #t
+           (lambda ()
+             (let ((socket (socket AF_UNIX SOCK_STREAM 0)))
+               (bind socket AF_UNIX config-socket-file)
+               (listen socket 5)
+               (set! fd-list (list socket))))
+           (lambda (key . args)
+             (delete-file config-pid-file)
+             (mcron-error 1
+                          "Cannot bind to UNIX socket "
+                          config-socket-file))))
+		     
 
 
 
@@ -398,23 +460,39 @@ option.\n")
          (user-name (read-line socket)))
     (close socket)
     (set-configuration-time (current-time))
-    (if (string=? user-name "/etc/crontab")
-        (begin
-          (clear-system-jobs)
-          (use-system-job-list)
-          (read-vixie-file "/etc/crontab" parse-system-vixie-line)
-          (use-user-job-list))
-        (let ((user (getpw user-name)))
-          (remove-user-jobs user)
-          (set-configuration-user user)
-          (read-vixie-file (string-append config-spool-dir "/" user-name))))))
+    (catch-mcron-error
+     (if (string=? user-name "/etc/crontab")
+         (begin
+           (clear-system-jobs)
+           (use-system-job-list)
+           (read-vixie-file "/etc/crontab" parse-system-vixie-line)
+           (use-user-job-list))
+         (let ((user (getpw user-name)))
+           (remove-user-jobs user)
+           (set-configuration-user user)
+           (read-vixie-file (string-append config-spool-dir "/" user-name)))))))
+
+
+
+;; Added by Sergey Poznyakoff.  This no-op will collect zombie child processes
+;; as soon as they die.  This is a big improvement as previously they stayed
+;; around the system until the next time mcron wakes to fire a new job off.
+
+;; Unfortunately it seems to interact badly with the select system call,
+;; wreaking havoc...
+
+;; (sigaction SIGCHLD (lambda (sig) noop) SA_RESTART)
 
 
 
 ;; Now the main loop. Forever execute the run-job-loop procedure in the mcron
 ;; core, and when it drops out (can only be because a message has come in on the
 ;; socket) we process the socket request before restarting the loop again.
+;; Sergey Poznyakoff: we can also drop out of run-job-loop because of a SIGCHLD,
+;; so must test fd-list.
 
-(while #t
-       (run-job-loop fd-list)
-       (process-update-request))
+(catch-mcron-error
+ (while #t
+        (run-job-loop fd-list)
+        (if (not (null? fd-list))
+            (process-update-request))))

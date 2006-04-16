@@ -20,7 +20,7 @@
 ED = @ED@   # !!!! Are these needed?
 CP = @CP@
 
-MAINTAINERCLEANFILES = configure makefile makefile.in \
+MAINTAINERCLEANFILES = configure makefile makefile.in config.guess config.sub \
                        install-sh missing mkinstalldirs texinfo.tex INSTALL \
                        aclocal.m4 compile depcomp COPYING
 

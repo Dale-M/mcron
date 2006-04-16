@@ -167,7 +167,7 @@
           ((eqv? count 0))
         (and-let* ((next-jobs (find-next-jobs))
                    (time (car next-jobs))
-                   (date-string (strftime "%c\n" (localtime time))))
+                   (date-string (strftime "%c %z\n" (localtime time))))
           (for-each (lambda (job)
                       (display date-string)
                       (display (job:displayable job))
@@ -214,6 +214,16 @@
 
 
 
+;; Give any zombie children a chance to die, and decrease the number known to
+;; exist.
+
+(define (child-cleanup)
+  (do () ((or (<= number-children 0)
+	      (eqv? (car (waitpid WAIT_ANY WNOHANG)) 0)))
+    (set! number-children (- number-children 1))))
+
+
+
 ;; Now the main loop. Loop over all job specifications, get a list of the next
 ;; ones to run (may be more than one). Set an alarm and go to sleep. When we
 ;; wake, run the jobs and reap any children (old jobs) that have
@@ -227,26 +237,35 @@
 
 (define (run-job-loop . fd-list)
 
-  (call-with-current-continuation (lambda (break)
-  
-    (let ((fd-list (if (null? fd-list) '() (car fd-list))))
+  (call-with-current-continuation
+   (lambda (break)
+     
+     (let ((fd-list (if (null? fd-list) '() (car fd-list))))
 
-      (let loop ()
+       (let loop ()
 
-        (let* ((next-jobs      (find-next-jobs))
-               (next-time      (car next-jobs))
-               (next-jobs-list (cdr next-jobs))
-               (sleep-time     (if next-time (- next-time (current-time))
-                                   2000000000)))
+         (let* ((next-jobs      (find-next-jobs))
+                (next-time      (car next-jobs))
+                (next-jobs-list (cdr next-jobs))
+                (sleep-time     (if next-time (- next-time (current-time))
+                                    2000000000)))
 
-          (and (> sleep-time 0)
-               (if (not (null? (car (select fd-list '() '() sleep-time))))
-                   (break)))
-        
-          (run-jobs next-jobs-list)
+           (and (> sleep-time 0)
+                (if (not (null?
+                          (catch 'system-error
+                                 (lambda ()
+                                   (car (select fd-list '() '() sleep-time)))
+                                 (lambda (key . args) ;; Exception add by Sergey
+						                              ;; Poznyakoff.
+                                   (if (member (car (last args))
+                                               (list EINTR EAGAIN))
+                                       (begin
+                                         (child-cleanup) '())
+                                       (apply throw key args))))))
+                    (break)))
 
-          (do () ((or (<= number-children 0)
-                      (eqv? (car (waitpid WAIT_ANY WNOHANG)) 0)))
-            (set! number-children (- number-children 1)))
-        
-          (loop)))))))
+           (run-jobs next-jobs-list)
+
+           (child-cleanup)
+           
+           (loop)))))))

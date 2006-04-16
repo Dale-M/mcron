@@ -67,9 +67,7 @@
 
 (if (or (eq? (in-access-file? config-allow-file crontab-real-user) #f)
         (eq? (in-access-file? config-deny-file crontab-real-user) #t))
-    (begin
-      (display "Access denied by system operator.\n")
-      (primitive-exit 6)))
+    (mcron-error 6 "Access denied by system operator."))
 
 
 
@@ -79,9 +77,7 @@
           (if (option-ref options 'list #f) 1 0)
           (if (option-ref options 'remove #f) 1 0))
        1)
-    (begin
-      (display "crontab: Only one of options -e, -l or -r can be used.\n")
-      (primitive-exit 7)))
+    (mcron-error 7 "Only one of options -e, -l or -r can be used."))
 
 
 
@@ -89,8 +85,7 @@
 
 (if (and (not (eqv? (getuid) 0))
          (option-ref options 'user #f))
-    (begin (display "crontab: Only root can use the -u option.\n")
-           (primitive-exit 8)))
+    (mcron-error 8 "Only root can use the -u option."))
 
 
 
@@ -104,6 +99,24 @@
 ;; So now we know which crontab file we will be manipulating.
 
 (define crontab-file (string-append config-spool-dir "/" crontab-user))
+
+
+
+;; Display the prompt and wait for user to type his choice. Return #t if the
+;; answer begins with 'y' or 'Y', return #f if it begins with 'n' or 'N',
+;; otherwise ask again.
+
+(define (get-yes-no prompt . re-prompt)
+  (if (not (null? re-prompt))
+      (display "Please answer y or n.\n"))
+  (display (string-append prompt " "))
+  (let ((r (read-line)))
+    (if (not (string-null? r))
+        (case (string-ref r 0)
+          ((#\y #\Y) #t)
+          ((#\n #\N) #f)
+          (else (get-yes-no prompt #t)))
+        (get-yes-no prompt #t))))
 
 
 
@@ -136,7 +149,9 @@
  ;; it; once the editor returns we try to read the file to check that it is
  ;; parseable (but do nothing more with the configuration), and if it is okay
  ;; (this program is still running!) we move the temporary file to the real
- ;; crontab, wake the cron daemon up, and remove the temporary file.
+ ;; crontab, wake the cron daemon up, and remove the temporary file. If the
+ ;; parse fails, we give user a choice of editing the file again or quitting
+ ;; the program and losing all changes made.
 
  ((option-ref options 'edit #f)
   (let ((temp-file (string-append config-tmp-dir
@@ -145,10 +160,20 @@
     (catch #t (lambda () (copy-file crontab-file temp-file))
               (lambda (key . args) (with-output-to-file temp-file noop)))
     (chown temp-file (getuid) (getgid))
-    (system (string-append (or (getenv "VISUAL") (getenv "EDITOR") "vi")
-                           " "
-                           temp-file))
-    (read-vixie-file temp-file)
+    (let retry ()
+      (system (string-append
+               (or (getenv "VISUAL") (getenv "EDITOR") "vi")
+               " "
+               temp-file))
+      (catch 'mcron-error
+             (lambda () (read-vixie-file temp-file))
+             (lambda (key exit-code . msg)
+               (apply mcron-error 0 msg)
+               (if (get-yes-no "Edit again?")
+                   (retry)
+                   (begin
+                     (mcron-error 0 "Crontab not changed")
+                     (primitive-exit 0))))))
     (copy-file temp-file crontab-file)
     (delete-file temp-file)
     (hit-server crontab-user)))
@@ -174,20 +199,20 @@
 
  ((not (null? (option-ref options '() '())))
   (let ((input-file (car (option-ref options '() '()))))
-    (if (string=? input-file "-")
-        (let ((input-string (stdin->string)))
-          (read-vixie-port (open-input-string input-string))
-          (with-output-to-file crontab-file (lambda ()
-                                              (display input-string))))
-        (begin
-          (read-vixie-file input-file)
-          (copy-file input-file crontab-file))))
-  (hit-server crontab-user))
+    (catch-mcron-error
+     (if (string=? input-file "-")
+         (let ((input-string (stdin->string)))
+           (read-vixie-port (open-input-string input-string))
+           (with-output-to-file crontab-file (lambda ()
+                                               (display input-string))))
+         (begin
+           (read-vixie-file input-file)
+           (copy-file input-file crontab-file))))
+    (hit-server crontab-user)))
  
  
  ;; The user is being silly. The message here is identical to the one Vixie cron
  ;; used to put out, for total compatibility.
 
  (else
-  (display "crontab: usage error: file name must be specified for replace.\n")
-  (primitive-exit 15)))
+  (mcron-error 15 "usage error: file name must be specified for replace.")))

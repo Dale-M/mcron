@@ -54,8 +54,8 @@
 
 (define (parse-user-vixie-line line)
   (let ((match (regexp-exec parse-user-vixie-line-regexp line)))
-    (if (not match) (begin (display "Bad job line in Vixie file.\n")
-                           (primitive-exit 10)))
+    (if (not match) 
+        (throw 'mcron-error 10 "Bad job line in Vixie file."))
     (job (match:substring match 1)
          (lambda () (with-mail-out (match:substring match 3)))
          (match:substring match 3))))
@@ -71,8 +71,8 @@
 
 (define (parse-system-vixie-line line)
   (let ((match (regexp-exec parse-system-vixie-line-regexp line)))
-    (if (not match) (begin (display "Bad job line in /etc/crontab.\n")
-                           (primitive-exit 11)))
+    (if (not match) 
+        (throw 'mcron-error 11 "Bad job line in /etc/crontab."))
     (let ((user (match:substring match 3)))
       (set-configuration-user user)
       (job (match:substring match 1)
@@ -92,7 +92,7 @@
    "^[ \t]*([[:alpha:]_][[:alnum:]_]*)[ \t]*=[ \t]*\"(.*)\"[ \t]*$"))
 (define parse-vixie-environment-regexp2
   (make-regexp
-   "^[ \t]*([[:alpha:]_][[:alnum:]_]*)[ \t]*=[ \t]*\'(.*)\'[ \t]*$"))
+   "^[ \t]*([[:alpha:]_][[:alnum:]_]*)[ \t]*=[ \t]*'(.*)'[ \t]*$"))
 (define parse-vixie-environment-regexp3
   (make-regexp
    "^[ \t]*([[:alpha:]_][[:alnum:]_]*)[ \t]*=[ \t]*(.*[^ \t])[ \t]*$"))
@@ -136,26 +136,39 @@
       (let ((parse-vixie-line
              (if (null? parse-vixie-line) parse-user-vixie-line
                  (car parse-vixie-line))))
-        (do ((line (read-line port) (read-line port)))
+        (do ((line (read-line port) (read-line port))
+             (line-number 1 (1+ line-number)))
             ((eof-object? line))
-          
-          ;; If the line ends with \, append the next line.
-          (while (and (>= (string-length line) 1)
-                      (char=? (string-ref line
-                                          (- (string-length line) 1))
-                               #\\))
-            (let ((next-line (read-line port)))
-              (if (eof-object? next-line)
-                  (set! next-line ""))
-              (set! line
-                    (string-append
-                     (substring line 0 (- (string-length line) 1))
-                     next-line))))
 
-          ;; Consider the three cases mentioned in the description.
-          (or (regexp-exec read-vixie-file-comment-regexp line)
-              (parse-vixie-environment line)
-              (parse-vixie-line line))))))
+          (let ((report-line line-number))
+            ;; If the line ends with \, append the next line.
+            (while (and (>= (string-length line) 1)
+                        (char=? (string-ref line
+                                            (- (string-length line) 1))
+                                #\\))
+                   (let ((next-line (read-line port)))
+                     (if (eof-object? next-line)
+                         (set! next-line ""))
+                     (set! line-number (1+ line-number))
+                     (set! line
+                           (string-append
+                            (substring line 0 (- (string-length line) 1))
+                            next-line))))
+
+            (catch 'mcron-error
+                   (lambda ()
+                     ;; Consider the three cases mentioned in the description.
+                     (or (regexp-exec read-vixie-file-comment-regexp line)
+                         (parse-vixie-environment line)
+                         (parse-vixie-line line)))
+                   (lambda (key exit-code . msg)
+                     (throw
+                      'mcron-error
+                      exit-code
+                      (apply string-append
+                             (number->string report-line)
+                             ": "
+                             msg)))))))))
 
 
 
@@ -168,12 +181,16 @@
     (catch #t (lambda () (set! port (open-input-file file-path)))
            (lambda (key . args) (set! port #f)))
     (if port
-        (begin
-          (if (null? parse-vixie-line)
-              (read-vixie-port port)
-              (read-vixie-port port (car parse-vixie-line)))
-          (close port)))))
-
+        (catch 'mcron-error
+               (lambda ()
+                 (if (null? parse-vixie-line)
+                     (read-vixie-port port)
+                     (read-vixie-port port (car parse-vixie-line)))
+                 (close port))
+               (lambda (key exit-code . msg)
+                 (close port)
+                 (throw 'mcron-error exit-code
+                        (apply string-append file-path ":" msg)))))))
 
 
 ;; A procedure which determines if the /etc/crontab file has been recently
