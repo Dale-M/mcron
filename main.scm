@@ -106,12 +106,10 @@
                         (edit     (single-char #\e) (value #f))
                         (list     (single-char #\l) (value #f))
                         (remove   (single-char #\r) (value #f))))
-                     (else `((schedule (single-char #\s)
-                                       (value optional)
-                                       (predicate ;; Added by Sergey Poznyakoff.
+                     (else `((schedule (single-char #\s) (value #t)
+                                       (predicate
                                         ,(lambda (value)
-                                           (or (eq? value #t)
-                                               (string->number value)))))
+                                           (string->number value))))
                              (daemon   (single-char #\d) (value #f))
                              (noetc    (single-char #\n) (value #f))
                              (stdin    (single-char #\i) (value #t)
@@ -157,8 +155,7 @@ extensions.\n
 \n
   -v, --version             Display version\n
   -h, --help                Display this help message\n
-  -s, --schedule[=COUNT]    Display the next COUNT jobs (default 8) that\n
-                              will be run by mcron\n
+  -sN, --schedule[=]N       Display the next N jobs that will be run by mcron\n
   -d, --daemon              Immediately detach the program from the terminal and\n
                               run as a daemon process\n
   -i, --stdin=(guile|vixie) Format of data passed as standard input or\n
@@ -171,8 +168,7 @@ reading all the information in the users' crontabs and in /etc/crontab.\n
 \n
   -v, --version             Display version\n
   -h, --help                Display this help message\n
-  -s, --schedule[=COUNT]    Display the next COUNT jobs (default 8) that\n
-                              will be run by cron\n
+  -sN, --schedule[=]N       Display the next N jobs that will be run by cron\n
   -n, --noetc               Do not check /etc/crontab for updates (HIGHLY\n
                               RECOMMENDED).")
   
@@ -403,9 +399,7 @@ option.\n")
 ;; count is some positive integer.
 
 (and-let* ((count (option-ref options 'schedule #f)))
-          (set! count (if (eq? count #t)
-                          8
-                          (string->number count)))
+          (set! count (string->number count))
           (display (get-schedule (if (<= count 0) 1 count)))
           (quit))
     
