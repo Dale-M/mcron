@@ -30,11 +30,13 @@ EXTRA_DIST = makefile.ed main.scm mcron-core.scm vixie-specification.scm \
              crontab.scm environment.scm job-specifier.scm redirect.scm \
              vixie-time.scm mcron.c.template BUGS
 
+AM_LDFLAGS = @GUILE_LDFLAGS@
+AM_CFLAGS  = @GUILE_CFLAGS@ -DGUILE_LOAD_PATH=\"$(datadir)\"
+
 info_TEXINFOS = mcron.texinfo
+
 bin_PROGRAMS = mcron
 mcron_SOURCES = mcron.c
-mcron_LDFLAGS = @GUILE_LDFLAGS@
-mcron_CFLAGS = @GUILE_CFLAGS@ -DGUILE_LOAD_PATH=\"$(datadir)\"
 
 pkgdata_DATA = core.scm environment.scm job-specifier.scm redirect.scm \
                vixie-time.scm vixie-specification.scm config.scm

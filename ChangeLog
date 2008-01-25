@@ -1,4 +1,13 @@
-2005-09-02  hydro23  <Dale Mellor <dale@dmellor.dabsol.co.uk>>
+2008-01-25  Dale Mellor  <Dale Mellor <dale_mellor@users.sourceforge.net>>
+
+	* makefile.am: Moved target-specific CFLAGS and LDFLAGS to global
+	AM_* variables, to remove problem with automake requiring
+	AM_PROGS_CC_C_O in configure.ac (!)
+
+	* Version is currently at 1.0.3.
+	
+
+2005-09-02  hydro23  <Dale Mellor <dale_mellor@users.sourceforge.net>>
 
 	* makefile.am, mcron.c.template (main): Modified install-exec-hook
 	so that a proper installation of a Vixie-compatible cron only
