@@ -283,15 +283,16 @@ Report bugs to " config-package-bugreport ".\n
 (define guile-file-regexp (make-regexp "\\.gui(le)?$"))
 (define vixie-file-regexp (make-regexp "\\.vix(ie)?$"))
 
-(define (process-user-file file-path)
+(define (process-user-file file-path . assume-guile)
   (cond ((string=? file-path "-")
                (if (string=? (option-ref options 'stdin "guile") "vixie")
                    (read-vixie-port (current-input-port))
                    (eval-string (stdin->string))))
-        ((regexp-exec guile-file-regexp file-path)
-               (load file-path))
+        ((or (not (null? assume-guile))
+             (regexp-exec guile-file-regexp file-path))
+         (load file-path))
         ((regexp-exec vixie-file-regexp file-path)
-               (read-vixie-file file-path))))
+         (read-vixie-file file-path))))
 
 
 
@@ -368,7 +369,7 @@ Report bugs to " config-package-bugreport ".\n
   ((mcron) (if (null? (option-ref options '() '()))
                 (process-files-in-user-directory)
                 (for-each (lambda (file-path)
-                            (process-user-file file-path))
+                            (process-user-file file-path #t))
                           (option-ref options '() '()))))
   
   ((cron) (process-files-in-system-directory)

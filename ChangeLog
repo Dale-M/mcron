@@ -1,5 +1,9 @@
 2008-01-25  Dale Mellor  <Dale Mellor <dale_mellor@users.sourceforge.net>>
 
+	* main.scm (command-type): Files which are listed on the command
+	line are assumed to be guile configurations if they do not end in
+	.guile or .vixie (previously they were silently ignored).
+	
 	* main.scm: Argument to --schedule is no longer optional (the
 	options system goes really screwy with optional values, usually
 	pulling the first non-option argument as a value if one was not
