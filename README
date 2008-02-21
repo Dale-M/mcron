@@ -2,7 +2,7 @@ Copyright (C) 2003 Dale Mellor                        -*-text-*-
 See the end for copying conditions.
 
 
-This is version 1.0.3 of the GNU mcron program.  It is designed and written by
+This is version 1.0.4 of the GNU mcron program.  It is designed and written by
 Dale Mellor, and replaces and hugely enhances Vixie cron. It is functionally
 complete, production quality code (did you expect less?), but has not received
 much testing yet. It has only been built on a GNU/Linux system, and will most

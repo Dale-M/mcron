@@ -6,6 +6,12 @@ See the end for copying conditions.
 Please send bug reports to bug-mcron@gnu.org.
 
 
+Thursday, 21st Februrary 2008
+
+    Released version 1.0.4, under the new GPLv3 license, after some prodding by
+    Karl Berry.
+
+
 Sunday, 16th April 2006
     Released version 1.0.3.  Incorporated many coding suggestions by Sergey
     Poznyakoff, which makes the program work with daylight savings time shifts,

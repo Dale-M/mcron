@@ -1,4 +1,14 @@
-2008-01-25  Dale Mellor  <Dale Mellor <dale_mellor@users.sourceforge.net>>
+2008-02-21  Dale Mellor  <Dale Mellor <dale_mellor@users.sourceforge.net>
+
+	* ALL FILES: Replaced version 2 GPL notices with version 3 ones.
+
+	* makefile.am: Do not remove COPYING file with make
+	maintainer-clean; if you do it will eventually get replaced with
+	the old version 2 GPL by a subsequent automake.
+
+	* configure.ac: Bumped version to 1.0.4.
+
+2008-01-25  Dale Mellor  <Dale Mellor <dale_mellor@users.sourceforge.net>
 
 	* main.scm (command-type): Files which are listed on the command
 	line are assumed to be guile configurations if they do not end in
@@ -16,7 +26,7 @@
 	* Version is currently at 1.0.3.
 	
 
-2005-09-02  hydro23  <Dale Mellor <dale_mellor@users.sourceforge.net>>
+2005-09-02  hydro23  <Dale Mellor <dale_mellor@users.sourceforge.net>
 
 	* makefile.am, mcron.c.template (main): Modified install-exec-hook
 	so that a proper installation of a Vixie-compatible cron only
@@ -110,7 +120,7 @@
 
 
 ________________________________________________________________________________
-Copyright (C) 2003 Dale Mellor
+Copyright (C) 2003  Dale Mellor
 
 	Permission is granted to anyone to make or distribute verbatim
 	copies of this document as received, in any medium, provided that
