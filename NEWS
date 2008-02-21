@@ -8,6 +8,9 @@ Please send bug reports to bug-mcron@gnu.org.
 
 Thursday, 21st Februrary 2008
 
+    The source code is now held in a GIT repository, at
+    git://git.savannah.gnu.org/mcron.git.
+
     Released version 1.0.4, under the new GPLv3 license, after some prodding by
     Karl Berry.
 
