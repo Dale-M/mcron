@@ -36,6 +36,8 @@ AM_CFLAGS  = @GUILE_CFLAGS@ -DGUILE_LOAD_PATH=\"$(datadir)\"
 
 info_TEXINFOS = mcron.texinfo
 
+dist_man1_MANS = mcron.1
+
 bin_PROGRAMS = mcron
 mcron_SOURCES = mcron.c
 
@@ -86,4 +88,3 @@ uninstall-hook:
 	if [ "`id -u`" -eq "0" ]; then \
 	    rm -f $(fpp){cron,crontab}$(EXEEXT); \
 	fi
-
