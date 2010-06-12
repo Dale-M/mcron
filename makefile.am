@@ -22,7 +22,7 @@ ED = @ED@   # !!!! Are these needed?
 CP = @CP@
 
 MAINTAINERCLEANFILES = configure makefile makefile.in config.guess config.sub \
-                       install-sh missing mkinstalldirs texinfo.tex INSTALL \
+                       install-sh missing texinfo.tex INSTALL \
                        aclocal.m4 compile depcomp
 
 CLEANFILES = mcron.c core.scm
@@ -50,41 +50,34 @@ pkgdata_DATA = core.scm environment.scm job-specifier.scm redirect.scm \
 # of this).
 
 core.scm : mcron-core.scm
-	$(CP) mcron-core.scm core.scm
+    $(CP) mcron-core.scm core.scm
 
 mcron.c : main.scm crontab.scm makefile.ed mcron.c.template
-	@echo 'Building mcron.c...'
-	@$(ED) < makefile.ed > /dev/null 2>&1
-	@rm -f mcron.escaped.scm > /dev/null 2>&1
+    @echo 'Building mcron.c...'
+    @$(ED) < makefile.ed > /dev/null 2>&1
+    @rm -f mcron.escaped.scm > /dev/null 2>&1
 
-
-# !!!! Want to be able to install as non-root.
-
-# install-exec-local:
-# 	@if [ `id -u` -ne 0 ]; then \
-# 	    echo "*** MUST BE ROOT TO INSTALL MCRON ***"; \
-# 	    exit 1; \
-# 	fi
 
 #full program prefix
 fpp = $(DESTDIR)$(bindir)/@real_program_prefix@
 
+
 install-exec-hook:
-	@if [ "`id -u`" -eq "0" ]; then \
-	   rm -f $(fpp)cron$(EXEEXT) > /dev/null 2>&1; \
-	   $(INSTALL) --mode='u=rwx' mcron$(EXEEXT) $(fpp)cron$(EXEEXT); \
-	   rm -f $(fpp)crontab$(EXEEXT) > /dev/null 2>&1; \
-	   $(INSTALL) --mode='u=rwxs,og=rx' mcron$(EXEEXT) $(fpp)crontab$(EXEEXT); \
-	   ./mkinstalldirs -m 'u=rwx' /var/cron; \
-	   ./mkinstalldirs -m 'u=rwx,og=rx' /var/run; \
-	   ./mkinstalldirs -m 'u=rwx,og=rx' @GUILE_SITE@; \
-	   ./mkinstalldirs -m 'u=rwx,og=rx' @GUILE_SITE@/mcron; \
+    @if [ "`id -u`" -eq "0" ]; then \
+       rm -f $(fpp)cron$(EXEEXT) > /dev/null 2>&1; \
+       $(INSTALL) --mode='u=rwx' mcron$(EXEEXT) $(fpp)cron$(EXEEXT); \
+       rm -f $(fpp)crontab$(EXEEXT) > /dev/null 2>&1; \
+       $(INSTALL) --mode='u=rwxs,og=rx' mcron$(EXEEXT) $(fpp)crontab$(EXEEXT); \
+       $(INSTALL) -d --mode='u=rwx' /var/cron; \
+       $(INSTALL) -d --mode='u=rwx,og=rx' /var/run; \
+       $(INSTALL) -d --mode='u=rwx,og=rx' @GUILE_SITE@; \
+       $(INSTALL) -d --mode='u=rwx,og=rx' @GUILE_SITE@/mcron; \
     else \
        echo "+++ WARNING: NON-ROOT INSTALL: ONLY mcron WILL BE INSTALLED, NOT ANY OF THE VIXIE REPLACEMENT PROGRAMS"; \
-	fi
+    fi
 
 
 uninstall-hook:
-	if [ "`id -u`" -eq "0" ]; then \
-	    rm -f $(fpp){cron,crontab}$(EXEEXT); \
-	fi
+    if [ "`id -u`" -eq "0" ]; then \
+        rm -f $(fpp){cron,crontab}$(EXEEXT); \
+    fi
