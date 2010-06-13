@@ -77,9 +77,29 @@ install-exec-hook:
     else \
        echo "+++ WARNING: NON-ROOT INSTALL: ONLY mcron WILL BE INSTALLED, NOT ANY OF THE VIXIE REPLACEMENT PROGRAMS"; \
     fi
+	@echo
+	@echo "  AFTER INSTALLATION, CONSIDER RUNNING make cook-up-man"
+	@echo
 
 
 uninstall-hook:
 	if [ "`id -u`" -eq "0" ]; then \
         rm -f $(fpp){cron,crontab}$(EXEEXT); \
     fi
+
+
+# Debian lintian barfs if we install an info top-level.
+
+install-data-hook:
+	if [ -f $(DESTDIR)$(infodir)/dir  -o  -f $(DESTDIR)$(infodir)/dir.gz ]; \
+	    then \
+	    rm $(DESTDIR)$(infodir)/dir*; \
+	fi
+
+
+# Not part of formal package building, but a rule for manual use to get the
+# elemental man page.  Will only work once the mcron program is installed.
+cook-up-man:
+	help2man -n 'a program to run tasks at regular (or not) intervals' \
+	    $(fpp)mcron > mcron.1
+	$(MAKE) install
