@@ -88,15 +88,6 @@ uninstall-hook:
     fi
 
 
-# Debian lintian barfs if we install an info top-level.
-
-install-data-hook:
-	if [ -f $(DESTDIR)$(infodir)/dir  -o  -f $(DESTDIR)$(infodir)/dir.gz ]; \
-	    then \
-	    rm $(DESTDIR)$(infodir)/dir*; \
-	fi
-
-
 # Not part of formal package building, but a rule for manual use to get the
 # elemental man page.  Will only work once the mcron program is installed.
 cook-up-man:
