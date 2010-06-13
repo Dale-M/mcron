@@ -50,12 +50,12 @@ pkgdata_DATA = core.scm environment.scm job-specifier.scm redirect.scm \
 # of this).
 
 core.scm : mcron-core.scm
-    $(CP) mcron-core.scm core.scm
+	$(CP) mcron-core.scm core.scm
 
 mcron.c : main.scm crontab.scm makefile.ed mcron.c.template
-    @echo 'Building mcron.c...'
-    @$(ED) < makefile.ed > /dev/null 2>&1
-    @rm -f mcron.escaped.scm > /dev/null 2>&1
+	@echo 'Building mcron.c...'
+	@$(ED) < makefile.ed > /dev/null 2>&1
+	@rm -f mcron.escaped.scm > /dev/null 2>&1
 
 
 #full program prefix
@@ -63,7 +63,7 @@ fpp = $(DESTDIR)$(bindir)/@real_program_prefix@
 
 
 install-exec-hook:
-    @if [ "`id -u`" -eq "0" ]; then \
+	@if [ "x@NO_VIXIE_CLOBBER@" != "xyes"   -a   "`id -u`" -eq "0" ]; then \
        rm -f $(fpp)cron$(EXEEXT) > /dev/null 2>&1; \
        $(INSTALL) --mode='u=rwx' mcron$(EXEEXT) $(fpp)cron$(EXEEXT); \
        rm -f $(fpp)crontab$(EXEEXT) > /dev/null 2>&1; \
@@ -72,12 +72,14 @@ install-exec-hook:
        $(INSTALL) -d --mode='u=rwx,og=rx' /var/run; \
        $(INSTALL) -d --mode='u=rwx,og=rx' @GUILE_SITE@; \
        $(INSTALL) -d --mode='u=rwx,og=rx' @GUILE_SITE@/mcron; \
+    elif [ "x@NO_VIXIE_CLOBBER@" = "xyes" ]; then \
+       echo "Not installing Vixie-style programs"; \
     else \
        echo "+++ WARNING: NON-ROOT INSTALL: ONLY mcron WILL BE INSTALLED, NOT ANY OF THE VIXIE REPLACEMENT PROGRAMS"; \
     fi
 
 
 uninstall-hook:
-    if [ "`id -u`" -eq "0" ]; then \
+	if [ "`id -u`" -eq "0" ]; then \
         rm -f $(fpp){cron,crontab}$(EXEEXT); \
     fi
