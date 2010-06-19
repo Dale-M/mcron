@@ -1,8 +1,13 @@
-Copyright (C) 2003 Dale Mellor                        -*-text-*-
-See the end for copying conditions.
+GNU mcron --- README                                  -*-text-*-
+
+  Copyright (C) 2003, 2005, 2006  Dale Mellor
+
+  Copying and distribution of this file, with or without modification,
+  are permitted in any medium without royalty provided the copyright
+  notice and this notice are preserved.
 
 
-This is version 1.0.4 of the GNU mcron program.  It is designed and written by
+This is version 1.0.6 of the GNU mcron program.  It is designed and written by
 Dale Mellor, and replaces and hugely enhances Vixie cron. It is functionally
 complete, production quality code (did you expect less?), but has not received
 much testing yet. It has only been built on a GNU/Linux system, and will most
@@ -66,19 +71,3 @@ Mcron is free software. See the file COPYING for copying conditions.
 
 The mcron development home page is at http://www.gnu.org/software/mcron, and it
 can be obtained from ftp://ftp.gnu.org/pub/gnu/mcron.
-
-
-
-
-_______________________________________________________________________________
-Copyright (C) 2003 Dale Mellor
-
-   Permission is granted to anyone to make or distribute verbatim copies
-   of this document as received, in any medium, provided that the
-   copyright notice and this permission notice are preserved,
-   thus giving the recipient permission to redistribute in turn.
-
-   Permission is granted to distribute modified versions
-   of this document, or of portions of it,
-   under the above conditions, provided also that they
-   carry prominent notices stating who last changed them.

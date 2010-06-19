@@ -1,3 +1,13 @@
+Authors of GNU mcron.
+
+  Copyright (C) 2003, 2005, 2006  Dale Mellor
+
+  Copying and distribution of this file, with or without modification,
+  are permitted in any medium without royalty provided the copyright
+  notice and this notice are preserved.
+
+
+
 Dale Mellor (dale_mellor@users.sourceforge.net)
     wrote everything from scratch, with some reference to Paul Vixie's code,
     with the exceptions noted below.
