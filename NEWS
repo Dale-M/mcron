@@ -10,6 +10,13 @@ Historic moments in the life of mcron.                        -*-text-*-
 Please send bug reports to bug-mcron@gnu.org.
 
 
+Saturday, 4th February 2012
+
+    Received a suggestion from Antono Vasiljev to look in FreeDesktop.org's
+    standard user configuration directories for user script files.  This is
+    implemented in the GIT repository.
+
+
 Sunday, 20th June 2010
 
     Standardized the copyright notices on all auxiliary files (including this

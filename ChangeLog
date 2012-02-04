@@ -1,3 +1,12 @@
+2012-02-04  Dale Mellor <dale_mellor@users.sourceforge.net>
+
+	* main.scm: added search for initial files in
+	$XDG_CONFIG_HOME/cron directory, defaulting to ~/.config/cron if
+	the environment variable is not set) as well as in ~/.cron
+	directory (this is in line with the current FreeDesktop.org
+	standards).
+
+
 2010-06-13  Dale Mellor <dale_mellor@users.sourceforge.net>
 
 	* configure.ac: added --enable-no-vixie-clobber argument to

@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
   
-#     Copyright (C) 2003, 2005  Dale Mellor
+#    Copyright (C) 2003, 2005, 2012  Dale Mellor
 #   
 #    This file is part of GNU mcron.
 # 
@@ -21,7 +21,7 @@
 
 
 AC_PREREQ(2.61)
-AC_INIT([mcron], [1.0.6], [dale_mellor@users.sourceforge.net])
+AC_INIT([mcron], [1.0.7], [dale_mellor@users.sourceforge.net])
 AM_INIT_AUTOMAKE
 
 

@@ -49,6 +49,9 @@ pkgdata_DATA = core.scm environment.scm job-specifier.scm redirect.scm \
 # like core.*, so we have to keep re-making it (I lost a good day's work because
 # of this).
 
+mcron : mcron.c
+	$(CC) $(AM_CFLAGS) mcron.c -o mcron $(AM_LDFLAGS)
+
 core.scm : mcron-core.scm
 	$(CP) mcron-core.scm core.scm
 

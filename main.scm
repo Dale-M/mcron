@@ -1,4 +1,4 @@
-;;   Copyright (C) 2003 Dale Mellor
+;;   Copyright (C) 2003, 2012 Dale Mellor
 ;; 
 ;;   This file is part of GNU mcron.
 ;;
@@ -150,14 +150,14 @@ Usage: " (car (command-line))
   ((mcron)
 " [OPTIONS] [FILES]\n
 Run an mcron process according to the specifications in the FILES (`-' for\n
-standard input), or use all the files in ~/.cron with .guile or .vixie\n
-extensions.\n
+standard input), or use all the files in ~/.config/cron (or the \n
+deprecated ~/.cron) with .guile or .vixie extensions.\n
 \n
   -v, --version             Display version\n
   -h, --help                Display this help message\n
   -sN, --schedule[=]N       Display the next N jobs that will be run by mcron\n
-  -d, --daemon              Immediately detach the program from the terminal and\n
-                              run as a daemon process\n
+  -d, --daemon              Immediately detach the program from the terminal\n
+                              and run as a daemon process\n
   -i, --stdin=(guile|vixie) Format of data passed as standard input or\n
                               file arguments (default guile)")
 
@@ -296,22 +296,32 @@ Report bugs to " config-package-bugreport ".\n
 
 
 
-;; Procedure to run through all the files in a user's ~/.cron directory (only
-;; happens under the mcron personality).
+;; Procedure to run through all the files in a user's ~/.cron and/or
+;; $XDG_CONFIG_HOME/cron or ~/.config/cron directories (only happens under the
+;; mcron personality).
 
 (define (process-files-in-user-directory)
-  (catch #t (lambda ()
-              (let* ((dir-path (string-append (passwd:dir (getpw (getuid)))
-                                              "/.cron"))
-                     (directory (opendir dir-path)))
-                (do ((file-name (readdir directory) (readdir directory)))
-                    ((eof-object? file-name) (closedir directory))
-                  (process-user-file (string-append dir-path
-                                                    "/"
-                                                    file-name)))))
-         (lambda (key . args)
-           (mcron-error 13 "Cannot read files in your ~/.cron directory."))))
-
+  (let ((errors 0)
+        (home-directory (passwd:dir (getpw (getuid)))))
+    (map (lambda (config-directory)
+          (catch #t
+                 (lambda ()
+                   (let ((directory (opendir config-directory)))
+                     (do ((file-name (readdir directory) (readdir directory)))
+                         ((eof-object? file-name) (closedir directory))
+                       (process-user-file (string-append config-directory
+                                                         "/"
+                                                         file-name)))))
+                 (lambda (key . args)
+                   (set! errors (1+ errors)))))
+          (list (string-append home-directory "/.cron")
+                (string-append (or (getenv "XDG_CONFIG_HOME")
+                                   (string-append home-directory "/.config"))
+                               "/cron")))
+    (if (eq? 2 errors)
+        (mcron-error 13
+                     "Cannot read files in your ~/.config/cron (or ~/.cron) "
+                     "directory."))))
 
 
 
@@ -361,9 +371,9 @@ Report bugs to " config-package-bugreport ".\n
 ;; Having defined all the necessary procedures for scanning various sets of
 ;; files, we perform the actual configuration of the program depending on the
 ;; personality we are running as. If it is mcron, we either scan the files
-;; passed on the command line, or else all the ones in the user's .cron
-;; directory. If we are running under the cron personality, we read the
-;; /var/cron/tabs directory and also the /etc/crontab file.
+;; passed on the command line, or else all the ones in the user's .config/cron
+;; (or .cron) directory. If we are running under the cron personality, we read
+;; the /var/cron/tabs directory and also the /etc/crontab file.
 
 (case command-type
   ((mcron) (if (null? (option-ref options '() '()))
@@ -380,7 +390,7 @@ Report bugs to " config-package-bugreport ".\n
    (if (not (option-ref options 'noetc #f))
        (begin
          (display
-          "WARNING: cron will check for updates to /etc/crontab EVERY MINUTE. If you do\n
+"WARNING: cron will check for updates to /etc/crontab EVERY MINUTE. If you do\n
 not use this file, or you are prepared to manually restart cron whenever you\n
 make a change, then it is HIGHLY RECOMMENDED that you use the --noetc\n
 option.\n")

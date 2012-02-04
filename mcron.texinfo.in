@@ -9,7 +9,7 @@
 @copying This manual is for GNU mcron (version @VERSION@), which is a
 program for running jobs at scheduled times.
 
-Copyright @copyright{} 2003, 2005, 2006 Dale Mellor
+Copyright @copyright{}  2003, 2005, 2006, 2012  Dale Mellor
 
 @quotation
 Permission is granted to copy, distribute and/or modify this
@@ -192,8 +192,10 @@ how to run mcron to make them happen.
 @cindex examples, guile
 @cindex example, run a program every hour
 You have an executable @code{my-program} in your home directory, which
-you want to run every hour.  Create a file @code{job.guile} in directory
-@code{~/.cron} with the following contents
+you want to run every hour.  Create a file @code{job.guile} in
+directory @code{~/.config/cron} (this path may be altered by the
+@code{$XDG_CONFIG_HOME} environment variable) with the following
+contents
 
 @example
 (job '(next-hour) "my-program")
@@ -224,7 +226,7 @@ also the next section)
 and run the @code{mcron} command.
 
 If you want to run other jobs, you can either add more lines to this
-file, or you can create other files in your @code{.cron} directory
+file, or you can create other files in your @code{.config/cron} directory
 with the @code{.guile} extension.  Alternatively, you can use any file
 you want and pass it as an argument to @code{mcron}, or even pipe the
 commands into the standard input.
@@ -808,26 +810,28 @@ place in the part which implements the mcron personality.
 @cindex mcron arguments
 @cindex command line, mcron
 @cindex mcron command line
-Mcron should be run by the user who wants to schedule his jobs.  It may
-be made a background job using the facilities of the shell.  The basic
-command is
-@code{mcron [OPTION ...] [file ...]}
-which has the effect of reading all the configuration files specified
-(subject to the options) and then waiting until it is time to execute
-some command.  If no files are given on the command line, then mcron
-will look in the user's ~/.cron directory.  In either case, files which
-end in the extension .vixie or .vix will be assumed to contain
-Vixie-style crontabs, and files ending .guile or .gle will be assumed
-to contain scheme code and will be executed as such; ANY OTHER FILES
-WILL BE IGNORED - specify a file name of ``-'' and then pipe the files
-into the standard input if you really want to read them, possibly
-using the @code{stdin} option to specify the type of file.
+Mcron should be run by the user who wants to schedule his jobs.  It
+may be made a background job using the facilities of the shell.  The
+basic command is @code{mcron [OPTION ...] [file ...]}  which has the
+effect of reading all the configuration files specified (subject to
+the options) and then waiting until it is time to execute some
+command.  If no files are given on the command line, then mcron will
+look in the user's cron configuration directories: these are ~/.cron
+(deprecated), the directory indicated by the @code{XDG_CONFIG_HOME}
+environment variable, or ~/.config/cron if this variable is not set.
+In any case, files which end in the extension .vixie or .vix will be
+assumed to contain Vixie-style crontabs, and files ending .guile or
+.gle will be assumed to contain scheme code and will be executed as
+such; ANY OTHER FILES WILL BE IGNORED - specify a file name of ``-''
+and then pipe the files into the standard input if you really want to
+read them, possibly using the @code{stdin} option to specify the type
+of file.
 
 The program accepts the following options.
 
 @table @option
-@item -s [count]
-@itemx --schedule[=count]
+@item -s count
+@itemx --schedule=count
 @cindex printout of jobs schedule
 @cindex schedule of jobs, listing
 @cindex options, schedule
@@ -838,8 +842,7 @@ With this option specified no commands are run.  Instead, the program
 computes the times the commands would be run and prints the
 information to the screen, and then immediately exits.
 
-The count, if supplied, indicates the number of commands to
-display.  The default value is 8.
+The count indicates the number of commands to display.
 
 @cindex daemon option
 @cindex options, daemon
@@ -1109,8 +1112,10 @@ The last component of the name of the program was not one of
 @code{mcron}, @code{cron}, @code{crond} or @code{crontab}.
 
 @item 13
-Either the ~/.cron directory does not exist, or there is a problem
-reading the files there.
+Either none of the user's configuration directories exist, or there is a problem
+reading the files there.  The configuration directories are ~/.cron
+and the directory pointed to by the @code{XDG_CONFIG_HOME} environment
+variable, or ~/.config/cron if this is not set.
 
 @c @item 14
 @c There is a problem writing to /var/cron/update.  This is probably

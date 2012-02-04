@@ -1,0 +1,23 @@
+GNU mcron --- README--git                                  -*-text-*-
+
+  Copyright (C)  2012  Dale Mellor
+
+  Copying and distribution of this file, with or without modification,
+  are permitted in any medium without royalty provided the copyright
+  notice and this notice are preserved.
+
+
+If you have pulled mcron from the GIT repository, these are the steps you will
+need to take to build it the first time:
+
+1) cp mcron.texinfo.in mcron.texinfo
+2) aclocal
+4) autoconf
+3) automake -a
+5) rm mcron.texinfo
+6) ./configure --prefix={wherever}
+7) make install
+
+
+After that it should just be a simple matter of typing `make install' when you
+want to build a version with changes in it.
