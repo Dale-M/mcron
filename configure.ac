@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
   
-#    Copyright (C) 2003, 2005, 2012  Dale Mellor
+#    Copyright (C) 2003, 2005, 2012, 2014  Dale Mellor
 #   
 #    This file is part of GNU mcron.
 # 
@@ -42,11 +42,9 @@ AC_SUBST(CONFIG_DEBUG)
 
 AC_PROG_AWK
 AC_PROG_EGREP
-AC_PROG_CC
-GUILE_PROGS
-GUILE_FLAGS
-GUILE_SITE_DIR
+AM_PROG_CC_C_O
 
+PKG_CHECK_MODULES(GUILE, guile-2.0 >= 2.0.7)
 
 # Checks for programs.
   
@@ -72,17 +70,6 @@ if test "x$ac_cv_prog_CP" = "x"; then
 fi
 
 
-# Check the Guile version.
-        
-AC_MSG_CHECKING(for guile version >= 1.8.0)
-if [$GUILE --version | $HEAD -1 | $AWK '{print $2}' | \
-     $EGREP -q '^1\.8\.']; then 
-   AC_MSG_RESULT(OK)
-else
-   AC_MSG_ERROR([Sorry, Guile 1.8.0 or greater is needed to run mcron])
-fi
-
-                                                           
 # Now find a sendmail or equivalent.
 
 AC_CHECK_PROGS(SENDMAIL, sendmail)
@@ -182,5 +169,5 @@ real_program_prefix=`echo $program_prefix | sed s/NONE//`
 AC_SUBST(real_program_prefix)
 
         
-AC_CONFIG_FILES(makefile config.scm mcron.texinfo)
+AC_CONFIG_FILES(mcron.texinfo makefile config.scm)
 AC_OUTPUT

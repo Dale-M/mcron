@@ -1,6 +1,6 @@
 /*                                                   -*-c-*- */
 /*
- *   Copyright (C) 2003 Dale Mellor
+ *   Copyright (C) 2003, 2014 Dale Mellor
  * 
  *   This file is part of GNU mcron.
  *
@@ -66,7 +66,7 @@
 void
 react_to_terminal_signal (int sig)
 {
-  scm_eval_string (scm_take0str ("(delete-run-file)") );
+  scm_c_eval_string ("(delete-run-file)");
   exit (1);
 }
 
@@ -100,9 +100,9 @@ inner_main ()
 {
   scm_c_define_gsubr ("c-set-cron-signals", 0, 0, 0, set_cron_signals);
     
-  scm_eval_string (scm_take0str (
-                                  GUILE_PROGRAM_GOES_HERE
-                                                          ) );
+  scm_c_eval_string (
+                     GUILE_PROGRAM_GOES_HERE
+                     );
 }
 
 

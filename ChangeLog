@@ -1,3 +1,8 @@
+2014-04-28  Dale Mellor <dale_mellor@users.sourceforge.net>
+
+	* We now run against, and require, guile-2.0.
+
+
 2012-02-04  Dale Mellor <dale_mellor@users.sourceforge.net>
 
 	* main.scm: added search for initial files in

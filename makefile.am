@@ -31,15 +31,14 @@ EXTRA_DIST = makefile.ed main.scm mcron-core.scm vixie-specification.scm \
              crontab.scm environment.scm job-specifier.scm redirect.scm \
              vixie-time.scm mcron.c.template BUGS
 
-AM_LDFLAGS = @GUILE_LDFLAGS@
-AM_CFLAGS  = @GUILE_CFLAGS@ -DGUILE_LOAD_PATH=\"$(datadir)\"
-
 info_TEXINFOS = mcron.texinfo
 
 dist_man1_MANS = mcron.1
 
 bin_PROGRAMS = mcron
 mcron_SOURCES = mcron.c
+mcron_LDADD = @GUILE_LIBS@
+mcron_CFLAGS  = @GUILE_CFLAGS@ -DGUILE_LOAD_PATH=\"$(datadir)\"
 
 pkgdata_DATA = core.scm environment.scm job-specifier.scm redirect.scm \
                vixie-time.scm vixie-specification.scm config.scm
@@ -48,9 +47,6 @@ pkgdata_DATA = core.scm environment.scm job-specifier.scm redirect.scm \
 # If you're wondering, the configure script keeps deleting all files with a name
 # like core.*, so we have to keep re-making it (I lost a good day's work because
 # of this).
-
-mcron : mcron.c
-	$(CC) $(AM_CFLAGS) mcron.c -o mcron $(AM_LDFLAGS)
 
 core.scm : mcron-core.scm
 	$(CP) mcron-core.scm core.scm

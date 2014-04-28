@@ -1,6 +1,6 @@
 GNU mcron --- TODO                                  -*-text-*-
 
-  Copyright (C) 2003, 2005, 2006  Dale Mellor
+  Copyright (C) 2003, 2005, 2006, 2014  Dale Mellor
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
@@ -45,4 +45,4 @@ May happen if version 2.0 ever materializes...
     * TCP socket to allow control via HTTP (web browser interface). Or maybe
        crontab-like CGI personality.
 
-    * GTK+/Bononbo/Gnome2 interface.
+    * GTK+/d-bus/Gnome3 interface.

@@ -9,7 +9,7 @@
 @copying This manual is for GNU mcron (version @VERSION@), which is a
 program for running jobs at scheduled times.
 
-Copyright @copyright{}  2003, 2005, 2006, 2012  Dale Mellor
+Copyright @copyright{}  2003, 2005, 2006, 2012, 2014  Dale Mellor
 
 @quotation
 Permission is granted to copy, distribute and/or modify this

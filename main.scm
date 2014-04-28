@@ -131,7 +131,7 @@
 " command-name "  (" config-package-string ")\n
 Written by Dale Mellor\n
 \n
-Copyright (C) 2003, 2006  Dale Mellor\n
+Copyright (C) 2003, 2006, 2014  Dale Mellor\n
 This is free software; see the source for copying conditions.  There is NO\n
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n
 "))

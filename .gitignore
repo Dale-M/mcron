@@ -3,6 +3,7 @@
 INSTALL
 aclocal.m4
 autom4te.cache
+compile
 config.log
 config.scm
 config.status
@@ -15,7 +16,7 @@ makefile.in
 mcron
 mcron.c
 mcron.info
-mcron.o
+*.o
 mcron.texinfo
 missing
 texinfo.tex
