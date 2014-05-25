@@ -1,6 +1,16 @@
+2014-05-25  Dale Mellor <dale_mellor@users.sourceforge.net>
+
+	* Juggled build infrastructure so that we can make the minimal man
+	page in the proper autotools way.
+
+	* configure.ac: version to 1.0.8.
+
+
 2014-04-28  Dale Mellor <dale_mellor@users.sourceforge.net>
 
 	* We now run against, and require, guile-2.0.
+
+	* configure.ac: version to 1.0.7.
 
 
 2012-02-04  Dale Mellor <dale_mellor@users.sourceforge.net>
@@ -148,7 +158,7 @@
 
 
 ________________________________________________________________________________
-Copyright (C) 2003, 2005, 2006  Dale Mellor
+Copyright (C) 2003, 2005, 2006, 2014  Dale Mellor
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

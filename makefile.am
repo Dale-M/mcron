@@ -18,40 +18,33 @@
 
 ## Process this file with automake to produce Makefile.in
 
+SUBDIRS = scm/mcron .
+
 ED = @ED@   # !!!! Are these needed?
 CP = @CP@
 
 MAINTAINERCLEANFILES = configure makefile makefile.in config.guess config.sub \
                        install-sh missing texinfo.tex INSTALL \
-                       aclocal.m4 compile depcomp
+                       aclocal.m4 compile depcomp mcron.1
 
 CLEANFILES = mcron.c core.scm
 
-EXTRA_DIST = makefile.ed main.scm mcron-core.scm vixie-specification.scm \
-             crontab.scm environment.scm job-specifier.scm redirect.scm \
-             vixie-time.scm mcron.c.template BUGS
+EXTRA_DIST = makefile.ed mcron.c.template BUGS
 
 info_TEXINFOS = mcron.texinfo
 
-dist_man1_MANS = mcron.1
+man_MANS = mcron.1
 
 bin_PROGRAMS = mcron
 mcron_SOURCES = mcron.c
 mcron_LDADD = @GUILE_LIBS@
-mcron_CFLAGS  = @GUILE_CFLAGS@ -DGUILE_LOAD_PATH=\"$(datadir)\"
 
-pkgdata_DATA = core.scm environment.scm job-specifier.scm redirect.scm \
-               vixie-time.scm vixie-specification.scm config.scm
+# The second option is so that we can execute the binary in the local directory,
+# in turn so that we can do mcron --help during the build process.
+mcron_CFLAGS  = @GUILE_CFLAGS@ -DGUILE_LOAD_PATH=\"$(datadir):./scm:...\"
 
 
-# If you're wondering, the configure script keeps deleting all files with a name
-# like core.*, so we have to keep re-making it (I lost a good day's work because
-# of this).
-
-core.scm : mcron-core.scm
-	$(CP) mcron-core.scm core.scm
-
-mcron.c : main.scm crontab.scm makefile.ed mcron.c.template
+mcron.c : scm/mcron/main.scm scm/mcron/crontab.scm makefile.ed mcron.c.template
 	@echo 'Building mcron.c...'
 	@$(ED) < makefile.ed > /dev/null 2>&1
 	@rm -f mcron.escaped.scm > /dev/null 2>&1
@@ -76,9 +69,6 @@ install-exec-hook:
     else \
        echo "+++ WARNING: NON-ROOT INSTALL: ONLY mcron WILL BE INSTALLED, NOT ANY OF THE VIXIE REPLACEMENT PROGRAMS"; \
     fi
-	@echo
-	@echo "  AFTER INSTALLATION, CONSIDER RUNNING make cook-up-man"
-	@echo
 
 
 uninstall-hook:
@@ -89,7 +79,6 @@ uninstall-hook:
 
 # Not part of formal package building, but a rule for manual use to get the
 # elemental man page.  Will only work once the mcron program is installed.
-cook-up-man:
-	help2man -n 'a program to run tasks at regular (or not) intervals' \
-	    $(fpp)mcron > mcron.1
-	$(MAKE) install
+mcron.1 : mcron.c
+	$(HELP2MAN) -n 'a program to run tasks at regular (or not) intervals' \
+	    ./mcron > mcron.1

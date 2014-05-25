@@ -21,7 +21,7 @@
 
 
 AC_PREREQ(2.61)
-AC_INIT([mcron], [1.0.7], [dale_mellor@users.sourceforge.net])
+AC_INIT([mcron], [1.0.8], [dale_mellor@users.sourceforge.net])
 AM_INIT_AUTOMAKE
 
 
@@ -44,10 +44,12 @@ AC_PROG_AWK
 AC_PROG_EGREP
 AM_PROG_CC_C_O
 
-PKG_CHECK_MODULES(GUILE, guile-2.0 >= 2.0.7)
+PKG_CHECK_MODULES(GUILE, guile-2.0)
 
 # Checks for programs.
   
+AM_MISSING_PROG(HELP2MAN, help2man, $missing_dir)
+
 AC_CHECK_PROGS(SED, sed)
 if test "x$ac_cv_prog_SED" = "x"; then
    AC_MSG_ERROR(sed not found)
@@ -169,5 +171,5 @@ real_program_prefix=`echo $program_prefix | sed s/NONE//`
 AC_SUBST(real_program_prefix)
 
         
-AC_CONFIG_FILES(mcron.texinfo makefile config.scm)
+AC_CONFIG_FILES(mcron.texinfo makefile scm/mcron/makefile scm/mcron/config.scm)
 AC_OUTPUT

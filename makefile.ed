@@ -17,9 +17,9 @@
 #
 #
 #
-e main.scm
+e scm/mcron/main.scm
 /\(load "crontab.scm"\)/d
--1r crontab.scm
+-1r scm/mcron/crontab.scm
 %s/\\/\\\\/g
 %s/"/\\"/g
 %s/ *;;.*$/ /g
