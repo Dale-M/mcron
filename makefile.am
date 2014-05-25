@@ -33,7 +33,7 @@ EXTRA_DIST = makefile.ed mcron.c.template BUGS
 
 info_TEXINFOS = mcron.texinfo
 
-man_MANS = mcron.1
+dist_man_MANS = mcron.1
 
 bin_PROGRAMS = mcron
 mcron_SOURCES = mcron.c
