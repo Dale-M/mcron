@@ -1,0 +1,15 @@
+EXTRA_DIST = main.scm mcron-core.scm vixie-specification.scm \
+             crontab.scm environment.scm job-specifier.scm redirect.scm \
+             vixie-time.scm
+
+pkgdata_DATA = core.scm environment.scm job-specifier.scm redirect.scm \
+               vixie-time.scm vixie-specification.scm config.scm
+
+
+# If you're wondering, the configure script keeps deleting all files with a name
+# like core.*, so we have to keep re-making it (I lost a good day's work because
+# of this).
+
+core.scm : mcron-core.scm
+	$(CP) mcron-core.scm core.scm
+

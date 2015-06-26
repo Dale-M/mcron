@@ -13,7 +13,7 @@ depcomp
 install-sh
 makefile
 makefile.in
-mcron
+/mcron
 mcron.c
 mcron.info
 *.o
