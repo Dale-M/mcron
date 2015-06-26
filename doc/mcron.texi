@@ -1,12 +1,14 @@
 \input texinfo
 @c %**start of header
 @setfilename mcron.info
-@settitle mcron @VERSION@
+@include config.texi
+@include version.texi
+@settitle mcron @value{VERSION}
 @c %**end of header
 
 @syncodeindex fn cp
 
-@copying This manual is for GNU mcron (version @VERSION@), which is a
+@copying This manual is for GNU mcron (version @value{VERSION}), which is a
 program for running jobs at scheduled times.
 
 Copyright @copyright{}  2003, 2005, 2006, 2012, 2014  Dale Mellor
@@ -68,36 +70,36 @@ running jobs at scheduled times.
 
 Simple examples
 
-* Guile Simple Examples::       
-* Vixie Simple Examples::       
+* Guile Simple Examples::
+* Vixie Simple Examples::
 
 Full available syntax
 
-* Guile Syntax::                
-* Extended Guile examples::     
-* Vixie Syntax::                
+* Guile Syntax::
+* Extended Guile examples::
+* Vixie Syntax::
 
 Extended Guile examples
 
-* AT commands::                 
-* Every second Sunday::         
-* Two hours every day::         
-* Missing the first appointment::  
-* Penultimate day of every month::  
+* AT commands::
+* Every second Sunday::
+* Two hours every day::
+* Missing the first appointment::
+* Penultimate day of every month::
 
 Vixie
 
-* Paul Vixie's copyright::      
-* Crontab file::                
-* Incompatibilities with old Unices::  
+* Paul Vixie's copyright::
+* Crontab file::
+* Incompatibilities with old Unices::
 
 Detailed invoking
 
-* Invoking mcron::               
-* Invoking cron or crond::       
+* Invoking mcron::
+* Invoking cron or crond::
 * Invoking crontab::
 * Behaviour on laptops::
-* Exit codes::                  
+* Exit codes::
 
 Guile modules
 
@@ -182,8 +184,8 @@ been to allow such simple specifications to be made easily.  The
 examples show how to create the command descriptions, and subsequently
 how to run mcron to make them happen.
 @menu
-* Guile Simple Examples::       
-* Vixie Simple Examples::       
+* Guile Simple Examples::
+* Vixie Simple Examples::
 @end menu
 
 @node Guile Simple Examples, Vixie Simple Examples, Simple examples, Simple examples
@@ -258,9 +260,9 @@ on your system, as root.
 @node Syntax, Invoking, Simple examples, Top
 @chapter Full available syntax
 @menu
-* Guile Syntax::                
-* Extended Guile examples::     
-* Vixie Syntax::                
+* Guile Syntax::
+* Extended Guile examples::
+* Vixie Syntax::
 @end menu
 @node Guile Syntax, Extended Guile examples, Syntax, Syntax
 @section Guile Syntax
@@ -392,11 +394,11 @@ they seem.  The following examples illustrate some pitfalls, and
 demonstrate how to code around them.
 
 @menu
-* AT commands::                 
-* Every second Sunday::         
-* Two hours every day::         
-* Missing the first appointment::  
-* Penultimate day of every month::  
+* AT commands::
+* Every second Sunday::
+* Two hours every day::
+* Missing the first appointment::
+* Penultimate day of every month::
 @end menu
 
 @node AT commands, Every second Sunday, Extended Guile examples, Extended Guile examples
@@ -545,9 +547,9 @@ the variable and runs the command in the user's default shell, as
 advertised by the /etc/passwd file.
 
 @menu
-* Paul Vixie's copyright::      
-* Crontab file::                
-* Incompatibilities with old Unices::  
+* Paul Vixie's copyright::
+* Crontab file::
+* Incompatibilities with old Unices::
 @end menu
 
 
@@ -796,11 +798,11 @@ place in the part which implements the mcron personality.
 
 
 @menu
-* Invoking mcron::               
-* Invoking cron or crond::       
+* Invoking mcron::
+* Invoking cron or crond::
 * Invoking crontab::
 * Behaviour on laptops::
-* Exit codes::                  
+* Exit codes::
 @end menu
 
 @node Invoking mcron, Invoking cron or crond, Invoking, Invoking
@@ -893,21 +895,21 @@ standard output.
 @cindex invoking cron
 @cindex crond, invokation
 @cindex invoking crond
-@cindex @CONFIG_SPOOL_DIR@
-@cindex @CONFIG_SOCKET_FILE@
+@cindex @value{CONFIG_SPOOL_DIR}
+@cindex @value{CONFIG_SOCKET_FILE}
 NOTE THAT THIS SECTION ONLY APPLIES IF THE @code{cron} or
 @code{crond}, and @code{crontab} PROGRAMS HAVE BEEN INSTALLED BY THE
 SYSTEM ADMINISTRATOR.
 
 If the program runs by the name of @code{cron} or @code{crond}, then
-it will read all the files in @code{@CONFIG_SPOOL_DIR@} (which should only
-be readable by root) and the file @code{/etc/crontab}, and then
-detaches itself from the terminal to live forever as a daemon
+it will read all the files in @code{@value{CONFIG_SPOOL_DIR}} (which
+should only be readable by root) and the file @code{/etc/crontab}, and
+then detaches itself from the terminal to live forever as a daemon
 process.  Additionally, it creates a UNIX socket at
-@code{@CONFIG_SOCKET_FILE@}, and listens for messages sent to that socket
-consisting of a user name whose crontabs have been changed.  In this
-case, the program will re-read that user's crontab.  This is for
-correct functioning with the crontab program.
+@code{@value{CONFIG_SOCKET_FILE}}, and listens for messages sent to
+that socket consisting of a user name whose crontabs have been
+changed.  In this case, the program will re-read that user's crontab.
+This is for correct functioning with the crontab program.
 
 Further, if the @code{--noetc} option was not used, a job is scheduled
 to run every minute to check if /etc/crontab has been modified
@@ -1060,7 +1062,7 @@ No problems.
 
 @item 1
 An attempt has been made to start cron but there is already a
-@CONFIG_PID_FILE@ file.  If there really is no other cron daemon
+@value{CONFIG_PID_FILE} file.  If there really is no other cron daemon
 running (this does not include invokations of mcron) then you should
 remove this file before attempting to run cron.
 
@@ -1078,9 +1080,9 @@ to be specified in one of these forms.
 
 @item 4
 An attempt to run cron has been made by a user who does not have
-permission to access the crontabs in @CONFIG_SPOOL_DIR@.  These files
-should be readable only by root, and the cron daemon must be run as
-root.
+permission to access the crontabs in @value{CONFIG_SPOOL_DIR}.  These
+files should be readable only by root, and the cron daemon must be run
+as root.
 
 @item 5
 An attempt to run mcron has been made, but there are no jobs to
@@ -1088,7 +1090,7 @@ schedule!
 
 @item 6
 The system administrator has blocked this user from using crontab with
-the files @CONFIG_ALLOW_FILE@ and @CONFIG_DENY_FILE@.
+the files @value{CONFIG_ALLOW_FILE} and @value{CONFIG_DENY_FILE}.
 
 @item 7
 Crontab has been run with more than one of the arguments @code{-l},
@@ -1248,7 +1250,7 @@ This module is introduced to a program with the command
 @code{(use-modules (mcron redirect))}.
 
 This module provides the @code{with-mail-out} function, described
-fully in @ref{Guile Syntax}.  
+fully in @ref{Guile Syntax}.
 
 @node The vixie-time module, The job-specifier module, The redirect module, Guile modules
 @section The vixie-time module
@@ -1325,7 +1327,7 @@ return silently.  Otherwise, the behaviour is identical to
 
 Once this module has been declared in a program, a crontab file can be
 used to augment the current job list with a call to
-@code{read-vixie-file}. 
+@code{read-vixie-file}.
 
 @node Index,  , Guile modules, Top
 @unnumbered Index
