@@ -1,5 +1,6 @@
 ## Makefile for the toplevel directory of mcron.
 ## Copyright (C) 2003 Dale Mellor
+## Copyright (C) 2015 Mathieu Lirzin
 ##
 #    This file is part of GNU mcron.
 # 
@@ -31,9 +32,9 @@ CLEANFILES = mcron.c
 
 EXTRA_DIST = makefile.ed mcron.c.template BUGS
 
-info_TEXINFOS = mcron.texinfo
+info_TEXINFOS = doc/mcron.texi
 
-dist_man_MANS = mcron.1
+dist_man_MANS = doc/mcron.1
 
 bin_PROGRAMS = mcron
 mcron_SOURCES = mcron.c
@@ -79,6 +80,6 @@ uninstall-hook:
 
 # Not part of formal package building, but a rule for manual use to get the
 # elemental man page.  Will only work once the mcron program is installed.
-mcron.1 : mcron.c
+$(dist_man_MANS): mcron.c
 	$(HELP2MAN) -n 'a program to run tasks at regular (or not) intervals' \
-	    ./mcron > mcron.1
+	    ./mcron > $@

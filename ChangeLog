@@ -1,5 +1,14 @@
 2015-06-26  Mathieu Lirzin  <mthl@openmailbox.org>
 
+	Fix build of the manual.
+	* mcron.texinfo.in: Move to ...
+	* doc/mcron.texi: ... Here.  New file.
+	* doc/config.texi.in: New file.
+	* configure.ac: Adapt to it.
+	* makefile.am: Likewise.
+	* .gitignore: Likewise.
+	* README--git: Likewise.
+
 	Add missing 'makefile.am'.
 	* scm/mcron/makefile.am: New file.
 	* .gitignore: Ignore 'mcron' only in the top-level directory.

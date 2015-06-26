@@ -3,6 +3,7 @@
 
   
 #    Copyright (C) 2003, 2005, 2012, 2014  Dale Mellor
+#    Copyright (C) 2015  Mathieu Lirzin
 #   
 #    This file is part of GNU mcron.
 # 
@@ -174,6 +175,8 @@ AC_SUBST(CONFIG_TMP_DIR)
 real_program_prefix=`echo $program_prefix | sed s/NONE//`
 AC_SUBST(real_program_prefix)
 
-        
-AC_CONFIG_FILES(mcron.texinfo makefile scm/mcron/makefile scm/mcron/config.scm)
+AC_CONFIG_FILES([doc/config.texi
+                 makefile
+                 scm/mcron/makefile
+                 scm/mcron/config.scm])
 AC_OUTPUT
