@@ -1,3 +1,10 @@
+2015-06-26  Mathieu Lirzin  <mthl@openmailbox.org>
+
+	Add missing 'makefile.am'.
+	* scm/mcron/makefile.am: New file.
+	* .gitignore: Ignore 'mcron' only in the top-level directory.
+
+
 2014-05-25  Dale Mellor <dale_mellor@users.sourceforge.net>
 
 	* Juggled build infrastructure so that we can make the minimal man
