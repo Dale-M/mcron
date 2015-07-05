@@ -26,7 +26,7 @@ CP = @CP@
 
 MAINTAINERCLEANFILES = configure makefile makefile.in config.guess config.sub \
                        install-sh missing texinfo.tex INSTALL \
-                       aclocal.m4 compile depcomp mcron.1
+                       aclocal.m4 compile depcomp doc/mcron.1
 
 CLEANFILES = mcron.c
 
