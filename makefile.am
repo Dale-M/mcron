@@ -33,7 +33,7 @@ CLEANFILES = mcron.c
 EXTRA_DIST = makefile.ed mcron.c.template BUGS
 
 info_TEXINFOS = doc/mcron.texi
-
+doc_mcron_TEXINFOS = doc/fdl.texi
 dist_man_MANS = doc/mcron.1
 
 bin_PROGRAMS = mcron
