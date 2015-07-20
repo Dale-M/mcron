@@ -1,3 +1,4 @@
+;;   Copyright (C) 2015, 2016 Mathieu Lirzin
 ;;   Copyright (C) 2003, 2012 Dale Mellor
 ;; 
 ;;   This file is part of GNU mcron.
@@ -122,24 +123,24 @@
    (lambda (key func fmt args . rest)
      (mcron-error 1 (apply format (append (list #f fmt) args))))))
 
-;; If the user asked for the version of this program, give it to him and get
+(define* (show-version #:optional (command command-name))
+  "Display version information for COMMAND and quit."
+  (let* ((name       config-package-name)
+         (short-name (cadr (string-split name #\space)))
+         (version    config-package-version))
+    (simple-format #t "~a (~a) ~a\n
+Copyright (C) 2015 the ~a authors.\n
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n
+This is free software: you are free to change and redistribute it.\n
+There is NO WARRANTY, to the extent permitted by law.\n"
+		   command name version short-name)
+    (quit)))
+
+(when (option-ref options 'version #f)
+  (show-version))
+
+;; If the user asked for the help text of this program, give it to him and get
 ;; out.
-
-(if (option-ref options 'version #f)
-    (begin
-      (display (string-append "\n
-" command-name "  (" config-package-string ")\n
-Written by Dale Mellor\n
-\n
-Copyright (C) 2003, 2006, 2014  Dale Mellor\n
-This is free software; see the source for copying conditions.  There is NO\n
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n
-"))
-      (quit)))
-
-
-
-;; Likewise if the user requested the help text.
 
 (if (option-ref options 'help #f)
     (begin
