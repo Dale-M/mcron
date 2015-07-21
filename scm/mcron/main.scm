@@ -139,6 +139,15 @@ There is NO WARRANTY, to the extent permitted by law.\n"
 (when (option-ref options 'version #f)
   (show-version))
 
+(define (show-package-information)
+  "Display where to get help and send bug reports."
+  (simple-format #t "\nReport bugs to: ~a.\n
+~a home page: <~a>\n
+General help using GNU software: <http://www.gnu.org/gethelp/>\n"
+		 config-package-bugreport
+		 config-package-name
+		 config-package-url))
+
 ;; If the user asked for the help text of this program, give it to him and get
 ;; out.
 
@@ -181,11 +190,9 @@ reading all the information in the users' crontabs and in /etc/crontab.\n
            "       -l      (list user's crontab)\n"
            "       -r      (delete user's crontab)\n"))
 
-  (else "rubbish"))
-
-"\n\n
-Report bugs to " config-package-bugreport ".\n
-"))
+  (else "rubbish"))))
+      (newline)
+      (show-package-information)
       (quit)))
 
 
