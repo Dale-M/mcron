@@ -148,17 +148,13 @@ General help using GNU software: <http://www.gnu.org/gethelp/>\n"
 		 config-package-name
 		 config-package-url))
 
-;; If the user asked for the help text of this program, give it to him and get
-;; out.
-
-(if (option-ref options 'help #f)
-    (begin
-      (display (string-append "
-Usage: " (car (command-line))
-(case command-type
-
-  ((mcron)
-" [OPTIONS] [FILES]\n
+(define* (show-help #:optional (command command-name))
+  "Display informations of usage for COMMAND and quit."
+  (simple-format #t "Usage: ~a" command)
+  (display
+   (case command-type
+     ((mcron)
+      " [OPTIONS] [FILES]\n
 Run an mcron process according to the specifications in the FILES (`-' for\n
 standard input), or use all the files in ~/.config/cron (or the \n
 deprecated ~/.cron) with .guile or .vixie extensions.\n
@@ -170,9 +166,8 @@ deprecated ~/.cron) with .guile or .vixie extensions.\n
                               and run as a daemon process\n
   -i, --stdin=(guile|vixie) Format of data passed as standard input or\n
                               file arguments (default guile)")
-
-  ((cron)
-" [OPTIONS]\n
+     ((cron)
+      " [OPTIONS]\n
 Unless an option is specified, run a cron daemon as a detached process, \n
 reading all the information in the users' crontabs and in /etc/crontab.\n
 \n
@@ -181,21 +176,20 @@ reading all the information in the users' crontabs and in /etc/crontab.\n
   -sN, --schedule[=]N       Display the next N jobs that will be run by cron\n
   -n, --noetc               Do not check /etc/crontab for updates (HIGHLY\n
                               RECOMMENDED).")
-  
-  ((crontab)
-           (string-append " [-u user] file\n"
-           "       " (car (command-line)) " [-u user] { -e | -l | -r }\n"
-           "               (default operation is replace, per 1003.2)\n"
-           "       -e      (edit user's crontab)\n"
-           "       -l      (list user's crontab)\n"
-           "       -r      (delete user's crontab)\n"))
+     ((crontab)
+      " [-u user] file\n
+       crontab [-u user] { -e | -l | -r }\n
+               (default operation is replace, per 1003.2)\n
+       -e      (edit user's crontab)\n
+       -l      (list user's crontab)\n
+       -r      (delete user's crontab")
+     (else "\nrubbish")))
+  (newline)
+  (show-package-information)
+  (quit))
 
-  (else "rubbish"))))
-      (newline)
-      (show-package-information)
-      (quit)))
-
-
+(when (option-ref options 'help #f)
+  (show-help))
 
 ;; This is called from the C front-end whenever a terminal signal is
 ;; received. We remove the /var/run/cron.pid file so that crontab and other
