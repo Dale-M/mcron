@@ -29,12 +29,16 @@
 ;; (l0ad "crontab.scm") (sic) is inlined by the makefile. All other
 ;; functionality comes through modules in .../share/guile/site/mcron/*.scm.
 
+(use-modules (ice-9 getopt-long)
+             (ice-9 rdelim)
+             (ice-9 regex)
+             (mcron config)
+             (mcron core)
+             (mcron job-specifier)
+             (mcron vixie-specification)
+             (srfi srfi-2))
 
-
-;; Pull in some constants set by the builder (via autoconf) at configuration
-;; time. Turn debugging on if indicated.
-
-(use-modules (mcron config))
+;; Turn debugging on if indicated.
 (if config-debug (begin (debug-enable 'debug)
                         (debug-enable 'backtrace)))
 
@@ -43,8 +47,6 @@
 ;; To determine the name of the program, scan the first item of the command line
 ;; backwards for the first non-alphabetic character. This allows names like
 ;; in.cron to be accepted as an invocation of the cron command.
-
-(use-modules (ice-9 regex) (ice-9 rdelim))
 
 (define command-name (match:substring (regexp-exec (make-regexp "[[:alpha:]]*$")
                                                    (car (command-line)))))
@@ -92,8 +94,6 @@
 ;; There are a different set of options for the crontab personality compared to
 ;; all the others, with the --help and --version options common to all the
 ;; personalities.
-
-(use-modules (ice-9 getopt-long))
 
 (define options
   (catch
@@ -234,16 +234,6 @@ reading all the information in the users' crontabs and in /etc/crontab.\n
       (c-set-cron-signals)))
 
 
-
-;; Define the functions available to the configuration files. While we're here,
-;; we'll get the core loaded as well.
-
-(use-modules (mcron core)
-             (mcron job-specifier)
-             (mcron vixie-specification))
-
-
-
 ;; Procedure to slurp the standard input into a string.
 
 (define (stdin->string)
@@ -348,8 +338,6 @@ reading all the information in the users' crontabs and in /etc/crontab.\n
 ;; appropriate user. Note that only the root user should be able to perform this
 ;; operation, but we leave it to the permissions on the /var/cron/tabs directory
 ;; to enforce this.
-
-(use-modules (srfi srfi-2))  ;; For and-let*.
 
 (define (process-files-in-system-directory)
   (catch #t
