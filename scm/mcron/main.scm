@@ -36,23 +36,21 @@
              (mcron core)
              (mcron job-specifier)
              (mcron vixie-specification)
-             (srfi srfi-2))
+             (srfi srfi-2)
+             (srfi srfi-26))
 
 ;; Turn debugging on if indicated.
 (when config-debug
   (debug-enable 'debug)
   (debug-enable 'backtrace))
 
+(define* (command-name #:optional (command (car (command-line))))
+  "Extract the actual command name from COMMAND.  This returns the last part
+of COMMAND without any non-alphabetic characters.  For example \"in.cron\" and
+\"./mcron\" will return respectively \"cron\" and \"mcron\".
 
-
-;; To determine the name of the program, scan the first item of the command line
-;; backwards for the first non-alphabetic character. This allows names like
-;; in.cron to be accepted as an invocation of the cron command.
-
-(define command-name (match:substring (regexp-exec (make-regexp "[[:alpha:]]*$")
-                                                   (car (command-line)))))
-
-
+When COMMAND is not specified this uses the first element of (command-line)."
+  (match:substring (regexp-exec (make-regexp "[[:alpha:]]*$") command)))
 
 ;; Code contributed by Sergey Poznyakoff.  Print an error message (made up from
 ;; the parts of rest), and if the error is fatal (present and non-zero) then
@@ -61,7 +59,7 @@
 (define (mcron-error exit-code . rest)
   (with-output-to-port (current-error-port)
     (lambda ()
-      (for-each display (append (list command-name ": ") rest))
+      (for-each display (append (list (command-name) ": ") rest))
       (newline)))
   (when (and exit-code (not (eq? exit-code 0)))
     (primitive-exit exit-code)))
@@ -83,14 +81,13 @@
 ;; We will be doing a lot of testing of the command name, so it makes sense to
 ;; perform the string comparisons once and for all here.
 
-(define command-type (cond ((string=? command-name "mcron") 'mcron)
-                           ((or (string=? command-name "cron")
-                                (string=? command-name "crond")) 'cron)
-                           ((string=? command-name "crontab") 'crontab)
-                           (else
-                            (mcron-error 12 "The command name is invalid."))))
-
-
+(define command-type
+  (let* ((command   (command-name))
+         (command=? (cut string=? command <>)))
+    (cond ((command=? "mcron") 'mcron)
+          ((or (command=? "cron") (command=? "crond")) 'cron)
+          ((command=? "crontab") 'crontab)
+          (else (mcron-error 12 "The command name is invalid.")))))
 
 ;; There are a different set of options for the crontab personality compared to
 ;; all the others, with the --help and --version options common to all the
@@ -124,7 +121,7 @@
    (lambda (key func fmt args . rest)
      (mcron-error 1 (apply format (append (list #f fmt) args))))))
 
-(define* (show-version #:optional (command command-name))
+(define* (show-version #:optional (command (command-name)))
   "Display version information for COMMAND and quit."
   (let* ((name       config-package-name)
          (short-name (cadr (string-split name #\space)))
@@ -149,7 +146,7 @@ General help using GNU software: <http://www.gnu.org/gethelp/>\n"
 		 config-package-name
 		 config-package-url))
 
-(define* (show-help #:optional (command command-name))
+(define* (show-help #:optional (command (command-name)))
   "Display informations of usage for COMMAND and quit."
   (simple-format #t "Usage: ~a" command)
   (display
