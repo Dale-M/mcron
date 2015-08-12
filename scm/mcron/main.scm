@@ -39,8 +39,9 @@
              (srfi srfi-2))
 
 ;; Turn debugging on if indicated.
-(if config-debug (begin (debug-enable 'debug)
-                        (debug-enable 'backtrace)))
+(when config-debug
+  (debug-enable 'debug)
+  (debug-enable 'backtrace))
 
 
 
@@ -62,8 +63,8 @@
     (lambda ()
       (for-each display (append (list command-name ": ") rest))
       (newline)))
-  (if (and exit-code (not (eq? exit-code 0)))
-      (primitive-exit exit-code)))
+  (when (and exit-code (not (eq? exit-code 0)))
+    (primitive-exit exit-code)))
 
 
 
@@ -215,23 +216,22 @@ reading all the information in the users' crontabs and in /etc/crontab.\n
 ;; be filled in properly later when we have forked our daemon process (but not
 ;; done if we are only viewing the schedules).
 
-(if (eq? command-type 'cron)
-    (begin
-      (if (not (eqv? (getuid) 0))
-          (mcron-error 16
-                       "This program must be run by the root user (and should "
-                       "have been installed as such)."))
-      (if (access? config-pid-file F_OK)
-          (mcron-error 1
-		       "A cron daemon is already running.\n"
-		       "  (If you are sure this is not true, remove the file\n"
-		       "   "
-		       config-pid-file
-		       ".)"))
-      (if (not (option-ref options 'schedule #f))
-          (with-output-to-file config-pid-file noop))
-      (setenv "MAILTO" #f)
-      (c-set-cron-signals)))
+(when (eq? command-type 'cron)
+  (unless (eqv? (getuid) 0)
+    (mcron-error 16
+		 "This program must be run by the root user (and should "
+		 "have been installed as such)."))
+  (when (access? config-pid-file F_OK)
+    (mcron-error 1
+		 "A cron daemon is already running.\n"
+		 "  (If you are sure this is not true, remove the file\n"
+		 "   "
+		 config-pid-file
+		 ".)"))
+  (unless (option-ref options 'schedule #f)
+    (with-output-to-file config-pid-file noop))
+  (setenv "MAILTO" #f)
+  (c-set-cron-signals))
 
 
 ;; Procedure to slurp the standard input into a string.
@@ -248,10 +248,9 @@ reading all the information in the users' crontabs and in /etc/crontab.\n
 ;; files. If the user requested the crontab personality, we load and run the
 ;; code here and then get out.
 
-(if (eq? command-type 'crontab)
-    (begin
-      (load "crontab.scm")
-      (quit)))
+(when (eq? command-type 'crontab)
+  (load "crontab.scm")
+  (quit))
 
 
 
@@ -310,10 +309,10 @@ reading all the information in the users' crontabs and in /etc/crontab.\n
                 (string-append (or (getenv "XDG_CONFIG_HOME")
                                    (string-append home-directory "/.config"))
                                "/cron")))
-    (if (eq? 2 errors)
-        (mcron-error 13
-                     "Cannot read files in your ~/.config/cron (or ~/.cron) "
-                     "directory."))))
+    (when (eq? 2 errors)
+      (mcron-error 13
+		   "Cannot read files in your ~/.config/cron (or ~/.cron) "
+		   "directory."))))
 
 
 
@@ -377,17 +376,16 @@ reading all the information in the users' crontabs and in /etc/crontab.\n
    (catch-mcron-error
     (read-vixie-file "/etc/crontab" parse-system-vixie-line))
    (use-user-job-list)
-   (if (not (option-ref options 'noetc #f))
-       (begin
-         (display
-"WARNING: cron will check for updates to /etc/crontab EVERY MINUTE. If you do\n
+   (unless (option-ref options 'noetc #f)
+     (display "WARNING:
+cron will check for updates to /etc/crontab EVERY MINUTE. If you do\n
 not use this file, or you are prepared to manually restart cron whenever you\n
 make a change, then it is HIGHLY RECOMMENDED that you use the --noetc\n
 option.\n")
-         (set-configuration-user "root")
-         (job '(- (next-minute-from (next-minute)) 6)
-              check-system-crontab
-              "/etc/crontab update checker.")))))
+     (set-configuration-user "root")
+     (job '(- (next-minute-from (next-minute)) 6)
+	  check-system-crontab
+	  "/etc/crontab update checker."))))
 
 
 
@@ -410,14 +408,13 @@ option.\n")
 ;; been explicitly used, or we are running as cron or crond), detach from the
 ;; terminal now. If we are running as cron, we can now write the PID file.
 
-(if (option-ref options 'daemon (eq? command-type 'cron))
-    (begin
-      (if (not (eqv? (primitive-fork) 0))
-          (quit))
-      (setsid)
-      (if (eq? command-type 'cron)
-          (with-output-to-file config-pid-file
-            (lambda () (display (getpid)) (newline))))))
+(when (option-ref options 'daemon (eq? command-type 'cron))
+  (unless (eqv? (primitive-fork) 0)
+    (quit))
+  (setsid)
+  (when (eq? command-type 'cron)
+    (with-output-to-file config-pid-file
+      (lambda () (display (getpid)) (newline)))))
 
 
 
@@ -428,19 +425,19 @@ option.\n")
 
 (define fd-list '())
 
-(if (eq? command-type 'cron)
-    (catch #t
-           (lambda ()
-             (let ((socket (socket AF_UNIX SOCK_STREAM 0)))
-               (bind socket AF_UNIX config-socket-file)
-               (listen socket 5)
-               (set! fd-list (list socket))))
-           (lambda (key . args)
-             (delete-file config-pid-file)
-             (mcron-error 1
-                          "Cannot bind to UNIX socket "
-                          config-socket-file))))
-		     
+(when (eq? command-type 'cron)
+  (catch #t
+    (lambda ()
+      (let ((socket (socket AF_UNIX SOCK_STREAM 0)))
+	(bind socket AF_UNIX config-socket-file)
+	(listen socket 5)
+	(set! fd-list (list socket))))
+    (lambda (key . args)
+      (delete-file config-pid-file)
+      (mcron-error 1
+		   "Cannot bind to UNIX socket "
+		   config-socket-file))))
+
 
 
 
@@ -489,5 +486,5 @@ option.\n")
 (catch-mcron-error
  (while #t
         (run-job-loop fd-list)
-        (if (not (null? fd-list))
-            (process-update-request))))
+        (unless (null? fd-list)
+	  (process-update-request))))
