@@ -64,19 +64,13 @@ When COMMAND is not specified this uses the first element of (command-line)."
   (when (and exit-code (not (eq? exit-code 0)))
     (primitive-exit exit-code)))
 
-
-
-;; Code contributed by Sergey Poznyakoff.  Execute body. If an 'mcron-error
-;; exception occurs, print its diagnostics and exit with its error code.
-
-(defmacro catch-mcron-error (. body)
-  `(catch 'mcron-error
-          (lambda ()
-            ,@body)
-          (lambda (key exit-code . msg)
-            (apply mcron-error exit-code msg))))
-
-
+(define-syntax-rule (catch-mcron-error exp ...)
+  "Evaluate EXP .... if an 'mcron-error exception occurs, print its diagnostics
+and exit with its error code."
+  (catch 'mcron-error
+    (lambda () exp ...)
+    (lambda (key exit-code . msg)
+      (apply mcron-error exit-code msg))))
 
 ;; We will be doing a lot of testing of the command name, so it makes sense to
 ;; perform the string comparisons once and for all here.
