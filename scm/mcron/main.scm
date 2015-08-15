@@ -39,11 +39,6 @@
              (srfi srfi-2)
              (srfi srfi-26))
 
-;; Turn debugging on if indicated.
-(when config-debug
-  (debug-enable 'debug)
-  (debug-enable 'backtrace))
-
 (define* (command-name #:optional (command (car (command-line))))
   "Extract the actual command name from COMMAND.  This returns the last part
 of COMMAND without any non-alphabetic characters.  For example \"in.cron\" and
@@ -125,9 +120,6 @@ There is NO WARRANTY, to the extent permitted by law.\n"
 		   command name version short-name)
     (quit)))
 
-(when (option-ref options 'version #f)
-  (show-version))
-
 (define (show-package-information)
   "Display where to get help and send bug reports."
   (simple-format #t "\nReport bugs to: ~a.\n
@@ -177,9 +169,6 @@ reading all the information in the users' crontabs and in /etc/crontab.\n
   (show-package-information)
   (quit))
 
-(when (option-ref options 'help #f)
-  (show-help))
-
 (define (delete-run-file)
   "Remove the /var/run/cron.pid file so that crontab and other invocations of
 cron don't get the wrong idea that a daemon is currently running.  This
@@ -190,52 +179,11 @@ received."
             noop)
   (quit))
 
-
-
-;; Setup the cron process, if appropriate. If there is already a
-;; /var/run/cron.pid file, then we must assume a cron daemon is already running
-;; and refuse to start another one.
-;;
-;; Otherwise, clear the MAILTO environment variable so that output from cron
-;; jobs is sent to the various users (this may still be overridden in the
-;; configuration files), and call the function in the C wrapper to set up
-;; terminal signal responses to vector to the procedure above. The PID file will
-;; be filled in properly later when we have forked our daemon process (but not
-;; done if we are only viewing the schedules).
-
-(when (eq? command-type 'cron)
-  (unless (eqv? (getuid) 0)
-    (mcron-error 16
-		 "This program must be run by the root user (and should "
-		 "have been installed as such)."))
-  (when (access? config-pid-file F_OK)
-    (mcron-error 1
-		 "A cron daemon is already running.\n"
-		 "  (If you are sure this is not true, remove the file\n"
-		 "   "
-		 config-pid-file
-		 ".)"))
-  (unless (option-ref options 'schedule #f)
-    (with-output-to-file config-pid-file noop))
-  (setenv "MAILTO" #f)
-  (c-set-cron-signals))
-
 (define (stdin->string)
   "Return standard input as a string."
   (with-output-to-string (lambda () (do ((in (read-char) (read-char)))
                                         ((eof-object? in))
                                         (display in)))))
-
-
-
-;; Now we have the procedures in place for dealing with the contents of
-;; configuration files, the crontab personality is able to validate such
-;; files. If the user requested the crontab personality, we load and run the
-;; code here and then get out.
-
-(when (eq? command-type 'crontab)
-  (load "crontab.scm")
-  (quit))
 
 (define (regular-file? file)
   "Return true if FILE is a regular file."
@@ -321,67 +269,6 @@ operation.  The permissions on the /var/cron/tabs directory enforce this."
             4
             "You do not have permission to access the system crontabs."))))
 
-
-
-;; Having defined all the necessary procedures for scanning various sets of
-;; files, we perform the actual configuration of the program depending on the
-;; personality we are running as. If it is mcron, we either scan the files
-;; passed on the command line, or else all the ones in the user's .config/cron
-;; (or .cron) directory. If we are running under the cron personality, we read
-;; the /var/cron/tabs directory and also the /etc/crontab file.
-
-(case command-type
-  ((mcron) (if (null? (option-ref options '() '()))
-                (process-files-in-user-directory)
-                (for-each (lambda (file-path)
-                            (process-user-file file-path #t))
-                          (option-ref options '() '()))))
-  
-  ((cron) (process-files-in-system-directory)
-   (use-system-job-list)
-   (catch-mcron-error
-    (read-vixie-file "/etc/crontab" parse-system-vixie-line))
-   (use-user-job-list)
-   (unless (option-ref options 'noetc #f)
-     (display "WARNING:
-cron will check for updates to /etc/crontab EVERY MINUTE. If you do\n
-not use this file, or you are prepared to manually restart cron whenever you\n
-make a change, then it is HIGHLY RECOMMENDED that you use the --noetc\n
-option.\n")
-     (set-configuration-user "root")
-     (job '(- (next-minute-from (next-minute)) 6)
-	  check-system-crontab
-	  "/etc/crontab update checker."))))
-
-
-
-;; If the user has requested a schedule of jobs that will run, we provide the
-;; information here and then get out.
-;;
-;; Start by determining the number of time points in the future that output is
-;; required for. This may be provided on the command line as a parameter to the
-;; --schedule option, or else we assume a default of 8. Finally, ensure that the
-;; count is some positive integer.
-
-(and-let* ((count (option-ref options 'schedule #f)))
-          (set! count (string->number count))
-          (display (get-schedule (if (<= count 0) 1 count)))
-          (quit))
-    
-
-
-;; If we are supposed to run as a daemon process (either a --daemon option has
-;; been explicitly used, or we are running as cron or crond), detach from the
-;; terminal now. If we are running as cron, we can now write the PID file.
-
-(when (option-ref options 'daemon (eq? command-type 'cron))
-  (unless (eqv? (primitive-fork) 0)
-    (quit))
-  (setsid)
-  (when (eq? command-type 'cron)
-    (with-output-to-file config-pid-file
-      (lambda () (display (getpid)) (newline)))))
-
 (define (cron-file-descriptors)
   "Establish a socket to listen for updates from a crontab program, and return
 a list containing the file descriptors correponding to the files read by
@@ -422,28 +309,119 @@ comes in on the above socket."
            (set-configuration-user user)
            (read-vixie-file (string-append config-spool-dir "/" user-name)))))))
 
+
+;;;
+;;; Entry point.
+;;;
 
+(define (main . args)
+  ;; Turn debugging on if indicated.
+  (when config-debug
+    (debug-enable 'debug)
+    (debug-enable 'backtrace))
+  (when (option-ref options 'version #f)
+    (show-version))
+  (when (option-ref options 'help #f)
+    (show-help))
 
-;; Added by Sergey Poznyakoff.  This no-op will collect zombie child processes
-;; as soon as they die.  This is a big improvement as previously they stayed
-;; around the system until the next time mcron wakes to fire a new job off.
+  ;; Setup the cron process, if appropriate. If there is already a
+  ;; /var/run/cron.pid file, then we must assume a cron daemon is already
+  ;; running and refuse to start another one.
+  ;;
+  ;; Otherwise, clear the MAILTO environment variable so that output from cron
+  ;; jobs is sent to the various users (this may still be overridden in the
+  ;; configuration files), and call the function in the C wrapper to set up
+  ;; terminal signal responses to vector to the procedure above. The PID file
+  ;; will be filled in properly later when we have forked our daemon process
+  ;; (but not done if we are only viewing the schedules).
+  (when (eq? command-type 'cron)
+    (unless (eqv? (getuid) 0)
+      (mcron-error 16
+                   "This program must be run by the root user (and should "
+                   "have been installed as such)."))
+    (when (access? config-pid-file F_OK)
+      (mcron-error 1
+                   "A cron daemon is already running.\n"
+                   "  (If you are sure this is not true, remove the file\n"
+                   "   "
+                   config-pid-file
+                   ".)"))
+    (unless (option-ref options 'schedule #f)
+      (with-output-to-file config-pid-file noop))
+    (setenv "MAILTO" #f)
+    (c-set-cron-signals))
 
-;; Unfortunately it seems to interact badly with the select system call,
-;; wreaking havoc...
+  ;; Now we have the procedures in place for dealing with the contents of
+  ;; configuration files, the crontab personality is able to validate such
+  ;; files. If the user requested the crontab personality, we load and run the
+  ;; code here and then get out.
+  (when (eq? command-type 'crontab)
+    (load "crontab.scm")
+    (quit))
 
-;; (sigaction SIGCHLD (lambda (sig) noop) SA_RESTART)
+  ;; Having defined all the necessary procedures for scanning various sets of
+  ;; files, we perform the actual configuration of the program depending on
+  ;; the personality we are running as. If it is mcron, we either scan the
+  ;; files passed on the command line, or else all the ones in the user's
+  ;; .config/cron (or .cron) directory. If we are running under the cron
+  ;; personality, we read the /var/cron/tabs directory and also the
+  ;; /etc/crontab file.
+  (case command-type
+    ((mcron)
+     (if (null? (option-ref options '() '()))
+         (process-files-in-user-directory)
+         (for-each (lambda (file-path) (process-user-file file-path #t))
+                   (option-ref options '() '()))))
+    ((cron)
+     (process-files-in-system-directory)
+     (use-system-job-list)
+     (catch-mcron-error (read-vixie-file "/etc/crontab"
+                                         parse-system-vixie-line))
+     (use-user-job-list)
+     (unless (option-ref options 'noetc #f)
+       (display "WARNING:
+cron will check for updates to /etc/crontab EVERY MINUTE. If you do\n
+not use this file, or you are prepared to manually restart cron whenever you\n
+make a change, then it is HIGHLY RECOMMENDED that you use the --noetc\n
+option.\n")
+       (set-configuration-user "root")
+       (job '(- (next-minute-from (next-minute)) 6)
+            check-system-crontab
+            "/etc/crontab update checker."))))
 
+  ;; If the user has requested a schedule of jobs that will run, we provide
+  ;; the information here and then get out.  Start by determining the number
+  ;; of time points in the future that output is required for. This may be
+  ;; provided on the command line as a parameter to the --schedule option, or
+  ;; else we assume a default of 8. Finally, ensure that the count is some
+  ;; positive integer.
+  (and-let* ((count (option-ref options 'schedule #f)))
+            (set! count (string->number count))
+            (display (get-schedule (if (<= count 0) 1 count)))
+            (quit))
 
+  ;; If we are supposed to run as a daemon process (either a --daemon option
+  ;; has been explicitly used, or we are running as cron or crond), detach
+  ;; from the terminal now. If we are running as cron, we can now write the
+  ;; PID file.
+  (when (option-ref options 'daemon (eq? command-type 'cron))
+    (unless (eqv? (primitive-fork) 0)
+      (quit))
+    (setsid)
+    (when (eq? command-type 'cron)
+      (with-output-to-file config-pid-file
+        (lambda () (display (getpid)) (newline)))))
 
-;; Now the main loop. Forever execute the run-job-loop procedure in the mcron
-;; core, and when it drops out (can only be because a message has come in on the
-;; socket) we process the socket request before restarting the loop again.
-;; Sergey Poznyakoff: we can also drop out of run-job-loop because of a SIGCHLD,
-;; so must test FDES-LIST.
+  ;; Now the main loop. Forever execute the run-job-loop procedure in the
+  ;; mcron core, and when it drops out (can only be because a message has come
+  ;; in on the socket) we process the socket request before restarting the
+  ;; loop again.  Sergey Poznyakoff: we can also drop out of run-job-loop
+  ;; because of a SIGCHLD, so must test FDES-LIST.
+  (catch-mcron-error
+   (let ((fdes-list (cron-file-descriptors)))
+     (while #t
+       (run-job-loop fdes-list)
+       (unless (null? fdes-list)
+         (process-update-request fdes-list))))))
 
-(catch-mcron-error
- (let ((fdes-list (cron-file-descriptors)))
-   (while #t
-     (run-job-loop fdes-list)
-     (unless (null? fdes-list)
-       (process-update-request fdes-list)))))
+(main)
