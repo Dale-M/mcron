@@ -52,11 +52,10 @@ of COMMAND without any non-alphabetic characters.  For example \"in.cron\" and
 When COMMAND is not specified this uses the first element of (command-line)."
   (match:substring (regexp-exec (make-regexp "[[:alpha:]]*$") command)))
 
-;; Code contributed by Sergey Poznyakoff.  Print an error message (made up from
-;; the parts of rest), and if the error is fatal (present and non-zero) then
-;; exit to the system with this code.
-
 (define (mcron-error exit-code . rest)
+  "Print an error message (made up from the parts of REST), and if the
+EXIT-CODE error is fatal (present and non-zero) then exit to the system with
+EXIT-CODE."
   (with-output-to-port (current-error-port)
     (lambda ()
       (for-each display (append (list (command-name) ": ") rest))
@@ -72,10 +71,9 @@ and exit with its error code."
     (lambda (key exit-code . msg)
       (apply mcron-error exit-code msg))))
 
-;; We will be doing a lot of testing of the command name, so it makes sense to
-;; perform the string comparisons once and for all here.
-
 (define command-type
+  ;; We will be doing a lot of testing of the command name, so it makes sense
+  ;; to perform the string comparisons once and for all here.
   (let* ((command   (command-name))
          (command=? (cut string=? command <>)))
     (cond ((command=? "mcron") 'mcron)
@@ -83,11 +81,10 @@ and exit with its error code."
           ((command=? "crontab") 'crontab)
           (else (mcron-error 12 "The command name is invalid.")))))
 
-;; There are a different set of options for the crontab personality compared to
-;; all the others, with the --help and --version options common to all the
-;; personalities.
-
 (define options
+  ;; There are a different set of options for the crontab personality compared
+  ;; to all the others, with the --help and --version options common to all
+  ;; the personalities.
   (catch
    'misc-error
    (lambda ()
@@ -183,12 +180,11 @@ reading all the information in the users' crontabs and in /etc/crontab.\n
 (when (option-ref options 'help #f)
   (show-help))
 
-;; This is called from the C front-end whenever a terminal signal is
-;; received. We remove the /var/run/cron.pid file so that crontab and other
-;; invocations of cron don't get the wrong idea that a daemon is currently
-;; running.
-
 (define (delete-run-file)
+  "Remove the /var/run/cron.pid file so that crontab and other invocations of
+cron don't get the wrong idea that a daemon is currently running.  This
+procedure is called from the C front-end whenever a terminal signal is
+received."
   (catch #t (lambda () (delete-file config-pid-file)
                        (delete-file config-socket-file))
             noop)
@@ -224,10 +220,8 @@ reading all the information in the users' crontabs and in /etc/crontab.\n
   (setenv "MAILTO" #f)
   (c-set-cron-signals))
 
-
-;; Procedure to slurp the standard input into a string.
-
 (define (stdin->string)
+  "Return standard input as a string."
   (with-output-to-string (lambda () (do ((in (read-char) (read-char)))
                                         ((eof-object? in))
                                         (display in)))))
@@ -243,12 +237,8 @@ reading all the information in the users' crontabs and in /etc/crontab.\n
   (load "crontab.scm")
   (quit))
 
-
-
-;; Code contributed by Sergey Poznyakoff.  Determine if the given file is a
-;; regular file or not.
-
 (define (regular-file? file)
+  "Return true if FILE is a regular file."
   (catch 'system-error
 	 (lambda ()
 	   (eq? (stat:type (stat file)) 'regular))
@@ -256,16 +246,14 @@ reading all the information in the users' crontabs and in /etc/crontab.\n
 	   (mcron-error 0 (apply format (append (list #f fmt) args)))
 	   #f)))
 
-
-
-;; Procedure which processes any configuration file according to the
-;; extension. If a file is not recognized, it is silently ignored (this deals
-;; properly with most editors' backup files, for instance).
-
 (define guile-file-regexp (make-regexp "\\.gui(le)?$"))
 (define vixie-file-regexp (make-regexp "\\.vix(ie)?$"))
 
 (define (process-user-file file-path . assume-guile)
+  "Process FILE-PATH according its extension.  When ASSUME-GUILE is non nil,
+usage of guile syntax is forced for FILE-PATH.  If a file is not recognized,
+it is silently ignored (this deals properly with most editors' backup files,
+for instance)."
   (cond ((string=? file-path "-")
                (if (string=? (option-ref options 'stdin "guile") "vixie")
                    (read-vixie-port (current-input-port))
@@ -276,13 +264,9 @@ reading all the information in the users' crontabs and in /etc/crontab.\n
         ((regexp-exec vixie-file-regexp file-path)
          (read-vixie-file file-path))))
 
-
-
-;; Procedure to run through all the files in a user's ~/.cron and/or
-;; $XDG_CONFIG_HOME/cron or ~/.config/cron directories (only happens under the
-;; mcron personality).
-
 (define (process-files-in-user-directory)
+  "Process files in $XDG_CONFIG_HOME/cron and/or ~/.cron directories (if
+$XDG_CONFIG_HOME is not defined uses ~/.config/cron instead)."
   (let ((errors 0)
         (home-directory (passwd:dir (getpw (getuid)))))
     (map (lambda (config-directory)
@@ -305,13 +289,10 @@ reading all the information in the users' crontabs and in /etc/crontab.\n
 		   "Cannot read files in your ~/.config/cron (or ~/.cron) "
 		   "directory."))))
 
-
-
-;; Procedure to check that a user name is in the passwd database (it may happen
-;; that a user is removed after creating a crontab). If the user name is valid,
-;; the full passwd entry for that user is returned to the caller.
-
 (define (valid-user user-name)
+  "Check that USER-NAME is in the passwd database (it may happen that a user
+is removed after creating a crontab).  If the USER-NAME is valid, Return the
+full passwd entry for that user."
   (setpwent)
   (do ((entry (getpw) (getpw)))
       ((or (not entry)
@@ -319,17 +300,11 @@ reading all the information in the users' crontabs and in /etc/crontab.\n
        (endpwent)
        entry)))
 
-
-
-;; Procedure to process all the files in the crontab directory, making sure that
-;; each file is for a legitimate user and setting the configuration-user to that
-;; user. In this way, when the job procedure is run on behalf of the
-;; configuration files, the jobs are registered with the system with the
-;; appropriate user. Note that only the root user should be able to perform this
-;; operation, but we leave it to the permissions on the /var/cron/tabs directory
-;; to enforce this.
-
 (define (process-files-in-system-directory)
+  "Process all the files in the crontab directory.  When the job procedure is
+run on behalf of the configuration files, the jobs are registered on the
+system with the appropriate user.  Only root should be able to perform this
+operation.  The permissions on the /var/cron/tabs directory enforce this."
   (catch #t
          (lambda ()
            (let ((directory (opendir config-spool-dir)))
@@ -429,16 +404,12 @@ option.\n")
 		   "Cannot bind to UNIX socket "
 		   config-socket-file))))
 
-
-
-
-;; This function is called whenever a message comes in on the above socket. We
-;; read a user name from the socket, dealing with the "/etc/crontab" special
-;; case, remove all the user's jobs from the job list, and then re-read the
-;; user's updated file. In the special case we drop all the system jobs and
-;; re-read the /etc/crontab file.
-
 (define (process-update-request)
+  "Read a user name from the socket, dealing with the /etc/crontab special
+case, remove all the user's jobs from the job list, and then re-read the
+user's updated file.  In the special case drop all the system jobs and re-read
+the /etc/crontab file.  This function should be called whenever a message
+comes in on the above socket."
   (let* ((socket (car (accept (car fd-list))))
          (user-name (read-line socket)))
     (close socket)
