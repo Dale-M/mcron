@@ -382,37 +382,33 @@ option.\n")
     (with-output-to-file config-pid-file
       (lambda () (display (getpid)) (newline)))))
 
+(define (cron-file-descriptors)
+  "Establish a socket to listen for updates from a crontab program, and return
+a list containing the file descriptors correponding to the files read by
+crontab.  This requires that command-type is 'cron."
+  (if (eq? command-type 'cron)
+      (catch #t
+	(lambda ()
+	  (let ((sock (socket AF_UNIX SOCK_STREAM 0)))
+	    (bind sock AF_UNIX config-socket-file)
+	    (listen sock 5)
+	    (list sock)))
+	(lambda (key . args)
+	  (delete-file config-pid-file)
+	  (mcron-error 1
+		       "Cannot bind to UNIX socket "
+		       config-socket-file)))
+      '()))
 
-
-;; If we are running as cron or crond, we establish a socket to listen for
-;; updates from a crontab program. This is put into fd-list so that we can
-;; inform the main wait-run-wait execution loop to listen for incoming messages
-;; on this socket.
-
-(define fd-list '())
-
-(when (eq? command-type 'cron)
-  (catch #t
-    (lambda ()
-      (let ((socket (socket AF_UNIX SOCK_STREAM 0)))
-	(bind socket AF_UNIX config-socket-file)
-	(listen socket 5)
-	(set! fd-list (list socket))))
-    (lambda (key . args)
-      (delete-file config-pid-file)
-      (mcron-error 1
-		   "Cannot bind to UNIX socket "
-		   config-socket-file))))
-
-(define (process-update-request)
+(define (process-update-request fdes-list)
   "Read a user name from the socket, dealing with the /etc/crontab special
 case, remove all the user's jobs from the job list, and then re-read the
 user's updated file.  In the special case drop all the system jobs and re-read
 the /etc/crontab file.  This function should be called whenever a message
 comes in on the above socket."
-  (let* ((socket (car (accept (car fd-list))))
-         (user-name (read-line socket)))
-    (close socket)
+  (let* ((sock      (car (accept (car fdes-list))))
+         (user-name (read-line sock)))
+    (close sock)
     (set-configuration-time (current-time))
     (catch-mcron-error
      (if (string=? user-name "/etc/crontab")
@@ -443,10 +439,11 @@ comes in on the above socket."
 ;; core, and when it drops out (can only be because a message has come in on the
 ;; socket) we process the socket request before restarting the loop again.
 ;; Sergey Poznyakoff: we can also drop out of run-job-loop because of a SIGCHLD,
-;; so must test fd-list.
+;; so must test FDES-LIST.
 
 (catch-mcron-error
- (while #t
-        (run-job-loop fd-list)
-        (unless (null? fd-list)
-	  (process-update-request))))
+ (let ((fdes-list (cron-file-descriptors)))
+   (while #t
+     (run-job-loop fdes-list)
+     (unless (null? fdes-list)
+       (process-update-request fdes-list)))))
