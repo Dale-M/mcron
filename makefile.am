@@ -21,12 +21,9 @@
 
 SUBDIRS = scm/mcron .
 
-ED = @ED@   # !!!! Are these needed?
 CP = @CP@
 
-CLEANFILES = mcron.c
-
-EXTRA_DIST = makefile.ed mcron.c.template BUGS ChangeLog.old
+EXTRA_DIST = BUGS ChangeLog.old
 
 info_TEXINFOS = doc/mcron.texi
 doc_mcron_TEXINFOS = doc/fdl.texi
@@ -39,12 +36,6 @@ mcron_LDADD = @GUILE_LIBS@
 # The second option is so that we can execute the binary in the local directory,
 # in turn so that we can do mcron --help during the build process.
 mcron_CFLAGS  = @GUILE_CFLAGS@ -DGUILE_LOAD_PATH=\"$(datadir):./scm:...\"
-
-
-mcron.c : scm/mcron/main.scm scm/mcron/crontab.scm makefile.ed mcron.c.template
-	@echo 'Building mcron.c...'
-	@$(ED) < makefile.ed > /dev/null 2>&1
-	@rm -f mcron.escaped.scm > /dev/null 2>&1
 
 dist-hook: gen-ChangeLog
 

@@ -16,28 +16,22 @@
 ;;   You should have received a copy of the GNU General Public License along
 ;;   with GNU mcron.  If not, see <http://www.gnu.org/licenses/>.
 
+;;; This is the 'main' routine for the whole system; this module is the global
+;;; entry point (after the minimal C wrapper); to all intents and purposes the
+;;; program is pure Guile and starts here.
 
-
-;; This is the 'main' routine for the whole system; the top of this file is the
-;; global entry point (after the minimal C wrapper, mcron.c.template); to all
-;; intents and purposes the program is pure Guile and starts here.
-;;
-;; This file is built into mcron.c.template by the makefile, which stringifies
-;; the whole lot, and escapes quotation marks and escape characters
-;; accordingly. Bear this in mind when considering literal multi-line strings.
-;;
-;; (l0ad "crontab.scm") (sic) is inlined by the makefile. All other
-;; functionality comes through modules in .../share/guile/site/mcron/*.scm.
-
-(use-modules (ice-9 getopt-long)
-             (ice-9 rdelim)
-             (ice-9 regex)
-             (mcron config)
-             (mcron core)
-             (mcron job-specifier)
-             (mcron vixie-specification)
-             (srfi srfi-2)
-             (srfi srfi-26))
+(define-module (mcron main)
+  #:use-module (ice-9 getopt-long)
+  #:use-module (ice-9 rdelim)
+  #:use-module (ice-9 regex)
+  #:use-module (mcron config)
+  #:use-module (mcron core)
+  #:use-module (mcron job-specifier)
+  #:use-module (mcron vixie-specification)
+  #:use-module (srfi srfi-2)
+  #:use-module (srfi srfi-26)
+  #:export (delete-run-file
+	    main))
 
 (define* (command-name #:optional (command (car (command-line))))
   "Extract the actual command name from COMMAND.  This returns the last part
@@ -112,18 +106,18 @@ and exit with its error code."
   (let* ((name       config-package-name)
          (short-name (cadr (string-split name #\space)))
          (version    config-package-version))
-    (simple-format #t "~a (~a) ~a\n
-Copyright (C) 2015 the ~a authors.\n
-License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n
-This is free software: you are free to change and redistribute it.\n
+    (simple-format #t "~a (~a) ~a
+Copyright (C) 2015 the ~a authors.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.\n"
 		   command name version short-name)
     (quit)))
 
 (define (show-package-information)
   "Display where to get help and send bug reports."
-  (simple-format #t "\nReport bugs to: ~a.\n
-~a home page: <~a>\n
+  (simple-format #t "\nReport bugs to: ~a.
+~a home page: <~a>
 General help using GNU software: <http://www.gnu.org/gethelp/>\n"
 		 config-package-bugreport
 		 config-package-name
@@ -135,34 +129,34 @@ General help using GNU software: <http://www.gnu.org/gethelp/>\n"
   (display
    (case command-type
      ((mcron)
-      " [OPTIONS] [FILES]\n
-Run an mcron process according to the specifications in the FILES (`-' for\n
-standard input), or use all the files in ~/.config/cron (or the \n
-deprecated ~/.cron) with .guile or .vixie extensions.\n
-\n
-  -v, --version             Display version\n
-  -h, --help                Display this help message\n
-  -sN, --schedule[=]N       Display the next N jobs that will be run by mcron\n
-  -d, --daemon              Immediately detach the program from the terminal\n
-                              and run as a daemon process\n
-  -i, --stdin=(guile|vixie) Format of data passed as standard input or\n
+      " [OPTIONS] [FILES]
+Run an mcron process according to the specifications in the FILES (`-' for
+standard input), or use all the files in ~/.config/cron (or the
+deprecated ~/.cron) with .guile or .vixie extensions.
+
+  -v, --version             Display version
+  -h, --help                Display this help message
+  -sN, --schedule[=]N       Display the next N jobs that will be run by mcron
+  -d, --daemon              Immediately detach the program from the terminal
+                              and run as a daemon process
+  -i, --stdin=(guile|vixie) Format of data passed as standard input or
                               file arguments (default guile)")
      ((cron)
-      " [OPTIONS]\n
-Unless an option is specified, run a cron daemon as a detached process, \n
-reading all the information in the users' crontabs and in /etc/crontab.\n
-\n
-  -v, --version             Display version\n
-  -h, --help                Display this help message\n
-  -sN, --schedule[=]N       Display the next N jobs that will be run by cron\n
-  -n, --noetc               Do not check /etc/crontab for updates (HIGHLY\n
+      " [OPTIONS]
+Unless an option is specified, run a cron daemon as a detached process,
+reading all the information in the users' crontabs and in /etc/crontab.
+
+  -v, --version             Display version
+  -h, --help                Display this help message
+  -sN, --schedule[=]N       Display the next N jobs that will be run by cron
+  -n, --noetc               Do not check /etc/crontab for updates (HIGHLY
                               RECOMMENDED).")
      ((crontab)
-      " [-u user] file\n
-       crontab [-u user] { -e | -l | -r }\n
-               (default operation is replace, per 1003.2)\n
-       -e      (edit user's crontab)\n
-       -l      (list user's crontab)\n
+      " [-u user] file
+       crontab [-u user] { -e | -l | -r }
+               (default operation is replace, per 1003.2)
+       -e      (edit user's crontab)
+       -l      (list user's crontab)
        -r      (delete user's crontab")
      (else "\nrubbish")))
   (newline)
@@ -379,10 +373,10 @@ comes in on the above socket."
                                          parse-system-vixie-line))
      (use-user-job-list)
      (unless (option-ref options 'noetc #f)
-       (display "WARNING:
-cron will check for updates to /etc/crontab EVERY MINUTE. If you do\n
-not use this file, or you are prepared to manually restart cron whenever you\n
-make a change, then it is HIGHLY RECOMMENDED that you use the --noetc\n
+       (display "\
+WARNING: cron will check for updates to /etc/crontab EVERY MINUTE. If you do
+not use this file, or you are prepared to manually restart cron whenever you
+make a change, then it is HIGHLY RECOMMENDED that you use the --noetc
 option.\n")
        (set-configuration-user "root")
        (job '(- (next-minute-from (next-minute)) 6)
@@ -423,5 +417,3 @@ option.\n")
        (run-job-loop fdes-list)
        (unless (null? fdes-list)
          (process-update-request fdes-list))))))
-
-(main)

@@ -27,7 +27,6 @@ install-sh
 makefile
 makefile.in
 /mcron
-mcron.c
 /mdate-sh
 *.o
 missing
