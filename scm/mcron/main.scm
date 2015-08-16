@@ -343,6 +343,8 @@ comes in on the above socket."
     (unless (option-ref options 'schedule #f)
       (with-output-to-file config-pid-file noop))
     (setenv "MAILTO" #f)
+    ;; XXX: At compile time, this yields a "possibly unbound variable"
+    ;; warning, but this is OK since it is bound in the C wrapper.
     (c-set-cron-signals))
 
   ;; Now we have the procedures in place for dealing with the contents of

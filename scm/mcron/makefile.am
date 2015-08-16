@@ -1,10 +1,48 @@
-EXTRA_DIST = main.scm mcron-core.scm vixie-specification.scm \
-             crontab.scm environment.scm job-specifier.scm redirect.scm \
-             vixie-time.scm
+MODULES =				\
+  environment.scm			\
+  job-specifier.scm			\
+  main.scm				\
+  redirect.scm				\
+  vixie-specification.scm		\
+  vixie-time.scm
 
-pkgdata_DATA = core.scm environment.scm job-specifier.scm redirect.scm \
-               vixie-time.scm vixie-specification.scm config.scm
+GEN_MODULES =				\
+  config.scm				\
+  core.scm
 
+GOBJECTS =				\
+  $(GEN_MODULES:%.scm=%.go)		\
+  $(MODULES:%.scm=%.go)
+
+mcronmodule_DATA =			\
+  $(GOBJECTS)				\
+  $(GEN_MODULES)
+
+dist_mcronmodule_DATA = 		\
+  $(MODULES)				\
+  crontab.scm				\
+  mcron-core.scm
+
+# Unset 'GUILE_LOAD_COMPILED_PATH' altogether while compiling.  Otherwise, if
+# $GUILE_LOAD_COMPILED_PATH contains $(mcronmoduledir), we may find .go files
+# in there that are newer than the local .scm files (for instance because the
+# user ran 'make install' recently).  When that happens, we end up loading
+# those previously-installed .go files, which may be stale, thereby breaking
+# the whole thing.
+#
+# XXX: Use the C locale for when Guile lacks
+# <http://git.sv.gnu.org/cgit/guile.git/commit/?h=stable-2.0&id=e2c6bf3866d1186c60bacfbd4fe5037087ee5e3f>.
+.scm.go:
+	unset GUILE_LOAD_COMPILED_PATH ;				\
+	LC_ALL=C							\
+	$(GUILD) compile						\
+	  --load-path="$(top_builddir)/scm"				\
+	  --load-path="$(top_srcdir)/scm"				\
+	  --warn=format --warn=unbound-variable --warn=arity-mismatch	\
+	  --target="$(host)" --output="$@" "$<"
+
+SUFFIXES = .go
+CLEANFILES = $(GOBJECTS)
 
 # If you're wondering, the configure script keeps deleting all files with a name
 # like core.*, so we have to keep re-making it (I lost a good day's work because

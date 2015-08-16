@@ -26,6 +26,8 @@ AC_INIT([GNU Mcron], [1.0.8], [bug-mcron@gnu.org])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE
 
+mcronmoduledir="${datarootdir}/guile/site/2.0/mcron"
+AC_SUBST([mcronmoduledir])
 
 AC_MSG_CHECKING([whether debugging is requested])
 AC_ARG_ENABLE(debug,
@@ -45,12 +47,18 @@ AC_SUBST(CONFIG_DEBUG)
 # We have no interest (hence a no-op), but Debian wants this.
 AC_ARG_ENABLE(maintainer-mode)
 
-
+AC_CANONICAL_HOST
 AC_PROG_AWK
 AC_PROG_EGREP
 AM_PROG_CC_C_O
 
-PKG_CHECK_MODULES(GUILE, guile-2.0)
+PKG_CHECK_MODULES([GUILE], [guile-2.0 >= 2.0.7])
+AC_PATH_PROG([GUILE], [guile])
+
+# search guild
+AC_PATH_PROG([GUILD], [guild])
+AS_IF([test -z "$ac_cv_path_GUILD"],
+  [AC_MSG_ERROR(['guild' program cannot be found.])])
 
 # Checks for programs.
   
