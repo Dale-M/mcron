@@ -311,7 +311,6 @@ comes in on the above socket."
 (define (main . args)
   ;; Turn debugging on if indicated.
   (when config-debug
-    (debug-enable 'debug)
     (debug-enable 'backtrace))
   (when (option-ref options 'version #f)
     (show-version))
