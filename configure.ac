@@ -25,6 +25,7 @@ AC_PREREQ(2.61)
 AC_INIT([GNU Mcron], [1.0.8], [bug-mcron@gnu.org])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE
+AM_SILENT_RULES([yes])		# enables silent rules by default
 
 mcronmoduledir="${datarootdir}/guile/site/2.0/mcron"
 AC_SUBST([mcronmoduledir])

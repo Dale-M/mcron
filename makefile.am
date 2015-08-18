@@ -79,9 +79,15 @@ uninstall-hook:
         rm -f $(fpp){cron,crontab}$(EXEEXT); \
     fi
 
+# Extend silent rules to help2man.
+AM_V_HELP2MAN = $(AM_V_HELP2MAN_$(V))
+AM_V_HELP2MAN_ = $(AM_V_HELP2MAN_$(AM_DEFAULT_VERBOSITY))
+AM_V_HELP2MAN_0 = @echo "  HELP2MAN" $@;
 
 # Not part of formal package building, but a rule for manual use to get the
 # elemental man page.  Will only work once the mcron program is installed.
 doc/mcron.1: mcron.c
-	-$(HELP2MAN) -n 'a program to run tasks at regular (or not) intervals' \
-	    ./mcron > $@
+	-$(AM_V_HELP2MAN)$(MKDIR_P) `dirname "$@"` ; 			\
+	$(HELP2MAN)							\
+	  -n 'a program to run tasks at regular (or not) intervals'	\
+	  ./mcron > $@
