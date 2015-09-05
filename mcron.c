@@ -48,16 +48,30 @@
 #include <signal.h>
 #include <string.h>
 
-/* This is a function designed to be installed as a signal handler, for
-   signals which are supposed to initiate shutdown of this program.  It calls
-   the scheme procedure (see mcron.scm for details) to do all the work, and
-   then exits.  */
+/* Forward declarations.  */
+void inner_main (void *closure, int argc, char **argv);
+void react_to_terminal_signal (int sig);
+SCM set_cron_signals (void);
+
+int
+main (int argc, char **argv)
+{
+  setenv ("GUILE_LOAD_PATH", GUILE_LOAD_PATH, 1);
+  scm_boot_guile (argc, argv, inner_main, 0);
+
+  return 0;
+}
+
+/* The effective main function (i.e. the one that actually does some work).
+   We register the function above with the guile system, and then execute the
+   mcron guile program.  */
 
 void
-react_to_terminal_signal (int sig)
+inner_main (void *closure, int argc, char **argv)
 {
-  scm_c_eval_string ("(delete-run-file)");
-  exit (1);
+  scm_set_current_module (scm_c_resolve_module ("mcron main"));
+  scm_c_define_gsubr ("c-set-cron-signals", 0, 0, 0, set_cron_signals);
+  scm_c_eval_string ("(main)");
 }
 
 /* This is a function designed to be callable from scheme, and sets up all the
@@ -78,25 +92,14 @@ set_cron_signals ()
   return SCM_BOOL_T;
 }
 
-/* The effective main function (i.e. the one that actually does some work).
-   We register the function above with the guile system, and then execute the
-   mcron guile program.  */
+/* This is a function designed to be installed as a signal handler, for
+   signals which are supposed to initiate shutdown of this program.  It calls
+   the scheme procedure (see mcron.scm for details) to do all the work, and
+   then exits.  */
 
 void
-inner_main (void *closure, int argc, char **argv)
+react_to_terminal_signal (int sig)
 {
-  scm_set_current_module (scm_c_resolve_module ("mcron main"));
-  scm_c_define_gsubr ("c-set-cron-signals", 0, 0, 0, set_cron_signals);
-  scm_c_eval_string ("(main)");
-}
-
-/* The real main function.  Does nothing but start up the guile subsystem. */
-
-int
-main (int argc, char **argv)
-{
-  setenv ("GUILE_LOAD_PATH", GUILE_LOAD_PATH, 1);
-  scm_boot_guile (argc, argv, inner_main, 0);
-
-  return 0;
+  scm_c_eval_string ("(delete-run-file)");
+  exit (1);
 }
