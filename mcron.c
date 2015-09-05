@@ -28,9 +28,9 @@
 #include <string.h>
 
 /* Forward declarations.  */
-void inner_main (void *closure, int argc, char **argv);
-void react_to_terminal_signal (int sig);
-SCM set_cron_signals (void);
+static void inner_main (void *closure, int argc, char **argv);
+static void react_to_terminal_signal (int sig);
+static SCM set_cron_signals (void);
 
 int
 main (int argc, char **argv)
@@ -42,7 +42,7 @@ main (int argc, char **argv)
 }
 
 /* Launch the Mcron Guile main program.  */
-void
+static void
 inner_main (void *closure, int argc, char **argv)
 {
   scm_set_current_module (scm_c_resolve_module ("mcron main"));
@@ -54,7 +54,7 @@ inner_main (void *closure, int argc, char **argv)
 /* Set up all the signal handlers as required by the cron personality.  This
    is necessary to perform the signal processing in C because the sigaction
    function won't work when called from Guile.  */
-SCM
+static SCM
 set_cron_signals ()
 {
   static struct sigaction sa;
@@ -71,7 +71,7 @@ set_cron_signals ()
 
 /* Handle signal SIG and exit.  All signals that mcron handles will produce
    the same behavior so we don't need to use SIG in the implementation.  */
-void
+static void
 react_to_terminal_signal (int sig)
 {
   scm_c_eval_string ("(delete-run-file)");
