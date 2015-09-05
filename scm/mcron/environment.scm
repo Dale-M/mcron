@@ -1,3 +1,4 @@
+;;   Copyright (C) 2015, 2016 Mathieu Lirzin
 ;;   Copyright (C) 2003 Dale Mellor
 ;; 
 ;;   This file is part of GNU mcron.
@@ -36,37 +37,6 @@
             append-environment-mods
             get-current-environment-mods-copy))
             
-            
-
-
-;; The env-alist is an association list of variable names and values. Variables
-;; later in the list will take precedence over variables before. We return a
-;; fixed-up version in which some variables are given specific default values
-;; (which the user can override), and two variables which the user is not
-;; allowed to control are added at the end of the list.
-
-(define (impose-default-environment env-alist passwd-entry)
-  (append `(("HOME"    . ,(passwd:dir passwd-entry))
-            ("CWD"     . ,(passwd:dir passwd-entry))
-            ("SHELL"   . ,(passwd:shell passwd-entry))
-            ("TERM"    . #f)
-            ("TERMCAP" . #f))
-          env-alist
-          `(("LOGNAME" . ,(passwd:name passwd-entry))
-            ("USER"    . ,(passwd:name passwd-entry)))))
-
-
-
-
-;; Modify the UNIX environment for the current process according to the given
-;; association list of variables, with the default variable values imposed.
-
-(define (modify-environment env-alist passwd-entry)
-  (for-each (lambda (variable)
-              (setenv (car variable) (cdr variable)))
-            (impose-default-environment env-alist passwd-entry)))
-
-
 
 
 ;; As we parse configuration files, we build up an alist of environment
@@ -103,3 +73,25 @@
   (set! current-environment-mods (append current-environment-mods
                                          (list (cons name value))))
   #t)
+
+(define (modify-environment env passwd-entry)
+  "Modify the environment (in the UNIX sense) by setting the variables from
+ENV and some default ones which are modulated by PASSWD-ENTRY.  \"LOGNAME\"
+and \"USER\" environment variables can't be overided by ENV.  ENV must be an
+alist which associate environment variables to their value.  PASSWD-ENTRY must
+be an object representing user information which corresponds to a valid entry
+in /etc/passwd.  The return value is not specified."
+  (for-each (lambda (pair) (setenv (car pair) (cdr pair)))
+            (let ((home-dir  (passwd:dir passwd-entry))
+                  (user-name (passwd:name passwd-entry)))
+              (append
+               ;; Default environment variables which can be overided by ENV.
+               `(("HOME"    . ,home-dir)
+                 ("CWD"     . ,home-dir)
+                 ("SHELL"   . ,(passwd:shell passwd-entry))
+                 ("TERM"    . #f)
+                 ("TERMCAP" . #f))
+               env
+               ;; Environment variables with imposed values.
+               `(("LOGNAME" . ,user-name)
+                 ("USER"    . ,user-name))))))
