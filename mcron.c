@@ -46,6 +46,7 @@
 
 #include <libguile.h>
 #include <signal.h>
+#include <stdlib.h>
 #include <string.h>
 
 /* Forward declarations.  */
@@ -59,7 +60,7 @@ main (int argc, char **argv)
   setenv ("GUILE_LOAD_PATH", GUILE_LOAD_PATH, 1);
   scm_boot_guile (argc, argv, inner_main, 0);
 
-  return 0;
+  return EXIT_SUCCESS;
 }
 
 /* The effective main function (i.e. the one that actually does some work).
@@ -101,5 +102,5 @@ void
 react_to_terminal_signal (int sig)
 {
   scm_c_eval_string ("(delete-run-file)");
-  exit (1);
+  exit (EXIT_FAILURE);
 }
