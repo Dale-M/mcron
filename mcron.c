@@ -18,31 +18,9 @@
    You should have received a copy of the GNU General Public License
    along with GNU Mcron.  If not, see <http://www.gnu.org/licenses/>.  */
 
-/* This C code represents the thinnest possible wrapper around the Guile code
-   which constitutes all the functionality of the mcron program.  There are
-   two plus one reasons why we need to do this, and one very unfortunate
-   consequence.
-
-   * Firstly, SUID does not work on an executable script.  In the end, it is
-     the execution of the translator, in our case guile, which determines the
-     effective user, and it is not wise to make the system guile installation
-     SUID root!
-
-   * Secondly, executable scripts show up in ugly ways in listings of the
-     system process table.  Guile in particular, with its multi-line
-     #! ...\ \n -s ...!#
-     idiosyncracies shows up in process listings in a way that is difficult
-     to determine what program is actually running.
-
-   * A third reason for the C wrapper which might be mentioned is that a
-     security-conscious system administrator can choose to only install a
-     binary, thus removing the possibility of a user studying a guile script
-     and working out ways of hacking it to his own ends, or worse still
-     finding a way to modify it to his own ends.
-
-   * Unfortunately, running the guile script from inside a C program means
-     that the sigaction function does not work.  Instead, it is necessary to
-     perform the signal processing in C.  */
+/* This C code represents a thin wrapper around the Guile code of Mcron.  It
+   is needed because the crontab personality requires SUID which is not
+   permitted for executable scripts.  */
 
 #include <libguile.h>
 #include <signal.h>
@@ -63,21 +41,19 @@ main (int argc, char **argv)
   return EXIT_SUCCESS;
 }
 
-/* The effective main function (i.e. the one that actually does some work).
-   We register the function above with the guile system, and then execute the
-   mcron guile program.  */
-
+/* Launch the Mcron Guile main program.  */
 void
 inner_main (void *closure, int argc, char **argv)
 {
   scm_set_current_module (scm_c_resolve_module ("mcron main"));
+  /* Register set_cron_signals to be called from Guile.  */
   scm_c_define_gsubr ("c-set-cron-signals", 0, 0, 0, set_cron_signals);
   scm_c_eval_string ("(main)");
 }
 
-/* This is a function designed to be callable from scheme, and sets up all the
-   signal handlers required by the cron personality.  */
-
+/* Set up all the signal handlers as required by the cron personality.  This
+   is necessary to perform the signal processing in C because the sigaction
+   function won't work when called from Guile.  */
 SCM
 set_cron_signals ()
 {
@@ -93,11 +69,8 @@ set_cron_signals ()
   return SCM_BOOL_T;
 }
 
-/* This is a function designed to be installed as a signal handler, for
-   signals which are supposed to initiate shutdown of this program.  It calls
-   the scheme procedure (see mcron.scm for details) to do all the work, and
-   then exits.  */
-
+/* Handle signal SIG and exit.  All signals that mcron handles will produce
+   the same behavior so we don't need to use SIG in the implementation.  */
 void
 react_to_terminal_signal (int sig)
 {
