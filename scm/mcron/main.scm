@@ -179,6 +179,15 @@ received."
                                         ((eof-object? in))
                                         (display in)))))
 
+(define (for-each-file proc directory)
+  "Apply PROC to each file in DIRECTORY.  DIRECTORY must be a valid directory name.
+PROC must be a procedure that take one file name argument.  The return value
+is not specified"
+  (let ((dir (opendir directory)))
+    (do ((file-name (readdir dir) (readdir dir)))
+        ((eof-object? file-name) (closedir dir))
+      (proc file-name))))
+
 (define process-user-file
   (let ((guile-regexp (make-regexp "\\.gui(le)?$"))
         (vixie-regexp (make-regexp "\\.vix(ie)?$")))
@@ -200,21 +209,19 @@ silently ignored."
 $XDG_CONFIG_HOME is not defined uses ~/.config/cron instead)."
   (let ((errors 0)
         (home-directory (passwd:dir (getpw (getuid)))))
-    (map (lambda (config-directory)
-          (catch #t
-                 (lambda ()
-                   (let ((directory (opendir config-directory)))
-                     (do ((file-name (readdir directory) (readdir directory)))
-                         ((eof-object? file-name) (closedir directory))
-                       (process-user-file (string-append config-directory
-                                                         "/"
-                                                         file-name)))))
-                 (lambda (key . args)
-                   (set! errors (1+ errors)))))
-          (list (string-append home-directory "/.cron")
-                (string-append (or (getenv "XDG_CONFIG_HOME")
-                                   (string-append home-directory "/.config"))
-                               "/cron")))
+    (map (lambda (dir)
+           (catch #t
+             (lambda ()
+               (for-each-file
+                (lambda (file)
+                  (process-user-file (string-append dir "/" file)))
+                dir))
+             (lambda (key . args)
+               (set! errors (1+ errors)))))
+         (list (string-append home-directory "/.cron")
+               (string-append (or (getenv "XDG_CONFIG_HOME")
+                                  (string-append home-directory "/.config"))
+                              "/cron")))
     (when (eq? 2 errors)
       (mcron-error 13
         "Cannot read files in your ~/.config/cron (or ~/.cron) directory."))))
@@ -236,19 +243,17 @@ run on behalf of the configuration files, the jobs are registered on the
 system with the appropriate user.  Only root should be able to perform this
 operation.  The permissions on the /var/cron/tabs directory enforce this."
   (catch #t
-         (lambda ()
-           (let ((directory (opendir config-spool-dir)))
-             (do ((file-name (readdir directory) (readdir directory)))
-                 ((eof-object? file-name))
-               (and-let* ((user (valid-user file-name)))
-                         (set-configuration-user user)         ;; / ?? !!!!
-                         (catch-mcron-error
-                          (read-vixie-file (string-append config-spool-dir
-                                                          "/"
-                                                          file-name)))))))
-         (lambda (key . args)
-           (mcron-error 4
-             "You do not have permission to access the system crontabs."))))
+    (lambda ()
+      (for-each-file
+       (lambda (user)
+         (and-let* ((user* (valid-user user))) ;crontab without user?
+           (set-configuration-user user*)
+           (catch-mcron-error
+            (read-vixie-file (string-append config-spool-dir "/" user)))))
+       config-spool-dir))
+    (lambda (key . args)
+      (mcron-error 4
+        "You do not have permission to access the system crontabs."))))
 
 (define (cron-file-descriptors)
   "Establish a socket to listen for updates from a crontab program, and return
