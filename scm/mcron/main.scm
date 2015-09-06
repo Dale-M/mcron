@@ -188,23 +188,21 @@ received."
 	   (mcron-error 0 (apply format (append (list #f fmt) args)))
 	   #f)))
 
-(define guile-file-regexp (make-regexp "\\.gui(le)?$"))
-(define vixie-file-regexp (make-regexp "\\.vix(ie)?$"))
-
-(define (process-user-file file-path . assume-guile)
-  "Process FILE-PATH according its extension.  When ASSUME-GUILE is non nil,
-usage of guile syntax is forced for FILE-PATH.  If a file is not recognized,
-it is silently ignored (this deals properly with most editors' backup files,
-for instance)."
-  (cond ((string=? file-path "-")
-               (if (string=? (option-ref options 'stdin "guile") "vixie")
-                   (read-vixie-port (current-input-port))
-                   (eval-string (stdin->string))))
-        ((or (not (null? assume-guile))
-             (regexp-exec guile-file-regexp file-path))
-         (load file-path))
-        ((regexp-exec vixie-file-regexp file-path)
-         (read-vixie-file file-path))))
+(define process-user-file
+  (let ((guile-regexp (make-regexp "\\.gui(le)?$"))
+        (vixie-regexp (make-regexp "\\.vix(ie)?$")))
+    (lambda* (file-name #:optional guile-syntax?)
+      "Process FILE-NAME according its extension.  When GUILE-SYNTAX? is TRUE,
+force guile syntax usage.  If FILE-NAME format is not recognized, it is
+silently ignored."
+      (cond ((string=? "-" file-name)
+             (if (string=? (option-ref options 'stdin "guile") "vixie")
+                 (read-vixie-port (current-input-port))
+                 (eval-string (stdin->string))))
+            ((or guile-syntax? (regexp-exec guile-regexp file-name))
+             (load file-name))
+            ((regexp-exec vixie-regexp file-name)
+             (read-vixie-file file-name))))))
 
 (define (process-files-in-user-directory)
   "Process files in $XDG_CONFIG_HOME/cron and/or ~/.cron directories (if
