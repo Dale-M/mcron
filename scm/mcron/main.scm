@@ -226,28 +226,22 @@ $XDG_CONFIG_HOME is not defined uses ~/.config/cron instead)."
       (mcron-error 13
         "Cannot read files in your ~/.config/cron (or ~/.cron) directory."))))
 
-(define (valid-user user-name)
-  "Check that USER-NAME is in the passwd database (it may happen that a user
-is removed after creating a crontab).  If the USER-NAME is valid, Return the
-full passwd entry for that user."
-  (setpwent)
-  (do ((entry (getpw) (getpw)))
-      ((or (not entry)
-           (string=? (passwd:name entry) user-name))
-       (endpwent)
-       entry)))
-
 (define (process-files-in-system-directory)
   "Process all the files in the crontab directory.  When the job procedure is
 run on behalf of the configuration files, the jobs are registered on the
 system with the appropriate user.  Only root should be able to perform this
 operation.  The permissions on the /var/cron/tabs directory enforce this."
+
+  (define (user-entry name)
+    ;; Return the user database entry if NAME is valid, otherwise #f.
+    (false-if-exception (getpwnam name)))
+
   (catch #t
     (lambda ()
       (for-each-file
        (lambda (user)
-         (and-let* ((user* (valid-user user))) ;crontab without user?
-           (set-configuration-user user*)
+         (and-let* ((entry (user-entry user))) ;crontab without user?
+           (set-configuration-user entry)
            (catch-mcron-error
             (read-vixie-file (string-append config-spool-dir "/" user)))))
        config-spool-dir))
