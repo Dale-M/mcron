@@ -179,15 +179,6 @@ received."
                                         ((eof-object? in))
                                         (display in)))))
 
-(define (regular-file? file)
-  "Return true if FILE is a regular file."
-  (catch 'system-error
-	 (lambda ()
-	   (eq? (stat:type (stat file)) 'regular))
-	 (lambda (key call fmt args . rest)
-	   (mcron-error 0 (apply format (append (list #f fmt) args)))
-	   #f)))
-
 (define process-user-file
   (let ((guile-regexp (make-regexp "\\.gui(le)?$"))
         (vixie-regexp (make-regexp "\\.vix(ie)?$")))
