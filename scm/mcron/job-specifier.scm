@@ -233,10 +233,9 @@
                       ((list? action) (lambda () (primitive-eval action)))
                       ((string? action) (lambda () (system action)))
                       (else 
-           (throw 'mcron-error 
-                  2
-                  "job: invalid second argument (action; should be lambda"
-                  " function, string or list)"))))
+           (throw 'mcron-error 2
+                  "job: invalid second argument (action; should be lambda "
+                  "function, string or list)"))))
 
         (time-proc
          (cond ((procedure? time-proc) time-proc)
@@ -244,10 +243,9 @@
                ((list? time-proc)      (lambda (current-time)
                                          (primitive-eval time-proc)))
                (else
-          (throw 'mcron-error 
-                 3       
-                 "job: invalid first argument (next-time-function; should ")
-                 "be function, string or list)")))
+                (throw 'mcron-error 3
+                       "job: invalid first argument (next-time-function; "
+                       "should be function, string or list)"))))
         (displayable
          (cond ((not (null? displayable)) (car displayable))
                ((procedure? action) "Lambda function")

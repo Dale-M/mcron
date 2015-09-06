@@ -217,8 +217,7 @@ $XDG_CONFIG_HOME is not defined uses ~/.config/cron instead)."
                                "/cron")))
     (when (eq? 2 errors)
       (mcron-error 13
-		   "Cannot read files in your ~/.config/cron (or ~/.cron) "
-		   "directory."))))
+        "Cannot read files in your ~/.config/cron (or ~/.cron) directory."))))
 
 (define (valid-user user-name)
   "Check that USER-NAME is in the passwd database (it may happen that a user
@@ -248,9 +247,8 @@ operation.  The permissions on the /var/cron/tabs directory enforce this."
                                                           "/"
                                                           file-name)))))))
          (lambda (key . args)
-           (mcron-error
-            4
-            "You do not have permission to access the system crontabs."))))
+           (mcron-error 4
+             "You do not have permission to access the system crontabs."))))
 
 (define (cron-file-descriptors)
   "Establish a socket to listen for updates from a crontab program, and return
@@ -265,9 +263,7 @@ crontab.  This requires that command-type is 'cron."
 	    (list sock)))
 	(lambda (key . args)
 	  (delete-file config-pid-file)
-	  (mcron-error 1
-		       "Cannot bind to UNIX socket "
-		       config-socket-file)))
+	  (mcron-error 1 "Cannot bind to UNIX socket " config-socket-file)))
       '()))
 
 (define (process-update-request fdes-list)
@@ -319,15 +315,12 @@ comes in on the above socket."
   (when (eq? command-type 'cron)
     (unless (eqv? (getuid) 0)
       (mcron-error 16
-                   "This program must be run by the root user (and should "
-                   "have been installed as such)."))
+        "This program must be run by the root user (and should have been "
+        "installed as such)."))
     (when (access? config-pid-file F_OK)
       (mcron-error 1
-                   "A cron daemon is already running.\n"
-                   "  (If you are sure this is not true, remove the file\n"
-                   "   "
-                   config-pid-file
-                   ".)"))
+        "A cron daemon is already running.\n  (If you are sure this is not"
+        " true, remove the file\n   " config-pid-file ".)"))
     (unless (option-ref options 'schedule #f)
       (with-output-to-file config-pid-file noop))
     (setenv "MAILTO" #f)

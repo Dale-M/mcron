@@ -162,13 +162,11 @@
                          (parse-vixie-environment line)
                          (parse-vixie-line line)))
                    (lambda (key exit-code . msg)
-                     (throw
-                      'mcron-error
-                      exit-code
-                      (apply string-append
-                             (number->string report-line)
-                             ": "
-                             msg)))))))))
+                     (throw 'mcron-error exit-code
+                            (apply string-append
+                                   (number->string report-line)
+                                   ": "
+                                   msg)))))))))
 
 
 
