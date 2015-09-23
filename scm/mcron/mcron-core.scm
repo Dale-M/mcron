@@ -1,3 +1,4 @@
+;;   Copyright (C) 2015, 2016 Mathieu Lirzin
 ;;   Copyright (C) 2003 Dale Mellor
 ;; 
 ;;   This file is part of GNU mcron.
@@ -19,6 +20,7 @@
 
 (define-module (mcron core)
   #:use-module (mcron environment)
+  #:use-module (srfi srfi-9)
   #:export     (add-job
                 remove-user-jobs
                 get-schedule
@@ -38,7 +40,7 @@
 
 ;; The list of all jobs known to the system. Each element of the list is
 ;;
-;;  (vector user next-time-function action environment displayable next-time)
+;;  (make-job user next-time-function action environment displayable next-time)
 ;;
 ;; where action must be a procedure, and the environment is an alist of
 ;; modifications that need making to the UNIX environment before the action is
@@ -60,18 +62,17 @@
 (define (use-system-job-list) (set! configuration-source 'system))
 (define (use-user-job-list) (set! configuration-source 'user))
 
-
-
-;; Convenience functions for getting and setting the elements of a job object.
-
-(define (job:user job)                (vector-ref job 0))
-(define (job:next-time-function job)  (vector-ref job 1))
-(define (job:action job)              (vector-ref job 2))
-(define (job:environment job)         (vector-ref job 3))
-(define (job:displayable job)         (vector-ref job 4))
-(define (job:next-time job)           (vector-ref job 5))
-
-
+;; A cron job.
+(define-record-type <job>
+  (make-job user time-proc action environment displayable next-time)
+  job?
+  (user        job:user)                ;object : passwd entry
+  (time-proc   job:next-time-function)  ;proc   : with one 'time' parameter
+  (action      job:action)              ;thunk  : user's code
+  (environment job:environment)         ;alist  : environment variables
+  (displayable job:displayable)         ;string : visible in schedule
+  (next-time   job:next-time            ;number : time in UNIX format
+               job:next-time-set!))
 
 ;; Remove jobs from the user-job-list belonging to this user.
 
@@ -97,12 +98,12 @@
 
 (define (add-job time-proc action displayable configuration-time
                  configuration-user)
-  (let ((entry (vector configuration-user
-                       time-proc
-                       action
-                       (get-current-environment-mods-copy)
-                       displayable
-                       (time-proc configuration-time))))
+  (let ((entry (make-job configuration-user
+                         time-proc
+                         action
+                         (get-current-environment-mods-copy)
+                         displayable
+                         (time-proc configuration-time))))
     (if (eq? configuration-source 'user)
       (set! user-job-list (cons entry user-job-list))
       (set! system-job-list (cons entry system-job-list)))))
@@ -165,18 +166,17 @@
     (lambda ()
       (do ((count count (- count 1)))
           ((eqv? count 0))
-        (and-let* ((next-jobs (find-next-jobs))
-                   (time (car next-jobs))
-                   (date-string (strftime "%c %z\n" (localtime time))))
-          (for-each (lambda (job)
-                      (display date-string)
-                      (display (job:displayable job))
-                      (newline)(newline)
-                      (vector-set! job
-                                   5
-                                   ((job:next-time-function job)
-                                                          (job:next-time job))))
-                    (cdr next-jobs)))))))
+        (and-let*
+         ((next-jobs (find-next-jobs))
+          (time (car next-jobs))
+          (date-string (strftime "%c %z\n" (localtime time))))
+         (for-each (lambda (job)
+                     (display date-string)
+                     (display (job:displayable job))
+                     (newline)(newline)
+                     (job:next-time-set! job ((job:next-time-function job)
+                                              (job:next-time job))))
+                   (cdr next-jobs)))))))
 
 
 
@@ -195,22 +195,21 @@
 ;; to run.
 
 (define (run-jobs jobs-list)
-  (for-each (lambda (job)
-              (if (eqv? (primitive-fork) 0)
-                  (begin
-                    (setgid (passwd:gid (job:user job)))
-                    (setuid (passwd:uid (job:user job)))
-                    (chdir (passwd:dir (job:user job)))
-                    (modify-environment (job:environment job) (job:user job))
-                    ((job:action job))
-                    (primitive-exit 0))
-                  (begin
-                    (set! number-children (+ number-children 1))
-                    (vector-set! job
-                                 5
-                                 ((job:next-time-function job)
-                                                            (current-time))))))
-            jobs-list))
+  (for-each
+   (lambda (job)
+     (if (eqv? (primitive-fork) 0)
+         (begin
+           (setgid (passwd:gid (job:user job)))
+           (setuid (passwd:uid (job:user job)))
+           (chdir (passwd:dir (job:user job)))
+           (modify-environment (job:environment job) (job:user job))
+           ((job:action job))
+           (primitive-exit 0))
+         (begin
+           (set! number-children (+ number-children 1))
+           (job:next-time-set! job ((job:next-time-function job)
+                                    (current-time))))))
+   jobs-list))
 
 
 
