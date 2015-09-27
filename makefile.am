@@ -24,10 +24,6 @@ SUBDIRS = scm/mcron .
 ED = @ED@   # !!!! Are these needed?
 CP = @CP@
 
-MAINTAINERCLEANFILES = configure makefile makefile.in config.guess config.sub \
-                       install-sh missing texinfo.tex INSTALL \
-                       aclocal.m4 compile depcomp mcron.1
-
 CLEANFILES = mcron.c
 
 EXTRA_DIST = makefile.ed mcron.c.template BUGS
