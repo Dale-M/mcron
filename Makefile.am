@@ -18,7 +18,7 @@
 
 bin_PROGRAMS = mcron
 mcron_SOURCES = mcron.c
-mcron_CFLAGS = @GUILE_CFLAGS@ -DGUILE_LOAD_PATH=\"$(datadir):./scm:...\"
+mcron_CFLAGS = @GUILE_CFLAGS@
 mcron_DEPENDENCIES = $(GOBJECTS) # Build Guile modules before linking.
 mcron_LDADD = @GUILE_LIBS@
 
@@ -65,13 +65,14 @@ dist_mcronmodule_DATA = 		\
 	$(AM_V_GUILEC)$(MKDIR_P) `dirname "$@"` ;			\
 	unset GUILE_LOAD_COMPILED_PATH ;				\
 	LC_ALL=C							\
-	$(GUILD) compile						\
+	$(top_builddir)/pre-inst-env $(GUILD) compile			\
 	  --load-path="$(top_builddir)/scm"				\
 	  --load-path="$(top_srcdir)/scm"				\
 	  --warn=format --warn=unbound-variable --warn=arity-mismatch	\
 	  --target="$(host)" --output="$@" "$<"
 
 SUFFIXES = .go
+noinst_SCRIPTS = pre-inst-env
 
 dist-hook: gen-ChangeLog
 
@@ -128,7 +129,7 @@ dist_man_MANS = doc/mcron.1
 # elemental man page.  Will only work once the mcron program is installed.
 doc/mcron.1: mcron.c
 	-$(AM_V_HELP2MAN)$(MKDIR_P) `dirname "$@"` ; 			\
-	$(HELP2MAN)							\
+	$(top_builddir)/pre-inst-env $(HELP2MAN)			\
 	  -n 'a program to run tasks at regular (or not) intervals'	\
 	  ./mcron > $@
 

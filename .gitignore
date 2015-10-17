@@ -25,6 +25,8 @@ aclocal.m4
 autom4te.cache
 compile
 config.cache
+config.h
+config.h.in
 config.log
 config.scm
 config.status
@@ -33,4 +35,6 @@ core.scm
 depcomp
 install-sh
 missing
+pre-inst-env
+stamp-h1
 texinfo.tex

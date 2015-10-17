@@ -22,6 +22,7 @@
    is needed because the crontab personality requires SUID which is not
    permitted for executable scripts.  */
 
+#include "config.h"
 #include <libguile.h>
 #include <signal.h>
 #include <stdlib.h>
@@ -35,7 +36,6 @@ static SCM set_cron_signals (void);
 int
 main (int argc, char **argv)
 {
-  setenv ("GUILE_LOAD_PATH", GUILE_LOAD_PATH, 1);
   scm_boot_guile (argc, argv, inner_main, 0);
 
   return EXIT_SUCCESS;
@@ -45,6 +45,14 @@ main (int argc, char **argv)
 static void
 inner_main (void *closure, int argc, char **argv)
 {
+  /* Set Guile load paths to ensure that Mcron modules will be found.  */
+  if (getenv ("MCRON_UNINSTALLED") == NULL)
+    {
+      scm_c_eval_string ("(set! %load-path (cons \""
+                         PACKAGE_LOAD_PATH "\" %load-path))");
+      scm_c_eval_string ("(set! %load-compiled-path (cons \""
+                         PACKAGE_LOAD_PATH "\" %load-compiled-path))");
+    }
   scm_set_current_module (scm_c_resolve_module ("mcron main"));
   /* Register set_cron_signals to be called from Guile.  */
   scm_c_define_gsubr ("c-set-cron-signals", 0, 0, 0, set_cron_signals);
