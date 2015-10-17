@@ -24,7 +24,7 @@
 AC_PREREQ(2.61)
 AC_INIT([GNU Mcron], [1.0.8], [bug-mcron@gnu.org])
 AC_CONFIG_AUX_DIR([build-aux])
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([subdir-objects])
 AM_SILENT_RULES([yes])		# enables silent rules by default
 
 mcronmoduledir="${datarootdir}/guile/site/2.0/mcron"
@@ -182,7 +182,6 @@ real_program_prefix=`echo $program_prefix | sed s/NONE//`
 AC_SUBST(real_program_prefix)
 
 AC_CONFIG_FILES([doc/config.texi
-                 makefile
-                 scm/mcron/makefile
+                 Makefile
                  scm/mcron/config.scm])
 AC_OUTPUT
