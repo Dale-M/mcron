@@ -116,6 +116,7 @@ uninstall-hook:
 
 EXTRA_DIST = BUGS
 CLEANFILES = $(GOBJECTS)
+DISTCLEANFILES = $(GEN_MODULES)
 
 ## --------------- ##
 ## Documentation.  ##
@@ -123,7 +124,12 @@ CLEANFILES = $(GOBJECTS)
 
 info_TEXINFOS = doc/mcron.texi
 doc_mcron_TEXINFOS = doc/fdl.texi
+nodist_doc_mcron_TEXINFOS = doc/config.texi
 dist_man_MANS = doc/mcron.1
+
+# XXX: Allow the inclusion of 'doc/fdl.texi' and 'doc/config.texi' inside
+# 'doc/mcron.texi' for 'dvi' and 'pdf' targets.
+TEXI2DVI = texi2dvi -I doc
 
 # Not part of formal package building, but a rule for manual use to get the
 # elemental man page.  Will only work once the mcron program is installed.
