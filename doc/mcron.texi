@@ -63,6 +63,7 @@ running jobs at scheduled times.
 * Syntax::                      All the possibilities for configuring cron jobs.
 * Invoking::                    What happens when you run the mcron command.
 * Guile modules::               Incorporating mcron into another Guile program.
+* GNU Free Documentation License::  The license of this manual.
 * Index::                       The complete index.
 
 @detailmenu
@@ -1328,6 +1329,11 @@ return silently.  Otherwise, the behaviour is identical to
 Once this module has been declared in a program, a crontab file can be
 used to augment the current job list with a call to
 @code{read-vixie-file}.
+
+@node GNU Free Documentation License
+@appendix GNU Free Documentation License
+
+@include fdl.texi
 
 @node Index,  , Guile modules, Top
 @unnumbered Index

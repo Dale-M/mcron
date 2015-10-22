@@ -1,15 +1,60 @@
-EXTRA_DIST = main.scm mcron-core.scm vixie-specification.scm \
-             crontab.scm environment.scm job-specifier.scm redirect.scm \
-             vixie-time.scm
+## Makefile for the scm/mcron directory of mcron.
 
-pkgdata_DATA = core.scm environment.scm job-specifier.scm redirect.scm \
-               vixie-time.scm vixie-specification.scm config.scm
+#  Copyright (C) 2015 Mathieu Lirzin
+#
+#  This file is part of GNU mcron.
+# 
+#  GNU mcron is free software: you can redistribute it and/or modify it under
+#  the terms of the GNU General Public License as published by the Free Software
+#  Foundation, either version 3 of the License, or (at your option) any later
+#  version.
+# 
+#  GNU mcron is distributed in the hope that it will be useful, but WITHOUT ANY
+#  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+#  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+# 
+#  You should have received a copy of the GNU General Public License along with
+#  GNU mcron.  If not, see <http://www.gnu.org/licenses/>.
+
+## Process this file with automake to produce makefile.in.
 
 
-# If you're wondering, the configure script keeps deleting all files with a name
-# like core.*, so we have to keep re-making it (I lost a good day's work because
-# of this).
+MODULES = environment.scm			\
+          job-specifier.scm			\
+          main.scm					\
+          mcron-core.scm			\
+          redirect.scm				\
+          vixie-specification.scm	\
+          vixie-time.scm
 
-core.scm : mcron-core.scm
-	$(CP) mcron-core.scm core.scm
+GOBJECTS = $(MODULES:%.scm=%.go) config.go
 
+nobase_dist_guilemodule_DATA = $(MODULES) crontab.scm
+nobase_nodist_guilemodule_DATA = $(GOBJECTS) config.scm
+
+CLEANFILES = $(GOBJECTS)
+
+AM_V_GUILEC = $(AM_V_GUILEC_$(V))
+AM_V_GUILEC_ = $(AM_V_GUILEC_$(AM_DEFAULT_VERBOSITY))
+AM_V_GUILEC_0 = @echo "  GUILEC" $@;
+
+# Unset 'GUILE_LOAD_COMPILED_PATH' altogether while compiling.  Otherwise, if
+# $GUILE_LOAD_COMPILED_PATH contains $(moduledir), we may find .go files in
+# there that are newer than the local .scm files (for instance because the
+# user ran 'make install' recently).  When that happens, we end up loading
+# those previously-installed .go files, which may be stale, thereby breaking
+# the whole thing.
+#
+# XXX: Use the C locale for when Guile lacks
+# <http://git.sv.gnu.org/cgit/guile.git/commit/?h=stable-2.0&id=e2c6bf3866d1186c60bacfbd4fe5037087ee5e3f>.
+.scm.go:
+	$(AM_V_GUILEC)$(MKDIR_P) `dirname "$@"` ;			\
+	unset GUILE_LOAD_COMPILED_PATH ;					\
+	LC_ALL=C											\
+	$(GUILD) compile									\
+	  -L "$(top_builddir)/scm" -L "$(top_srcdir)/scm"	\
+	  -Wformat -Wunbound-variable -Warity-mismatch		\
+	  --target="$(host)"								\
+	  -o "$@" "$<"
+
+SUFFIXES = .go

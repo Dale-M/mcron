@@ -31,6 +31,7 @@
 
 (define-module (mcron redirect)
   #:export (with-mail-out)
+  #:use-module (ice-9 regex)
   #:use-module ((mcron config) :select (config-sendmail))
   #:use-module (mcron vixie-time))
 

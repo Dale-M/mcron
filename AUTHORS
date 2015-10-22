@@ -1,6 +1,6 @@
 Authors of GNU mcron.
 
-  Copyright (C) 2003, 2005, 2006  Dale Mellor
+  Copyright (C) 2003, 2005, 2006, 2015  Dale Mellor
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
@@ -16,3 +16,6 @@ The section of the manual which describes in detail the syntax for Vixie-style
     configuration files is copied verbatim from Paul Vixie's own distribution,
     on the understanding that this is permitted under his copyright notice,
     which is reproduced in its entirety in this section of the manual.
+
+Further contributions have been received from Sergey Poznyakoff and Mathieu
+    Lirzin, and incorporated where appropriate.
