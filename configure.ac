@@ -23,6 +23,7 @@
 
 AC_PREREQ(2.61)
 AC_INIT([mcron], [1.0.8], [dale_mellor@users.sourceforge.net])
+AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE
 
 

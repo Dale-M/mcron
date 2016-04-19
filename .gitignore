@@ -3,7 +3,14 @@
 INSTALL
 aclocal.m4
 autom4te.cache
+/build-aux/compile
+/build-aux/depcomp
+/build-aux/install-sh
+/build-aux/mdate-sh
+/build-aux/missing
+/build-aux/texinfo.tex
 compile
+config.cache
 config.log
 config.scm
 config.status
