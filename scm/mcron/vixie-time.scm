@@ -15,15 +15,13 @@
 ;;   You should have received a copy of the GNU General Public License along
 ;;   with GNU mcron.  If not, see <http://www.gnu.org/licenses/>.
 
-
 (define-module (mcron vixie-time)
-  #:export (parse-vixie-time)
-  #:use-module (mcron job-specifier))
-
-
-(use-modules (srfi srfi-1) (srfi srfi-13) (srfi srfi-14)
-             (ice-9 regex))
-
+  #:use-module (ice-9 regex)
+  #:use-module (mcron job-specifier)
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-13)
+  #:use-module (srfi srfi-14)
+  #:export (parse-vixie-time))
 
 ;; In Vixie-style time specifications three-letter symbols are allowed to stand
 ;; for the numbers corresponding to months and days of the week. We deal with
@@ -179,11 +177,12 @@
 ;; simply unreadable without all of these aliases.
 
 (define (increment-time-component time time-spec)
-  (let* ((time-list   (time-spec:list   time-spec))
-         (getter      (time-spec:getter time-spec))
-         (setter      (time-spec:setter time-spec))
-         (next-best   (find-best-next (getter time) time-list))
-         (wrap-around (eqv? (cdr next-best) 9999)))
+  (let* ((time-list      (time-spec:list   time-spec))
+         (getter         (time-spec:getter time-spec))
+         (setter         (time-spec:setter time-spec))
+         (find-best-next (@@ (mcron job-specifier) %find-best-next))
+         (next-best      (find-best-next (getter time) time-list))
+         (wrap-around    (eqv? (cdr next-best) 9999)))
     (setter time ((if wrap-around car cdr) next-best))
     wrap-around))
 

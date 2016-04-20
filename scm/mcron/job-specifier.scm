@@ -24,6 +24,13 @@
 ;; add-job function), and the procedure for declaring environment modifications.
 
 (define-module (mcron job-specifier)
+  #:use-module (ice-9 match)
+  #:use-module (mcron core)
+  #:use-module (mcron environment)
+  #:use-module (mcron vixie-time)
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
+  #:re-export (append-environment-mods)
   #:export (range
             next-year-from         next-year
             next-month-from        next-month
@@ -33,15 +40,7 @@
             next-second-from       next-second
             set-configuration-user
             set-configuration-time
-            job
-            find-best-next)
-  #:use-module (mcron core)
-  #:use-module (mcron environment)
-  #:use-module (mcron vixie-time)
-  #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-26)
-  #:re-export (append-environment-mods))
-
+            job))
 
 (define* (range start end #:optional (step 1))
   "Produces a list of values from START up to (but not including) END.  An
@@ -49,25 +48,18 @@ optional STEP may be supplied, and (if positive) only every step'th value will
 go into the list.  For example, (range 1 6 2) returns '(1 3 5)."
   (unfold (cut >= <> end) identity (cute + <> (max step 1)) start))
 
-;; Internal function (not supposed to be used directly in configuration files;
-;; it is exported from the module for the convenience of other parts of the
-;; mcron implementation) which takes a value and a list of possible next values
-;; (all assumed less than 9999). It returns a pair consisting of the smallest
-;; element of the list, and the smallest element larger than the current
-;; value. If an example of the latter cannot be found, 9999 will be returned.
-
-(define (find-best-next current next-list)
-  (let ((current-best (cons 9999 9999)))
-    (for-each (lambda (allowed-time)
-                          (if (< allowed-time (car current-best))
-                              (set-car! current-best allowed-time))
-                          (if (and (> allowed-time current)
-                                   (< allowed-time (cdr current-best)))
-                              (set-cdr! current-best allowed-time)))
-              next-list)
-    current-best))
-
-
+(define (%find-best-next current next-list)
+  ;; Takes a value and a list of possible next values (all assumed less than
+  ;; 9999). It returns a pair consisting of the smallest element of the
+  ;; NEXT-LIST, and the smallest element larger than the CURRENT value. If an
+  ;; example of the latter cannot be found, 9999 will be returned.
+  (let loop ((smallest 9999) (closest+ 9999) (lst next-list))
+    (match lst
+      (() (cons smallest closest+))
+      ((time . rest)
+       (loop (min time smallest)
+             (if (> time current) (min time closest+) closest+)
+             rest)))))
 
 ;; Internal function to return the time corresponding to some near future
 ;; hour. If hour-list is not supplied, the time returned corresponds to the
@@ -89,7 +81,7 @@ go into the list.  For example, (range 1 6 2) returns '(1 3 5)."
                    set-component! set-higher-component!)
   (if (null? value-list)
       (set-component! time (+ (component time) 1))
-      (let ((best-next (find-best-next (component time) (car value-list))))
+      (let ((best-next (%find-best-next (component time) (car value-list))))
         (if (eqv? 9999 (cdr best-next))
             (begin
               (set-higher-component! time (+ (higher-component time) 1))
