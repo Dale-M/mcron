@@ -1,4 +1,5 @@
 ;;   Copyright (C) 2003 Dale Mellor
+;;   Copyright (C) 2016 Mathieu Lirzin
 ;; 
 ;;   This file is part of GNU mcron.
 ;;
@@ -37,26 +38,16 @@
   #:use-module (mcron core)
   #:use-module (mcron environment)
   #:use-module (mcron vixie-time)
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
   #:re-export (append-environment-mods))
 
 
-
-;; Function (available to user configuration files) which produces a list of
-;; values from start up to (but not including) end. An optional step may be
-;; supplied, and (if positive) only every step'th value will go into the
-;; list. For example, (range 1 6 2) returns '(1 3 5).
-
-(define (range start end . step)
-  (let ((step (if (or (null? step)
-                      (<= (car step) 0))
-                  1
-                  (car step))))
-    (let loop ((start start))
-      (if (>= start end) '()
-          (cons start
-                (loop (+ start step)))))))
-
-
+(define* (range start end #:optional (step 1))
+  "Produces a list of values from START up to (but not including) END.  An
+optional STEP may be supplied, and (if positive) only every step'th value will
+go into the list.  For example, (range 1 6 2) returns '(1 3 5)."
+  (unfold (cut >= <> end) identity (cute + <> (max step 1)) start))
 
 ;; Internal function (not supposed to be used directly in configuration files;
 ;; it is exported from the module for the convenience of other parts of the
