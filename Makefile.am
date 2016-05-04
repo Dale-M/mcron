@@ -57,13 +57,14 @@ dist_mcronmodule_DATA = 		\
 # in there that are newer than the local .scm files (for instance because the
 # user ran 'make install' recently).  When that happens, we end up loading
 # those previously-installed .go files, which may be stale, thereby breaking
-# the whole thing.
+# the whole thing.  Set GUILE_AUTO_COMPILE to 0 to avoid auto-compiling guild
+# as a consequence of the previous hack.
 #
 # XXX: Use the C locale for when Guile lacks
 # <http://git.sv.gnu.org/cgit/guile.git/commit/?h=stable-2.0&id=e2c6bf3866d1186c60bacfbd4fe5037087ee5e3f>.
 .scm.go:
 	$(AM_V_GUILEC)$(MKDIR_P) `dirname "$@"` ;			\
-	unset GUILE_LOAD_COMPILED_PATH ;				\
+	export GUILE_AUTO_COMPILE=0 ; unset GUILE_LOAD_COMPILED_PATH ;	\
 	LC_ALL=C							\
 	$(top_builddir)/pre-inst-env $(GUILD) compile			\
 	  --load-path="$(top_builddir)/scm"				\
