@@ -22,21 +22,21 @@ mcron_CFLAGS = @GUILE_CFLAGS@
 mcron_DEPENDENCIES = $(mcronmodule_DATA)
 mcron_LDADD = @GUILE_LIBS@
 
-MODULES =				\
-  src/mcron/base.scm			\
-  src/mcron/environment.scm		\
-  src/mcron/job-specifier.scm		\
-  src/mcron/main.scm			\
-  src/mcron/redirect.scm		\
-  src/mcron/vixie-specification.scm	\
+modules = \
+  src/mcron/base.scm \
+  src/mcron/environment.scm \
+  src/mcron/job-specifier.scm \
+  src/mcron/main.scm \
+  src/mcron/redirect.scm \
+  src/mcron/vixie-specification.scm \
   src/mcron/vixie-time.scm
 
-mcronmodule_DATA =			\
-  $(MODULES:%.scm=%.go)			\
+mcronmodule_DATA = \
+  $(modules:%.scm=%.go) \
   src/mcron/config.go
 
-dist_mcronmodule_DATA = 		\
-  $(MODULES)				\
+dist_mcronmodule_DATA = \
+  $(modules) \
   src/mcron/crontab.scm
 
 # Unset 'GUILE_LOAD_COMPILED_PATH' altogether while compiling.  Otherwise, if
