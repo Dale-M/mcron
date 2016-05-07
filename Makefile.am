@@ -19,7 +19,7 @@
 bin_PROGRAMS = mcron
 mcron_SOURCES = src/mcron.c
 mcron_CFLAGS = @GUILE_CFLAGS@
-mcron_DEPENDENCIES = $(GOBJECTS) # Build Guile modules before linking.
+mcron_DEPENDENCIES = $(mcronmodule_DATA)
 mcron_LDADD = @GUILE_LIBS@
 
 MODULES =				\
@@ -31,16 +31,9 @@ MODULES =				\
   src/mcron/vixie-specification.scm	\
   src/mcron/vixie-time.scm
 
-GEN_MODULES =				\
-  src/mcron/config.scm
-
-GOBJECTS =				\
-  $(GEN_MODULES:%.scm=%.go)		\
-  $(MODULES:%.scm=%.go)
-
 mcronmodule_DATA =			\
-  $(GOBJECTS)				\
-  $(GEN_MODULES)
+  $(MODULES:%.scm=%.go)			\
+  src/mcron/config.go
 
 dist_mcronmodule_DATA = 		\
   $(MODULES)				\
@@ -110,8 +103,8 @@ uninstall-hook:
     fi
 
 EXTRA_DIST = BUGS
-CLEANFILES = $(GOBJECTS)
-DISTCLEANFILES = $(GEN_MODULES)
+CLEANFILES = $(mcronmodule_DATA)
+DISTCLEANFILES = src/config.scm
 
 ## --------------- ##
 ## Documentation.  ##
