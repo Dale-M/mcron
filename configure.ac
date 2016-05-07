@@ -24,6 +24,7 @@
 AC_PREREQ(2.61)
 AC_INIT([GNU Mcron], [1.0.8], [bug-mcron@gnu.org])
 AC_CONFIG_HEADER([src/config.h])
+AC_CONFIG_SRCDIR([src/mcron.c])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([subdir-objects])
 AM_SILENT_RULES([yes])		# enables silent rules by default
