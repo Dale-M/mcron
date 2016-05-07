@@ -271,11 +271,13 @@ on your system, as root.
 @cindex guile syntax
 @cindex syntax, guile
 @findex job
-In Guile-formatted configuration files each command that needs
-executing is introduced with the @code{job} function.  This function
-always takes two arguments, the first a time specification, and the
-second a command specification.  An optional third argument may contain
-a string to display when this job is listed in a schedule.
+In Guile-formatted configuration files each command that needs executing is
+introduced with the @code{job} function.  This function always takes two
+arguments, the first a time specification, and the second a command
+specification.  An optional third argument may contain a string to display
+when this job is listed in a schedule.  Additionally a @var{user} keyword
+argument can be supplied to use a different user than the one defined in
+@code{configuration-user} global variable.
 
 @cindex time specification, procedure
 @cindex procedure time specification
@@ -342,13 +344,12 @@ on Vixie syntax for this.
 @cindex job execution
 @cindex command execution
 @cindex execution
-The second argument to the @code{(job)} function can be either a
-string, a list, or a function.  In all cases the command is executed in
-the user's home directory, under the user's own UID.  If a string is
-passed, it is assumed to be shell script and is executed with the
-user's default shell.  If a list is passed it is assumed to be scheme
-code and is eval'd as such.  A supplied function should take exactly
-zero arguments, and will be called at the pertinent times.
+The second argument to the @code{(job)} function can be either a string, a
+list, or a function.  The command is executed in the home directory and with
+the UID of @var{user}.  If a string is passed, it is assumed to be shell
+script and is executed with the user's default shell.  If a list is passed it
+is assumed to be scheme code and is eval'd as such.  A supplied function
+should take exactly zero arguments, and will be called at the pertinent times.
 
 @subsection Sending output as e-mail
 @cindex email output

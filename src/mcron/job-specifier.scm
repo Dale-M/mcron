@@ -212,7 +212,8 @@ go into the list.  For example, (range 1 6 2) returns '(1 3 5)."
 ;; finding the next legitimate time from the current configuration time (set
 ;; right at the top of this program).
 
-(define (job time-proc action . displayable)
+(define* (job time-proc action #:optional displayable
+              #:key (user configuration-user))
   (let ((action (cond ((procedure? action) action)
                       ((list? action) (lambda () (primitive-eval action)))
                       ((string? action) (lambda () (system action)))
@@ -231,11 +232,14 @@ go into the list.  For example, (range 1 6 2) returns '(1 3 5)."
                        "job: invalid first argument (next-time-function; "
                        "should be function, string or list)"))))
         (displayable
-         (cond ((not (null? displayable)) (car displayable))
+         (cond (displayable displayable)
                ((procedure? action) "Lambda function")
                ((string? action) action)
                ((list? action) (with-output-to-string
-                                 (lambda () (display action)))))))
+                                 (lambda () (display action))))))
+        (user* (if (or (string? user) (integer? user))
+                   (getpw user)
+                   user)))
     (add-job (lambda (current-time)
                (set! current-action-time current-time)  ;; ?? !!!!  Code
                
@@ -251,4 +255,4 @@ go into the list.  For example, (range 1 6 2) returns '(1 3 5)."
              action
              displayable
              configuration-time
-             configuration-user)))
+             user*)))
