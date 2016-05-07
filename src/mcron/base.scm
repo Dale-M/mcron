@@ -1,3 +1,4 @@
+;;   Copyright (C) 2016 Ludovic Courtès
 ;;   Copyright (C) 2015, 2016 Mathieu Lirzin
 ;;   Copyright (C) 2003 Dale Mellor
 ;; 
@@ -198,13 +199,16 @@
   (for-each
    (lambda (job)
      (if (eqv? (primitive-fork) 0)
-         (begin
-           (setgid (passwd:gid (job:user job)))
-           (setuid (passwd:uid (job:user job)))
-           (chdir (passwd:dir (job:user job)))
-           (modify-environment (job:environment job) (job:user job))
-           ((job:action job))
-           (primitive-exit 0))
+         (dynamic-wind
+           (const #t)
+           (lambda ()
+             (setgid (passwd:gid (job:user job)))
+             (setuid (passwd:uid (job:user job)))
+             (chdir (passwd:dir (job:user job)))
+             (modify-environment (job:environment job) (job:user job))
+             ((job:action job)))
+           (lambda ()
+             (primitive-exit 0)))
          (begin
            (set! number-children (+ number-children 1))
            (job:next-time-set! job ((job:next-time-function job)
