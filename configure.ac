@@ -23,7 +23,7 @@
 
 AC_PREREQ(2.61)
 AC_INIT([GNU Mcron], [1.0.8], [bug-mcron@gnu.org])
-AC_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADER([src/config.h])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([subdir-objects])
 AM_SILENT_RULES([yes])		# enables silent rules by default
@@ -187,5 +187,5 @@ AC_CONFIG_FILES([pre-inst-env:build-aux/pre-inst-env.in],
   [chmod +x pre-inst-env])
 AC_CONFIG_FILES([doc/config.texi
                  Makefile
-                 scm/mcron/config.scm])
+                 src/mcron/config.scm])
 AC_OUTPUT

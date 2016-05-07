@@ -2,6 +2,7 @@
 *.o
 *~
 .deps
+.dirstamp
 /build-aux/compile
 /build-aux/config.guess
 /build-aux/config.sub
@@ -10,7 +11,6 @@
 /build-aux/mdate-sh
 /build-aux/missing
 /build-aux/texinfo.tex
-/doc/.dirstamp
 /doc/config.texi
 /doc/mcron.1
 /doc/mcron.info

@@ -17,26 +17,26 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 bin_PROGRAMS = mcron
-mcron_SOURCES = mcron.c
+mcron_SOURCES = src/mcron.c
 mcron_CFLAGS = @GUILE_CFLAGS@
 mcron_DEPENDENCIES = $(GOBJECTS) # Build Guile modules before linking.
 mcron_LDADD = @GUILE_LIBS@
 
 MODULES =				\
-  scm/mcron/environment.scm		\
-  scm/mcron/job-specifier.scm		\
-  scm/mcron/main.scm			\
-  scm/mcron/redirect.scm		\
-  scm/mcron/vixie-specification.scm	\
-  scm/mcron/vixie-time.scm
+  src/mcron/environment.scm		\
+  src/mcron/job-specifier.scm		\
+  src/mcron/main.scm			\
+  src/mcron/redirect.scm		\
+  src/mcron/vixie-specification.scm	\
+  src/mcron/vixie-time.scm
 
 GEN_MODULES =				\
-  scm/mcron/config.scm			\
-  scm/mcron/core.scm
+  src/mcron/config.scm			\
+  src/mcron/core.scm
 
 CP = @CP@
 # XXX: Prevent the 'configure' script to delete the 'core.*' files.
-scm/mcron/core.scm: scm/mcron/mcron-core.scm
+src/mcron/core.scm: src/mcron/mcron-core.scm
 	$(CP) $< $@
 
 GOBJECTS =				\
@@ -49,8 +49,8 @@ mcronmodule_DATA =			\
 
 dist_mcronmodule_DATA = 		\
   $(MODULES)				\
-  scm/mcron/crontab.scm			\
-  scm/mcron/mcron-core.scm
+  src/mcron/crontab.scm			\
+  src/mcron/mcron-core.scm
 
 # Unset 'GUILE_LOAD_COMPILED_PATH' altogether while compiling.  Otherwise, if
 # $GUILE_LOAD_COMPILED_PATH contains $(mcronmoduledir), we may find .go files
@@ -67,8 +67,8 @@ dist_mcronmodule_DATA = 		\
 	export GUILE_AUTO_COMPILE=0 ; unset GUILE_LOAD_COMPILED_PATH ;	\
 	LC_ALL=C							\
 	$(top_builddir)/pre-inst-env $(GUILD) compile			\
-	  --load-path="$(top_builddir)/scm"				\
-	  --load-path="$(top_srcdir)/scm"				\
+	  --load-path="$(top_builddir)/src"				\
+	  --load-path="$(top_srcdir)/src"				\
 	  --warn=format --warn=unbound-variable --warn=arity-mismatch	\
 	  --target="$(host)" --output="$@" "$<"
 
@@ -134,7 +134,7 @@ TEXI2DVI = texi2dvi -I doc
 
 # Not part of formal package building, but a rule for manual use to get the
 # elemental man page.  Will only work once the mcron program is installed.
-doc/mcron.1: mcron.c
+doc/mcron.1: src/mcron.c
 	-$(AM_V_HELP2MAN)$(MKDIR_P) `dirname "$@"` ; 			\
 	$(top_builddir)/pre-inst-env $(HELP2MAN)			\
 	  -n 'a program to run tasks at regular (or not) intervals'	\
