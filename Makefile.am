@@ -23,6 +23,7 @@ mcron_DEPENDENCIES = $(GOBJECTS) # Build Guile modules before linking.
 mcron_LDADD = @GUILE_LIBS@
 
 MODULES =				\
+  src/mcron/base.scm			\
   src/mcron/environment.scm		\
   src/mcron/job-specifier.scm		\
   src/mcron/main.scm			\
@@ -31,13 +32,7 @@ MODULES =				\
   src/mcron/vixie-time.scm
 
 GEN_MODULES =				\
-  src/mcron/config.scm			\
-  src/mcron/core.scm
-
-CP = @CP@
-# XXX: Prevent the 'configure' script to delete the 'core.*' files.
-src/mcron/core.scm: src/mcron/mcron-core.scm
-	$(CP) $< $@
+  src/mcron/config.scm
 
 GOBJECTS =				\
   $(GEN_MODULES:%.scm=%.go)		\
@@ -49,8 +44,7 @@ mcronmodule_DATA =			\
 
 dist_mcronmodule_DATA = 		\
   $(MODULES)				\
-  src/mcron/crontab.scm			\
-  src/mcron/mcron-core.scm
+  src/mcron/crontab.scm
 
 # Unset 'GUILE_LOAD_COMPILED_PATH' altogether while compiling.  Otherwise, if
 # $GUILE_LOAD_COMPILED_PATH contains $(mcronmoduledir), we may find .go files

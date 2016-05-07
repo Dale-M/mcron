@@ -25,7 +25,7 @@
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 regex)
   #:use-module (mcron config)
-  #:use-module (mcron core)
+  #:use-module (mcron base)
   #:use-module (mcron job-specifier)
   #:use-module (mcron vixie-specification)
   #:use-module (srfi srfi-2)
@@ -389,7 +389,7 @@ option.\n")
         (lambda () (display (getpid)) (newline)))))
 
   ;; Now the main loop. Forever execute the run-job-loop procedure in the
-  ;; mcron core, and when it drops out (can only be because a message has come
+  ;; mcron base, and when it drops out (can only be because a message has come
   ;; in on the socket) we process the socket request before restarting the
   ;; loop again.  Sergey Poznyakoff: we can also drop out of run-job-loop
   ;; because of a SIGCHLD, so must test FDES-LIST.

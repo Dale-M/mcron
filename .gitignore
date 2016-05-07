@@ -31,7 +31,6 @@ config.log
 config.scm
 config.status
 configure
-core.scm
 depcomp
 install-sh
 missing

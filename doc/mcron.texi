@@ -104,7 +104,7 @@ Detailed invoking
 
 Guile modules
 
-* The core module::             The job list and execution loop.
+* The base module::             The job list and execution loop.
 * The redirect module::         Sending output of jobs to a mail box.
 * The vixie-time module::       Parsing vixie-style time specifications.
 * The job-specifier module::    All commands for scheme configuration files.
@@ -327,7 +327,7 @@ taken to be program code made up of the functions @code{(next-second
 . args)}, @code{(next-minute...)}, etc, where the optional arguments
 can be supplied with the @code{(range)} function above (these
 functions are analogous to the ones above except that they implicitly
-assume the current time; it is supplied by the mcron core when the
+assume the current time; it is supplied by the mcron base when the
 list is eval'd).
 
 @cindex time specification
@@ -1150,26 +1150,26 @@ non-absolute time specified on the Gregorian calendar (the first day
 of next week, for example).  Finally, it may be the wish of the user to
 provide a program with the functionality of mcron plus a bit extra.
 
-The core module maintains mcron's internal job lists, and provides the
+The base module maintains mcron's internal job lists, and provides the
 main wait-run-wait loop that is mcron's main function.  It also
 introduces the facilities for accumulating a set of environment
 modifiers, which take effect when jobs run.
 
 @menu
-* The core module::             The job list and execution loop.
+* The base module::             The job list and execution loop.
 * The redirect module::         Sending output of jobs to a mail box.
 * The vixie-time module::       Parsing vixie-style time specifications.
 * The job-specifier module::    All commands for scheme configuration files.
 * The vixie-specification module::  Commands for reading vixie-style crontabs.
 @end menu
 
-@node The core module, The redirect module, Guile modules, Guile modules
-@section The core module
+@node The base module, The redirect module, Guile modules, Guile modules
+@section The base module
 @cindex guile module
-@cindex core module
-@cindex modules, core
+@cindex base module
+@cindex modules, base
 
-This module may be used by including @code{(use-modules (mcron core))}
+This module may be used by including @code{(use-modules (mcron base))}
 in a program.  The main functions are @code{add-job} and
 @code{run-job-loop}, which allow a program to create a list of job
 specifications to run, and then to initiate the wait-run-wait loop
@@ -1221,7 +1221,7 @@ becoming available for reading on one of the file descriptors in the
 fd-list, if supplied.  Only in this case will the procedure return to
 the calling program, which may then make modifications to the job list
 before calling the @code{run-job-loop} procedure again to resume execution of
-the mcron core.
+the mcron base.
 @end deffn
 
 @deffn{Scheme procedure} remove-user-jobs user
@@ -1242,7 +1242,7 @@ last job that was reported in the schedule report.  The report itself
 is returned to the calling program as a string.
 @end deffn
 
-@node The redirect module, The vixie-time module, The core module, Guile modules
+@node The redirect module, The vixie-time module, The base module, Guile modules
 @section The redirect module
 @cindex redirect module
 @cindex modules, redirect
@@ -1263,7 +1263,7 @@ vixie-time))}.
 
 This module provides a single method for converting a vixie-style time
 specification into a procedure which can be used as the
-@code{next-time-function} to the core @code{add-job} procedure, or to
+@code{next-time-function} to the base @code{add-job} procedure, or to
 the @code{job-specifier} @code{job} procedure.  See @ref{Vixie Syntax}
 for full details of the allowed format for the time string.
 

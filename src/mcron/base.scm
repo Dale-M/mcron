@@ -18,7 +18,7 @@
 
 
 
-(define-module (mcron core)
+(define-module (mcron base)
   #:use-module (mcron environment)
   #:use-module (srfi srfi-9)
   #:export     (add-job

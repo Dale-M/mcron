@@ -30,7 +30,7 @@
             read-vixie-file
             check-system-crontab)
   #:use-module ((mcron config) :select (config-socket-file))
-  #:use-module (mcron core)
+  #:use-module (mcron base)
   #:use-module (mcron job-specifier)
   #:use-module (mcron redirect)
   #:use-module (mcron vixie-time))

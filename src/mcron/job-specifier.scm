@@ -20,12 +20,13 @@
 
 ;; This module defines all the functions that can be used by scheme mcron
 ;; configuration files, namely the procedures for working out next times, the
-;; job procedure for registering new jobs (actually a wrapper around the core
-;; add-job function), and the procedure for declaring environment modifications.
+;; job procedure for registering new jobs (actually a wrapper around the
+;; base add-job function), and the procedure for declaring environment
+;; modifications.
 
 (define-module (mcron job-specifier)
   #:use-module (ice-9 match)
-  #:use-module (mcron core)
+  #:use-module (mcron base)
   #:use-module (mcron environment)
   #:use-module (mcron vixie-time)
   #:use-module (srfi srfi-1)
