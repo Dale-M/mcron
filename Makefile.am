@@ -61,6 +61,15 @@ modules = \
   $(dist_mcronscript_DATA) \
   src/mcron/config.scm
 
+TEST_EXTENSIONS = .scm
+AM_TESTS_ENVIRONMENT = env GUILE_AUTO_COMPILE='0'
+
+SCM_LOG_DRIVER = \
+  $(builddir)/pre-inst-env $(GUILE) \
+  $(srcdir)/build-aux/test-driver.scm
+
+TESTS = tests/job-specifier.scm
+
 # Unset 'GUILE_LOAD_COMPILED_PATH' altogether while compiling.  Otherwise, if
 # $GUILE_LOAD_COMPILED_PATH contains $(mcronmoduledir), we may find .go files
 # in there that are newer than the local .scm files (for instance because the
@@ -124,7 +133,7 @@ uninstall-hook:
         rm -f $(fpp){cron,crontab}$(EXEEXT); \
     fi
 
-EXTRA_DIST = BUGS
+EXTRA_DIST = BUGS $(TESTS)
 DISTCLEANFILES = src/config.scm
 CLEANFILES = \
   $(modules:%.scm=%.go) \

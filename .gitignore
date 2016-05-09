@@ -1,5 +1,7 @@
 *.go
+*.log
 *.o
+*.trs
 *~
 .deps
 .dirstamp
