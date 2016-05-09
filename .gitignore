@@ -11,6 +11,8 @@
 /build-aux/mdate-sh
 /build-aux/missing
 /build-aux/texinfo.tex
+/cron
+/crontab
 /doc/config.texi
 /doc/mcron.1
 /doc/mcron.info

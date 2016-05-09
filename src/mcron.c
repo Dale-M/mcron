@@ -53,7 +53,7 @@ inner_main (void *closure, int argc, char **argv)
       scm_c_eval_string ("(set! %load-compiled-path (cons \""
                          PACKAGE_LOAD_PATH "\" %load-compiled-path))");
     }
-  scm_set_current_module (scm_c_resolve_module ("mcron main"));
+  scm_set_current_module (scm_c_resolve_module ("mcron scripts " PROGRAM));
   /* Register set_cron_signals to be called from Guile.  */
   scm_c_define_gsubr ("c-set-cron-signals", 0, 0, 0, set_cron_signals);
   scm_c_eval_string ("(main)");

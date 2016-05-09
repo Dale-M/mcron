@@ -16,13 +16,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-bin_PROGRAMS = mcron
-mcron_SOURCES = src/mcron.c
-mcron_CFLAGS = @GUILE_CFLAGS@
-mcron_DEPENDENCIES = $(mcronmodule_DATA)
-mcron_LDADD = @GUILE_LIBS@
+bin_PROGRAMS = mcron crontab
+sbin_PROGRAMS = cron
 
-modules = \
+AM_CFLAGS = @GUILE_CFLAGS@
+LDADD = @GUILE_LIBS@
+
+mcron_SOURCES = src/mcron.c
+mcron_CPPFLAGS = -DPROGRAM="\"mcron\""
+mcron_DEPENDENCIES = $(modules:%.scm=%.go)
+
+cron_SOURCES = src/mcron.c
+cron_CPPFLAGS = -DPROGRAM="\"cron\""
+cron_DEPENDENCIES = $(modules:%.scm=%.go)
+
+crontab_SOURCES = src/mcron.c
+crontab_CPPFLAGS = -DPROGRAM="\"crontab\""
+crontab_DEPENDENCIES = $(modules:%.scm=%.go)
+
+dist_mcronmodule_DATA = \
   src/mcron/base.scm \
   src/mcron/environment.scm \
   src/mcron/job-specifier.scm \
@@ -32,13 +44,22 @@ modules = \
   src/mcron/vixie-time.scm
 
 mcronmodule_DATA = \
-  $(modules:%.scm=%.go) \
+  $(dist_mcronmodule_DATA:%.scm=%.go) \
   src/mcron/config.scm \
   src/mcron/config.go
 
-dist_mcronmodule_DATA = \
-  $(modules) \
-  src/mcron/crontab.scm
+mcronscriptdir = $(mcronmoduledir)/scripts
+dist_mcronscript_DATA = \
+  src/mcron/scripts/cron.scm \
+  src/mcron/scripts/crontab.scm \
+  src/mcron/scripts/mcron.scm
+
+mcronscript_DATA = $(dist_mcronscript_DATA:%.scm=%.go)
+
+modules = \
+  $(dist_mcronmodule_DATA) \
+  $(dist_mcronscript_DATA) \
+  src/mcron/config.scm
 
 # Unset 'GUILE_LOAD_COMPILED_PATH' altogether while compiling.  Otherwise, if
 # $GUILE_LOAD_COMPILED_PATH contains $(mcronmoduledir), we may find .go files
