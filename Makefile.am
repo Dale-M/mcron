@@ -145,7 +145,7 @@ TEXI2DVI = texi2dvi -I doc
 
 # Not part of formal package building, but a rule for manual use to get the
 # elemental man page.  Will only work once the mcron program is installed.
-doc/mcron.1: src/mcron.c
+doc/mcron.1: src/mcron/scripts/mcron.scm
 	-$(AM_V_HELP2MAN)$(MKDIR_P) `dirname "$@"` ; 			\
 	$(top_builddir)/pre-inst-env $(HELP2MAN)			\
 	  -n 'a program to run tasks at regular (or not) intervals'	\
