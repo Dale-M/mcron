@@ -68,7 +68,9 @@ SCM_LOG_DRIVER = \
   $(builddir)/pre-inst-env $(GUILE) \
   $(srcdir)/build-aux/test-driver.scm
 
-TESTS = tests/job-specifier.scm
+TESTS = \
+  tests/environment.scm \
+  tests/job-specifier.scm
 
 # Unset 'GUILE_LOAD_COMPILED_PATH' altogether while compiling.  Otherwise, if
 # $GUILE_LOAD_COMPILED_PATH contains $(mcronmoduledir), we may find .go files
