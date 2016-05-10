@@ -136,6 +136,7 @@ uninstall-hook:
     fi
 
 EXTRA_DIST = BUGS $(TESTS)
+MAINTAINERCLEANFILES = $(dist_man_MANS)
 DISTCLEANFILES = src/config.scm
 CLEANFILES = \
   $(modules:%.scm=%.go) \
@@ -148,19 +149,35 @@ CLEANFILES = \
 info_TEXINFOS = doc/mcron.texi
 doc_mcron_TEXINFOS = doc/fdl.texi
 nodist_doc_mcron_TEXINFOS = doc/config.texi
-dist_man_MANS = doc/mcron.1
+dist_man_MANS = \
+  $(srcdir)/doc/mcron.1 \
+  $(srcdir)/doc/crontab.1 \
+  $(srcdir)/doc/cron.8
 
 # XXX: Allow the inclusion of 'doc/fdl.texi' and 'doc/config.texi' inside
 # 'doc/mcron.texi' for 'dvi' and 'pdf' targets.
 TEXI2DVI = texi2dvi -I doc
 
-# Not part of formal package building, but a rule for manual use to get the
-# elemental man page.  Will only work once the mcron program is installed.
-doc/mcron.1: src/mcron/scripts/mcron.scm
-	-$(AM_V_HELP2MAN)$(MKDIR_P) `dirname "$@"` ; 			\
-	$(top_builddir)/pre-inst-env $(HELP2MAN)			\
-	  -n 'a program to run tasks at regular (or not) intervals'	\
-	  ./mcron > $@
+# The 'case' ensures the man pages are only generated if the corresponding
+# source script (the first prerequisite) has been changed.  The second
+# prerequisites is solely meant to force these docs to be made only after
+# executables have been compiled.
+gen_man = \
+  case '$?' in \
+    *$<*) $(AM_V_P) && set -x || echo "  HELP2MAN $@"; \
+          LANGUAGE= $(top_builddir)/pre-inst-env $(HELP2MAN) \
+          -s $$man_section -S GNU -p $(PACKAGE_TARNAME) -o $@ $$prog;; \
+    *)    : ;; \
+  esac
+
+$(srcdir)/doc/mcron.1: src/mcron/scripts/mcron.scm mcron
+	-@prog="mcron"; man_section=1; $(gen_man)
+
+$(srcdir)/doc/crontab.1: src/mcron/scripts/crontab.scm crontab
+	-@prog="crontab"; man_section=1; $(gen_man)
+
+$(srcdir)/doc/cron.8: src/mcron/scripts/cron.scm cron
+	-@prog="cron"; man_section=8; $(gen_man)
 
 ## -------------- ##
 ## Silent rules.  ##
@@ -169,7 +186,3 @@ doc/mcron.1: src/mcron/scripts/mcron.scm
 AM_V_GUILEC = $(AM_V_GUILEC_$(V))
 AM_V_GUILEC_ = $(AM_V_GUILEC_$(AM_DEFAULT_VERBOSITY))
 AM_V_GUILEC_0 = @echo "  GUILEC  " $@;
-
-AM_V_HELP2MAN = $(AM_V_HELP2MAN_$(V))
-AM_V_HELP2MAN_ = $(AM_V_HELP2MAN_$(AM_DEFAULT_VERBOSITY))
-AM_V_HELP2MAN_0 = @echo "  HELP2MAN" $@;

@@ -16,6 +16,8 @@
 /cron
 /crontab
 /doc/config.texi
+/doc/cron.8
+/doc/crontab.1
 /doc/mcron.1
 /doc/mcron.info
 /doc/stamp-vti
