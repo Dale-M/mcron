@@ -27,7 +27,7 @@ AC_CONFIG_HEADER([src/config.h])
 AC_CONFIG_SRCDIR([src/mcron.c])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_REQUIRE_AUX_FILE([test-driver.scm])
-AM_INIT_AUTOMAKE([subdir-objects])
+AM_INIT_AUTOMAKE([subdir-objects -Wall -Wno-override])
 AM_SILENT_RULES([yes])		# enables silent rules by default
 
 moduledir="${datarootdir}/guile/site/2.0"

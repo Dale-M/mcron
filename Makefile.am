@@ -83,7 +83,7 @@ TESTS = \
 # XXX: Use the C locale for when Guile lacks
 # <http://git.sv.gnu.org/cgit/guile.git/commit/?h=stable-2.0&id=e2c6bf3866d1186c60bacfbd4fe5037087ee5e3f>.
 .scm.go:
-	$(AM_V_GUILEC)$(MKDIR_P) `dirname "$@"` ;			\
+	$(guilec_verbose)$(MKDIR_P) `dirname "$@"` ;			\
 	export GUILE_AUTO_COMPILE=0 ; unset GUILE_LOAD_COMPILED_PATH ;	\
 	LC_ALL=C							\
 	$(top_builddir)/pre-inst-env $(GUILD) compile			\
@@ -183,6 +183,6 @@ $(srcdir)/doc/cron.8: src/mcron/scripts/cron.scm cron
 ## Silent rules.  ##
 ## -------------- ##
 
-AM_V_GUILEC = $(AM_V_GUILEC_$(V))
-AM_V_GUILEC_ = $(AM_V_GUILEC_$(AM_DEFAULT_VERBOSITY))
-AM_V_GUILEC_0 = @echo "  GUILEC  " $@;
+guilec_verbose = $(guilec_verbose_@AM_V@)
+guilec_verbose_ = $(guilec_verbose_@AM_DEFAULT_V@)
+guilec_verbose_0 = @echo "  GUILEC  " $@;
