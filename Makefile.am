@@ -33,6 +33,7 @@ modules = \
 
 mcronmodule_DATA = \
   $(modules:%.scm=%.go) \
+  src/mcron/config.scm \
   src/mcron/config.go
 
 dist_mcronmodule_DATA = \
@@ -103,8 +104,10 @@ uninstall-hook:
     fi
 
 EXTRA_DIST = BUGS
-CLEANFILES = $(mcronmodule_DATA)
 DISTCLEANFILES = src/config.scm
+CLEANFILES = \
+  $(modules:%.scm=%.go) \
+  src/mcron/config.go
 
 ## --------------- ##
 ## Documentation.  ##
