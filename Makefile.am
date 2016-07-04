@@ -90,7 +90,7 @@ TESTS = \
 	  --load-path="$(top_builddir)/src"				\
 	  --load-path="$(top_srcdir)/src"				\
 	  --warn=format --warn=unbound-variable --warn=arity-mismatch	\
-	  --target="$(host)" --output="$@" "$<"
+	  --target="$(host)" --output="$@" "$<" $(devnull_verbose)
 
 SUFFIXES = .go
 noinst_SCRIPTS = pre-inst-env
@@ -186,3 +186,7 @@ $(srcdir)/doc/cron.8: src/mcron/scripts/cron.scm cron
 guilec_verbose = $(guilec_verbose_@AM_V@)
 guilec_verbose_ = $(guilec_verbose_@AM_DEFAULT_V@)
 guilec_verbose_0 = @echo "  GUILEC  " $@;
+
+devnull_verbose = $(devnull_verbose_@AM_V@)
+devnull_verbose_ = $(devnull_verbose_@AM_DEFAULT_V@)
+devnull_verbose_0 = >/dev/null
