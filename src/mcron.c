@@ -22,7 +22,6 @@
    is needed because the crontab personality requires SUID which is not
    permitted for executable scripts.  */
 
-#include "config.h"
 #include <libguile.h>
 #include <signal.h>
 #include <stdlib.h>
