@@ -62,36 +62,35 @@ go into the list.  For example, (range 1 6 2) returns '(1 3 5)."
              (if (> time current) (min time closest+) closest+)
              rest)))))
 
-;; Internal function to return the time corresponding to some near future
-;; hour. If hour-list is not supplied, the time returned corresponds to the
-;; start of the next hour of the day.
-;;
-;; If the hour-list is supplied the time returned corresponds to the first hour
-;; of the day in the future which is contained in the list. If all the values in
-;; the list are less than the current hour, then the time returned will
-;; correspond to the first hour in the list *on the following day*.
-;;
-;; ... except that the function is actually generalized to deal with seconds,
-;; minutes, etc., in an obvious way :-)
-;;
-;; Note that value-list always comes from an optional argument to a procedure,
-;; so is wrapped up as the first element of a list (i.e. it is a list inside a
-;; list).
-
 (define (bump-time time value-list component higher-component
                    set-component! set-higher-component!)
-  (if (null? value-list)
-      (set-component! time (+ (component time) 1))
-      (let ((best-next (%find-best-next (component time) (car value-list))))
-        (if (inf? (cdr best-next))
-            (begin
-              (set-higher-component! time (+ (higher-component time) 1))
-              (set-component! time (car best-next)))
-            (set-component! time (cdr best-next)))))
-  (car (mktime time)))
-
-
-
+  ;; Return the time corresponding to some near future hour.  If hour-list is
+  ;; not supplied, the time returned corresponds to the start of the next hour
+  ;; of the day.
+  ;;
+  ;; If the hour-list is supplied the time returned corresponds to the first
+  ;; hour of the day in the future which is contained in the list.  If all the
+  ;; values in the list are less than the current hour, then the time returned
+  ;; will correspond to the first hour in the list *on the following day*.
+  ;;
+  ;; ... except that the function is actually generalized to deal with
+  ;; seconds, minutes, etc., in an obvious way :-)
+  ;;
+  ;; Note that value-list always comes from an optional argument to a
+  ;; procedure, so is wrapped up as the first element of a list (i.e. it is a
+  ;; list inside a list).
+  (match value-list
+    (()
+     (set-component! time (1+ (component time))))
+    ((val . rest)
+     (match (%find-best-next (component time) val)
+       ((smallest . closest+)
+        (cond ((inf? closest+)
+               (set-higher-component! time (1+ (higher-component time)))
+               (set-component! time smallest))
+              (else
+               (set-component! time closest+)))))))
+  (first (mktime time)))
 
 ;; Set of configuration methods which use the above general function to bump
 ;; specific components of time to the next legitimate value. In each case, all
