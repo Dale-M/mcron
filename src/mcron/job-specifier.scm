@@ -137,17 +137,13 @@ go into the list.  For example, (range 1 6 2) returns '(1 3 5)."
   (let ((time (localtime current-time)))
     (bump-time time second-list tm:sec tm:min set-tm:sec set-tm:min)))
 
-
-
-;; The current-action-time is the time a job was last run, the time from which
-;; the next time to run a job must be computed. (When the program is first run,
-;; this time is set to the configuration time so that jobs run from that moment
-;; forwards.) Once we have this, we supply versions of the time computation
-;; commands above which implicitly assume this value.
-
-(define current-action-time 0)
-
-
+(define %current-action-time
+  ;; The time a job was last run, the time from which the next time to run a
+  ;; job must be computed. (When the program is first run, this time is set to
+  ;; the configuration time so that jobs run from that moment forwards.) Once
+  ;; we have this, we supply versions of the time computation commands above
+  ;; which implicitly assume this value.
+  (make-parameter 0))
 
 ;; We want to provide functions which take a single optional argument (as well
 ;; as implicitly the current action time), but unlike usual scheme behaviour if
@@ -157,14 +153,14 @@ go into the list.  For example, (range 1 6 2) returns '(1 3 5)."
 
 (define (maybe-args function args)
   (if (null? args)
-      (function current-action-time)
-      (function current-action-time (car args))))
+      (function (%current-action-time))
+      (function (%current-action-time) (car args))))
 
 
 
 ;; These are the convenience functions we were striving to define for the
 ;; configuration files. They are wrappers for the next-X-from functions above,
-;; but implicitly use the current-action-time for the time argument.
+;; but implicitly use %CURRENT-ACTION-TIME for the time argument.
 
 (define (next-year   . args) (maybe-args next-year-from args))
 (define (next-month  . args) (maybe-args next-month-from args))
@@ -204,7 +200,7 @@ go into the list.  For example, (range 1 6 2) returns '(1 3 5)."
 ;; string this is parsed as a Vixie-style time specification, and if it is a
 ;; list then we arrange to eval it (but note that such lists are expected to
 ;; ignore the function parameter - the last run time is always read from the
-;; current-action-time global variable). A similar normalization is applied to
+;; %CURRENT-ACTION-TIME parameter object). A similar normalization is applied to
 ;; the action.
 ;;
 ;; Here we also compute the first time that the job is supposed to run, by
@@ -240,17 +236,16 @@ go into the list.  For example, (range 1 6 2) returns '(1 3 5)."
                    (getpw user)
                    user)))
     (add-job (lambda (current-time)
-               (set! current-action-time current-time)  ;; ?? !!!!  Code
-               
-               ;; Contributed by Sergey Poznyakoff to allow for daylight savings
-               ;; time changes.
-               (let* ((next (time-proc current-time))
-                      (gmtoff (tm:gmtoff (localtime next)))
-                      (d (+ next (- gmtoff
-                                    (tm:gmtoff (localtime current-time))))))
-                 (if (eqv? (tm:gmtoff (localtime d)) gmtoff)
-                     d
-                     next)))
+               (parameterize ((%current-action-time current-time))
+                 ;; Allow for daylight savings time changes.
+                 (let* ((next   (time-proc current-time))
+                        (gmtoff (tm:gmtoff (localtime next)))
+                        (d      (+ next
+                                   (- gmtoff
+                                      (tm:gmtoff (localtime current-time))))))
+                   (if (eqv? (tm:gmtoff (localtime d)) gmtoff)
+                       d
+                       next))))
              action
              displayable
              configuration-time
