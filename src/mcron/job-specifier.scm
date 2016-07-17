@@ -50,11 +50,11 @@ go into the list.  For example, (range 1 6 2) returns '(1 3 5)."
   (unfold (cut >= <> end) identity (cute + <> (max step 1)) start))
 
 (define (%find-best-next current next-list)
-  ;; Takes a value and a list of possible next values (all assumed less than
-  ;; 9999). It returns a pair consisting of the smallest element of the
-  ;; NEXT-LIST, and the smallest element larger than the CURRENT value. If an
-  ;; example of the latter cannot be found, 9999 will be returned.
-  (let loop ((smallest 9999) (closest+ 9999) (lst next-list))
+  ;; Takes a value and a list of possible next values.  It returns a pair
+  ;; consisting of the smallest element of the NEXT-LIST, and the smallest
+  ;; element larger than the CURRENT value.  If an example of the latter
+  ;; cannot be found, +INF.0 will be returned.
+  (let loop ((smallest (inf)) (closest+ (inf)) (lst next-list))
     (match lst
       (() (cons smallest closest+))
       ((time . rest)
@@ -83,7 +83,7 @@ go into the list.  For example, (range 1 6 2) returns '(1 3 5)."
   (if (null? value-list)
       (set-component! time (+ (component time) 1))
       (let ((best-next (%find-best-next (component time) (car value-list))))
-        (if (eqv? 9999 (cdr best-next))
+        (if (inf? (cdr best-next))
             (begin
               (set-higher-component! time (+ (higher-component time) 1))
               (set-component! time (car best-next)))
