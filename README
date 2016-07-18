@@ -17,8 +17,6 @@ likely fail on others (but you never know...).
 ----------------------------------------------------------------------
 IMPORTANT NOTICES
 
-Read the BUGS file.
-
 Do not (yet) install this software on a machine which relies for its
 functioning on its current set of crontabs.
 
@@ -54,13 +52,13 @@ m.mcron, m.cron (or m.crond) and m.crontab.
 
 See the file INSTALL for generic building and installation instructions.
 
-After installation, read the info file for full instructions for use (typing
-`info mcron' at the command line should suffice). Notes for end users,
-sysadmins, and developers who wish to incorporate mcron into their own programs
-are included here.
+After compilation, read the info file for full instructions for use (typing
+'info -f doc/mcron.info' at the command line should suffice).  Notes for end
+users, sysadmins, and developers who wish to incorporate mcron into their own
+programs are included here.
 
-Known bugs are noted in the BUGS file, and features which might be implemented
-sometime sooner or later are noted in the TODO file.
+Features which might be implemented sometime sooner or later are noted in the
+TODO file.
 
 Please send all other bug reports to bug-mcron@gnu.org. Other mailing lists you
 could subscribe to are help-mcron@gnu.org (for help and advice from the

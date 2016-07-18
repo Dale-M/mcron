@@ -137,7 +137,7 @@ uninstall-hook:
         rm -f $(fpp){cron,crontab}$(EXEEXT); \
     fi
 
-EXTRA_DIST = BUGS $(TESTS)
+EXTRA_DIST = $(TESTS)
 MAINTAINERCLEANFILES = $(dist_man_MANS)
 DISTCLEANFILES = src/config.scm
 CLEANFILES = \
