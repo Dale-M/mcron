@@ -1,25 +1,22 @@
-#                                               -*- Autoconf -*-
-# Process this file with autoconf to produce a configure script.
-
-  
-#    Copyright (C) 2003, 2005, 2012, 2014  Dale Mellor
-#    Copyright (C) 2015, 2016  Mathieu Lirzin
-#   
-#    This file is part of GNU mcron.
-# 
-#    GNU mcron is free software: you can redistribute it and/or modify it under
-#    the terms of the GNU General Public License as published by the Free
-#    Software Foundation, either version 3 of the License, or (at your option)
-#    any later version.
-# 
-#    GNU mcron is distributed in the hope that it will be useful, but WITHOUT
-#    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-#    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-#    more details.
-# 
-#    You should have received a copy of the GNU General Public License along
-#    with GNU mcron.  If not, see <http://www.gnu.org/licenses/>.
-
+## Process this file with autoconf to produce a configure script.
+# Copyright © 2003, 2005, 2012, 2014 Dale Mellor
+# <dale_mellor@users.sourceforge.net>
+# Copyright © 2015, 2016 Mathieu Lirzin <mthl@gnu.org>
+#
+# This file is part of GNU Mcron.
+#
+# GNU Mcron is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# GNU Mcron is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GNU Mcron.  If not, see <http://www.gnu.org/licenses/>.
 
 AC_PREREQ(2.61)
 AC_INIT([GNU Mcron], [1.0.8], [bug-mcron@gnu.org])

@@ -1,6 +1,6 @@
 /* wrapper.c -- C code booting Guile
-   Copyright (C) 2003, 2014 Dale Mellor
-   Copyright (C) 2015, 2016 Mathieu Lirzin
+   Copyright © 2003, 2014 Dale Mellor <dale_mellor@users.sourceforge.net>
+   Copyright © 2015, 2016 Mathieu Lirzin <mthl@gnu.org>
 
    This file is part of GNU Mcron.
 

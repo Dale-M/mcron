@@ -1,33 +1,36 @@
-;;   Copyright (C) 2003 Dale Mellor
-;; 
-;;   This file is part of GNU mcron.
-;;
-;;   GNU mcron is free software: you can redistribute it and/or modify it under
-;;   the terms of the GNU General Public License as published by the Free
-;;   Software Foundation, either version 3 of the License, or (at your option)
-;;   any later version.
-;;
-;;   GNU mcron is distributed in the hope that it will be useful, but WITHOUT
-;;   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-;;   FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-;;   more details.
-;;
-;;   You should have received a copy of the GNU General Public License along
-;;   with GNU mcron.  If not, see <http://www.gnu.org/licenses/>.
+;;;; redirect.scm -- modify job outputs
+;;; Copyright © 2003 Dale Mellor <dale_mellor@users.sourceforge.net>
+;;;
+;;; This file is part of GNU Mcron.
+;;;
+;;; GNU Mcron is free software: you can redistribute it and/or modify
+;;; it under the terms of the GNU General Public License as published by
+;;; the Free Software Foundation, either version 3 of the License, or
+;;; (at your option) any later version.
+;;;
+;;; GNU Mcron is distributed in the hope that it will be useful,
+;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;; GNU General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU General Public License
+;;; along with GNU Mcron.  If not, see <http://www.gnu.org/licenses/>.
 
-
-
-;; This module provides the (with-mail-out action . user) procedure. This
-;; procedure runs the action in a child process, allowing the user control over
-;; the input and output (including standard error). The input is governed (only
-;; in the case of a string action) by the placing of percentage signs in the
-;; string; the first delimits the true action from the standard input, and
-;; subsequent ones denote newlines to be placed into the input. The output (if
-;; there actually is any) is controlled by the MAILTO environment variable. If
-;; this is not defined, output is e-mailed to the user passed as argument, if
-;; any, or else the owner of the action; if defined but empty then any output is
-;; sunk to /dev/null; otherwise output is e-mailed to the address held in the
-;; MAILTO variable.
+;;;; Commentary:
+;;;
+;;; Provide the (with-mail-out action . user) procedure.  This procedure runs
+;;; the action in a child process, allowing the user control over the input
+;;; and output (including standard error).  The input is governed (only in the
+;;; case of a string action) by the placing of percentage signs in the string;
+;;; the first delimits the true action from the standard input, and subsequent
+;;; ones denote newlines to be placed into the input.  The output (if there
+;;; actually is any) is controlled by the MAILTO environment variable.  If
+;;; this is not defined, output is e-mailed to the user passed as argument, if
+;;; any, or else the owner of the action; if defined but empty then any output
+;;; is sunk to /dev/null; otherwise output is e-mailed to the address held in
+;;; the MAILTO variable.
+;;;
+;;;; Code:
 
 (define-module (mcron redirect)
   #:export (with-mail-out)

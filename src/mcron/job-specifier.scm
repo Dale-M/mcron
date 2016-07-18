@@ -1,28 +1,30 @@
-;;   Copyright (C) 2003 Dale Mellor
-;;   Copyright (C) 2016 Mathieu Lirzin
-;; 
-;;   This file is part of GNU mcron.
-;;
-;;   GNU mcron is free software: you can redistribute it and/or modify it under
-;;   the terms of the GNU General Public License as published by the Free
-;;   Software Foundation, either version 3 of the License, or (at your option)
-;;   any later version.
-;;
-;;   GNU mcron is distributed in the hope that it will be useful, but WITHOUT
-;;   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-;;   FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-;;   more details.
-;;
-;;   You should have received a copy of the GNU General Public License along
-;;   with GNU mcron.  If not, see <http://www.gnu.org/licenses/>.
+;;;; job-specifier.scm -- public interface for defining jobs
+;;; Copyright © 2003 Dale Mellor <dale_mellor@users.sourceforge.net>
+;;; Copyright © 2016 Mathieu Lirzin <mthl@gnu.org>
+;;;
+;;; This file is part of GNU Mcron.
+;;;
+;;; GNU Mcron is free software: you can redistribute it and/or modify
+;;; it under the terms of the GNU General Public License as published by
+;;; the Free Software Foundation, either version 3 of the License, or
+;;; (at your option) any later version.
+;;;
+;;; GNU Mcron is distributed in the hope that it will be useful,
+;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;; GNU General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU General Public License
+;;; along with GNU Mcron.  If not, see <http://www.gnu.org/licenses/>.
 
-
-
-;; This module defines all the functions that can be used by scheme mcron
-;; configuration files, namely the procedures for working out next times, the
-;; job procedure for registering new jobs (actually a wrapper around the
-;; base add-job function), and the procedure for declaring environment
-;; modifications.
+;;;; Commentary:
+;;;
+;;; Define all the functions that can be used by scheme Mcron configuration
+;;; files, namely the procedures for working out next times, the job procedure
+;;; for registering new jobs (actually a wrapper around the base add-job
+;;; function), and the procedure for declaring environment modifications.
+;;;
+;;;; Code:
 
 (define-module (mcron job-specifier)
   #:use-module (ice-9 match)
