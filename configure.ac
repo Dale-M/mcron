@@ -23,7 +23,7 @@
 
 AC_PREREQ(2.61)
 AC_INIT([GNU Mcron], [1.0.8], [bug-mcron@gnu.org])
-AC_CONFIG_SRCDIR([src/mcron.c])
+AC_CONFIG_SRCDIR([src/wrapper.c])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_REQUIRE_AUX_FILE([test-driver.scm])
 AM_INIT_AUTOMAKE([subdir-objects -Wall -Wno-override])

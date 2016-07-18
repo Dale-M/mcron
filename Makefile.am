@@ -23,15 +23,15 @@ AM_CPPFLAGS = -DPACKAGE_LOAD_PATH=\"$(moduledir)\"
 AM_CFLAGS = @GUILE_CFLAGS@
 LDADD = @GUILE_LIBS@
 
-mcron_SOURCES = src/mcron.c
+mcron_SOURCES = src/wrapper.c
 mcron_CPPFLAGS = $(AM_CPPFLAGS) -DPROGRAM="\"mcron\""
 mcron_DEPENDENCIES = $(modules:%.scm=%.go)
 
-cron_SOURCES = src/mcron.c
+cron_SOURCES = src/wrapper.c
 cron_CPPFLAGS = $(AM_CPPFLAGS) -DPROGRAM="\"cron\""
 cron_DEPENDENCIES = $(modules:%.scm=%.go)
 
-crontab_SOURCES = src/mcron.c
+crontab_SOURCES = src/wrapper.c
 crontab_CPPFLAGS = $(AM_CPPFLAGS) -DPROGRAM="\"crontab\""
 crontab_DEPENDENCIES = $(modules:%.scm=%.go)
 

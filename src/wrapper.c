@@ -1,7 +1,6 @@
-/* mcron - run jobs at scheduled times
-
-   Copyright (C) 2015, 2016 Mathieu Lirzin
+/* wrapper.c -- C code booting Guile
    Copyright (C) 2003, 2014 Dale Mellor
+   Copyright (C) 2015, 2016 Mathieu Lirzin
 
    This file is part of GNU Mcron.
 
