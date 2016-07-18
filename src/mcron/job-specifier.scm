@@ -98,7 +98,7 @@ go into the list.  For example, (range 1 6 2) returns '(1 3 5)."
 ;; example the time of the next year will be the time at which the next year
 ;; actually starts.
 
-(define (next-year-from current-time . year-list)
+(define* (next-year-from current-time #:optional (year-list '()))
   (let ((time (localtime current-time)))
     (set-tm:mon   time 0)
     (set-tm:mday  time 1)
@@ -107,7 +107,7 @@ go into the list.  For example, (range 1 6 2) returns '(1 3 5)."
     (set-tm:sec   time 0)
     (bump-time time year-list tm:year tm:year set-tm:year set-tm:year)))
 
-(define (next-month-from current-time . month-list)
+(define* (next-month-from current-time #:optional (month-list '()))
   (let ((time (localtime current-time)))
     (set-tm:mday  time 1)
     (set-tm:hour  time 0)
@@ -115,27 +115,31 @@ go into the list.  For example, (range 1 6 2) returns '(1 3 5)."
     (set-tm:sec   time 0)
     (bump-time time month-list tm:mon tm:year set-tm:mon set-tm:year)))
 
-(define (next-day-from current-time . day-list)
+(define* (next-day-from current-time #:optional (day-list '()))
   (let ((time (localtime current-time)))
     (set-tm:hour  time 0)
     (set-tm:min   time 0)
     (set-tm:sec   time 0)
     (bump-time time day-list tm:mday tm:mon set-tm:mday set-tm:mon)))
 
-(define (next-hour-from current-time . hour-list)
+(define* (next-hour-from current-time #:optional (hour-list '()))
   (let ((time (localtime current-time)))
     (set-tm:min   time 0)
     (set-tm:sec   time 0)
     (bump-time time hour-list tm:hour tm:mday set-tm:hour set-tm:mday)))
 
-(define (next-minute-from current-time . minute-list)
+(define* (next-minute-from current-time #:optional (minute-list '()))
   (let ((time (localtime current-time)))
     (set-tm:sec   time 0)
     (bump-time time minute-list tm:min tm:hour set-tm:min set-tm:hour)))
 
-(define (next-second-from current-time . second-list)
+(define* (next-second-from current-time #:optional (second-list '()))
   (let ((time (localtime current-time)))
     (bump-time time second-list tm:sec tm:min set-tm:sec set-tm:min)))
+
+;;; The following procedures are convenient for configuration files.  They are
+;;; wrappers for the next-X-from functions above, by implicitly using
+;;; %CURRENT-ACTION-TIME as the time argument.
 
 (define %current-action-time
   ;; The time a job was last run, the time from which the next time to run a
@@ -145,31 +149,29 @@ go into the list.  For example, (range 1 6 2) returns '(1 3 5)."
   ;; which implicitly assume this value.
   (make-parameter 0))
 
-;; We want to provide functions which take a single optional argument (as well
-;; as implicitly the current action time), but unlike usual scheme behaviour if
-;; the argument is missing we want to act like it is really missing, and if it
-;; is there we want to act like it is a genuine argument, not a list of
-;; optionals.
+(define* (next-year #:optional (args '()))
+  "Compute the next year from %CURRENT-ACTION-TIME parameter object."
+  (next-year-from (%current-action-time) args))
 
-(define (maybe-args function args)
-  (if (null? args)
-      (function (%current-action-time))
-      (function (%current-action-time) (car args))))
+(define* (next-month #:optional (args '()))
+  "Compute the next month from %CURRENT-ACTION-TIME parameter object."
+  (next-month-from (%current-action-time) args))
 
+(define* (next-day #:optional (args '()))
+  "Compute the next day from %CURRENT-ACTION-TIME parameter object."
+  (next-day-from (%current-action-time) args))
 
+(define* (next-hour #:optional (args '()))
+  "Compute the next hour from %CURRENT-ACTION-TIME parameter object."
+  (next-hour-from (%current-action-time) args))
 
-;; These are the convenience functions we were striving to define for the
-;; configuration files. They are wrappers for the next-X-from functions above,
-;; but implicitly use %CURRENT-ACTION-TIME for the time argument.
+(define* (next-minute #:optional (args '()))
+  "Compute the next minute from %CURRENT-ACTION-TIME parameter object."
+  (next-minute-from (%current-action-time) args))
 
-(define (next-year   . args) (maybe-args next-year-from args))
-(define (next-month  . args) (maybe-args next-month-from args))
-(define (next-day    . args) (maybe-args next-day-from args))
-(define (next-hour   . args) (maybe-args next-hour-from args))
-(define (next-minute . args) (maybe-args next-minute-from args))
-(define (next-second . args) (maybe-args next-second-from args))
-
-
+(define* (next-second #:optional (args '()))
+  "Compute the next second from %CURRENT-ACTION-TIME parameter object."
+  (next-second-from (%current-action-time) args))
 
 ;; The default user for running jobs is the current one (who invoked this
 ;; program). There are exceptions: when cron parses /etc/crontab the user is
