@@ -20,6 +20,7 @@
 
 
 (define-module (mcron base)
+  #:use-module (ice-9 match)
   #:use-module (mcron environment)
   #:use-module (srfi srfi-9)
   #:export     (add-job
@@ -225,50 +226,38 @@
 	      (eqv? (car (waitpid WAIT_ANY WNOHANG)) 0)))
     (set! number-children (- number-children 1))))
 
-
-
-;; Now the main loop. Loop over all job specifications, get a list of the next
-;; ones to run (may be more than one). Set an alarm and go to sleep. When we
-;; wake, run the jobs and reap any children (old jobs) that have
-;; completed. Repeat ad infinitum.
-;;
-;; Note that, if we wake ahead of time, it can only mean that a signal has been
-;; sent by a crontab job to tell us to re-read a crontab file. In this case we
-;; break out of the loop here, and let the main procedure deal with the
-;; situation (it will eventually re-call this function, thus maintaining the
-;; loop).
-
-(define (run-job-loop . fd-list)
-
+(define* (run-job-loop #:optional fd-list)
+  ;; Loop over all job specifications, get a list of the next ones to run (may
+  ;; be more than one).  Set an alarm and go to sleep.  When we wake, run the
+  ;; jobs and reap any children (old jobs) that have completed. Repeat ad
+  ;; infinitum.
+  ;;
+  ;; Note that, if we wake ahead of time, it can only mean that a signal has
+  ;; been sent by a crontab job to tell us to re-read a crontab file.  In this
+  ;; case we break out of the loop here, and let the main procedure deal with
+  ;; the situation (it will eventually re-call this function, thus maintaining
+  ;; the loop).
   (call-with-current-continuation
    (lambda (break)
-     
-     (let ((fd-list (if (null? fd-list) '() (car fd-list))))
-
-       (let loop ()
-
-         (let* ((next-jobs      (find-next-jobs))
-                (next-time      (car next-jobs))
-                (next-jobs-list (cdr next-jobs))
-                (sleep-time     (if next-time (- next-time (current-time))
-                                    2000000000)))
-
-           (and (> sleep-time 0)
-                (if (not (null?
-                          (catch 'system-error
-                                 (lambda ()
+     (let loop ()
+       (match (find-next-jobs)
+         ((next-time . next-jobs-lst)
+          (let ((sleep-time (if next-time
+                                (- next-time (current-time))
+                                2000000000)))
+            (when (and
+                   (> sleep-time 0)
+                   (not (null? (catch 'system-error
+                                 (λ ()
                                    (car (select fd-list '() '() sleep-time)))
-                                 (lambda (key . args) ;; Exception add by Sergey
-						                              ;; Poznyakoff.
-                                   (if (member (car (last args))
-                                               (list EINTR EAGAIN))
-                                       (begin
-                                         (child-cleanup) '())
-                                       (apply throw key args))))))
-                    (break)))
-
-           (run-jobs next-jobs-list)
-
-           (child-cleanup)
-           
-           (loop)))))))
+                                 (λ (key . args)
+                                   (let ((err (car (last args))))
+                                     (cond ((member err (list EINTR EAGAIN))
+                                            (child-cleanup)
+                                            '())
+                                           (else
+                                            (apply throw key args)))))))))
+              (break))
+            (run-jobs next-jobs-lst)
+            (child-cleanup)
+            (loop))))))))
