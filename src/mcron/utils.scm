@@ -29,10 +29,10 @@
             parse-args
             show-version
             show-package-information
-            stdin->string
             for-each-file
             process-update-request)
-  #:re-export (option-ref))
+  #:re-export (option-ref
+               read-string))
 
 (define (mcron-error exit-code . rest)
   "Print an error message (made up from the parts of REST), and if the
@@ -80,12 +80,6 @@ General help using GNU software: <http://www.gnu.org/gethelp/>\n"
 		 config-package-bugreport
 		 config-package-name
 		 config-package-url))
-
-(define (stdin->string)
-  "Return standard input as a string."
-  (with-output-to-string (lambda () (do ((in (read-char) (read-char)))
-                                        ((eof-object? in))
-                                        (display in)))))
 
 (define (for-each-file proc directory)
   "Apply PROC to each file in DIRECTORY.  DIRECTORY must be a valid directory name.

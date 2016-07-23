@@ -63,7 +63,7 @@ silently ignored."
       (cond ((string=? "-" file-name)
              (if (string=? input "vixie")
                  (read-vixie-port (current-input-port))
-                 (eval-string (stdin->string))))
+                 (eval-string (read-string))))
             ((or guile-syntax? (regexp-exec guile-regexp file-name))
              (load file-name))
             ((regexp-exec vixie-regexp file-name)

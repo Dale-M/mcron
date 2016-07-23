@@ -210,7 +210,7 @@
           (let ((input-file (car (option-ref opts '() '()))))
             (catch-mcron-error
              (if (string=? input-file "-")
-                 (let ((input-string (stdin->string)))
+                 (let ((input-string (read-string)))
                    (read-vixie-port (open-input-string input-string))
                    (with-output-to-file crontab-file
                      (λ () (display input-string))))
