@@ -105,47 +105,36 @@
       (set! user-job-list (cons entry user-job-list))
       (set! system-job-list (cons entry system-job-list)))))
 
-
-
-;; Procedure to locate the jobs in the global job-list with the lowest
-;; (soonest) next-times. These are the jobs for which we must schedule the mcron
-;; program (under any personality) to next wake up. The return value is a cons
-;; cell consisting of the next time (maintained in the next-time variable) and a
-;; list of the job entries that are to run at this time (maintained in the
-;; next-jobs-list variable).
-;;
-;; The procedure works by first obtaining the time of the first job on the list,
-;; and setting this job in the next-jobs-list. Then for each other entry on the
-;; job-list, either the job runs earlier than any other that have been scanned,
-;; in which case the next-time and next-jobs-list are re-initialized to
-;; accomodate, or the job runs at the same time as the next job, in which case
-;; the next-jobs-list is simply augmented with the new job, or else the job runs
-;; later than others noted in which case we ignore it for now and continue to
-;; recurse the list.
-
 (define (find-next-jobs)
-  (let ((job-list (append system-job-list user-job-list)))
-    
-    (if (null? job-list)
-        
-        '(#f . '())
-        
-        (let ((next-time 2000000000)
-              (next-jobs-list '()))
+  "Procedure to locate the jobs in the global job-list with the
+lowest (soonest) next-times.  These are the jobs for which we must schedule
+the mcron program (under any personality) to next wake up.  The return value
+is a cons cell consisting of the next time (maintained in the next-time
+variable) and a list of the job entries that are to run at this
+time (maintained in the next-jobs-list variable).
 
-          (for-each
-           (lambda (job)
-             (let ((this-time (job:next-time job)))
-               (cond ((< this-time next-time)
-                          (set! next-time this-time)
-                          (set! next-jobs-list (list job)))
-                     ((eqv? this-time next-time)
-                          (set! next-jobs-list (cons job next-jobs-list))))))
-           job-list)
-
-          (cons next-time next-jobs-list)))))
-
-
+The procedure works by first obtaining the time of the first job on the list,
+and setting this job in the next-jobs-list.  Then for each other entry on the
+job-list, either the job runs earlier than any other that have been scanned,
+in which case the next-time and next-jobs-list are re-initialized to
+accomodate, or the job runs at the same time as the next job, in which case
+the next-jobs-list is simply augmented with the new job, or else the job runs
+later than others noted in which case we ignore it for now and continue to
+recurse the list."
+  (let loop ((jobs      (append system-job-list user-job-list))
+             (next-time (inf))
+             (next-jobs '()))
+    (match jobs
+      (()
+       (cons (and (finite? next-time) next-time) next-jobs))
+      ((job . rest)
+       (let ((this-time (job:next-time job)))
+         (cond ((< this-time next-time)
+                (loop rest this-time (list job)))
+               ((= this-time next-time)
+                (loop rest next-time (cons job next-jobs)))
+               (else
+                (loop rest next-time next-jobs))))))))
 
 ;; Create a string containing a textual list of the next count jobs to run.
 ;;
