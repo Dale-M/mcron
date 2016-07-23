@@ -92,9 +92,12 @@ General help using GNU software: <http://www.gnu.org/gethelp/>\n"
 PROC must be a procedure that take one file name argument.  The return value
 is not specified"
   (let ((dir (opendir directory)))
-    (do ((file-name (readdir dir) (readdir dir)))
-        ((eof-object? file-name) (closedir dir))
-      (proc file-name))))
+    (let loop ((file-name (readdir dir)))
+      (if (eof-object? file-name)
+          (closedir dir)
+          (begin
+            (proc file-name)
+            (loop (readdir dir)))))))
 
 (define (process-update-request fdes-list)
   "Read a user name from the socket, dealing with the /etc/crontab special
