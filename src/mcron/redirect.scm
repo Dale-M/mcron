@@ -33,12 +33,11 @@
 ;;;; Code:
 
 (define-module (mcron redirect)
-  #:export (with-mail-out)
+  #:use-module (ice-9 popen)
   #:use-module (ice-9 regex)
-  #:use-module ((mcron config) :select (config-sendmail))
-  #:use-module (mcron vixie-time))
-
-
+  #:use-module (mcron config)
+  #:use-module (mcron vixie-time)
+  #:export (with-mail-out))
 
 ;; An action string consists of a sequence of characters forming a command
 ;; executable by the shell, possibly followed by an non-escaped percentage
@@ -62,8 +61,6 @@
 ;; or list of scheme procedures) in a forked process, with the input coming from
 ;; the string, and output (including the error output) being sent to a pipe
 ;; opened on a mail transport.
-
-(use-modules (ice-9 popen))
 
 (define (with-mail-out action . user)
 

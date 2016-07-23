@@ -21,23 +21,19 @@
 (define-module (mcron base)
   #:use-module (ice-9 match)
   #:use-module (mcron environment)
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-2)
   #:use-module (srfi srfi-9)
-  #:export     (add-job
-                remove-user-jobs
-                get-schedule
-                run-job-loop
-                   ;; These three are deprecated and not documented.
-                use-system-job-list
-                use-user-job-list
-                clear-system-jobs)
-  #:re-export  (clear-environment-mods
-                append-environment-mods))
-
-
-(use-modules (srfi srfi-1)    ;; For remove.
-             (srfi srfi-2))   ;; For and-let*.
-
-
+  #:export (add-job
+            remove-user-jobs
+            get-schedule
+            run-job-loop
+            ;; Deprecated and undocumented procedures.
+            use-system-job-list
+            use-user-job-list
+            clear-system-jobs)
+  #:re-export (clear-environment-mods
+               append-environment-mods))
 
 ;; The list of all jobs known to the system. Each element of the list is
 ;;

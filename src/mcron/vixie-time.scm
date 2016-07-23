@@ -20,8 +20,6 @@
   #:use-module (ice-9 regex)
   #:use-module (mcron job-specifier)
   #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-13)
-  #:use-module (srfi srfi-14)
   #:export (parse-vixie-time))
 
 ;; In Vixie-style time specifications three-letter symbols are allowed to stand

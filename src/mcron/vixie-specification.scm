@@ -27,22 +27,20 @@
 ;;;; Code:
 
 (define-module (mcron vixie-specification)
+  #:use-module (ice-9 regex)
+  #:use-module (ice-9 rdelim)
+  #:use-module (mcron base)
+  #:use-module (mcron config)
+  #:use-module (mcron job-specifier)
+  #:use-module (mcron redirect)
+  #:use-module (mcron vixie-time)
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-2)
   #:export (parse-user-vixie-line
             parse-system-vixie-line
             read-vixie-port
             read-vixie-file
-            check-system-crontab)
-  #:use-module ((mcron config) :select (config-socket-file))
-  #:use-module (mcron base)
-  #:use-module (mcron job-specifier)
-  #:use-module (mcron redirect)
-  #:use-module (mcron vixie-time))
-
-
-(use-modules (ice-9 regex) (ice-9 rdelim)
-             (srfi srfi-1) (srfi srfi-2) (srfi srfi-13) (srfi srfi-14))
-
-
+            check-system-crontab))
 
 ;; A line in a Vixie-style crontab file which gives a command specification
 ;; carries two pieces of information: a time specification consisting of five
