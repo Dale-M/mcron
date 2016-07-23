@@ -35,7 +35,6 @@
   #:use-module (mcron redirect)
   #:use-module (mcron vixie-time)
   #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-2)
   #:export (parse-user-vixie-line
             parse-system-vixie-line
             read-vixie-port
@@ -109,11 +108,9 @@
     (if match
         (append-environment-mods (match:substring match 1)
                                  (match:substring match 2))
-        (and-let* ((match (regexp-exec parse-vixie-environment-regexp4 string)))
-                  (append-environment-mods (match:substring match 1) #f)))))
-
-
-
+        (and=> (regexp-exec parse-vixie-environment-regexp4 string)
+               (λ (match)
+                 (append-environment-mods (match:substring match 1) #f))))))
 
 ;; The next procedure reads an entire Vixie-style file. For each line in the
 ;; file there are three possibilities (after continuation lines have been
