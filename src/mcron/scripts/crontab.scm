@@ -20,7 +20,7 @@
 (define-module (mcron scripts crontab)
   #:use-module (ice-9 rdelim)
   #:use-module (mcron config)
-  #:use-module (mcron main)
+  #:use-module (mcron utils)
   #:use-module (mcron vixie-specification)
   #:export (main))
 

@@ -40,8 +40,8 @@ dist_mcronmodule_DATA = \
   src/mcron/base.scm \
   src/mcron/environment.scm \
   src/mcron/job-specifier.scm \
-  src/mcron/main.scm \
   src/mcron/redirect.scm \
+  src/mcron/utils.scm \
   src/mcron/vixie-specification.scm \
   src/mcron/vixie-time.scm
 

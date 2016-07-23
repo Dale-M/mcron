@@ -21,7 +21,7 @@
   #:use-module (mcron base)
   #:use-module (mcron config)
   #:use-module (mcron job-specifier)    ;for user/system files
-  #:use-module (mcron main)
+  #:use-module (mcron utils)
   #:use-module (mcron vixie-specification)
   #:export (main))
 

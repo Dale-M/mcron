@@ -21,7 +21,7 @@
   #:use-module (mcron base)
   #:use-module (mcron config)
   #:use-module (mcron job-specifier)
-  #:use-module (mcron main)
+  #:use-module (mcron utils)
   #:use-module (mcron vixie-specification)
   #:use-module (srfi srfi-2)
   #:export (main))

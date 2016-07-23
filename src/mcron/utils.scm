@@ -1,4 +1,4 @@
-;;; main.scm -- helper procedures
+;;;; utils.scm -- helper procedures
 ;;; Copyright © 2003, 2012 Dale Mellor <dale_mellor@users.sourceforge.net>
 ;;; Copyright © 2015, 2016 Mathieu Lirzin <mthl@gnu.org>
 ;;;
@@ -17,7 +17,7 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with GNU Mcron.  If not, see <http://www.gnu.org/licenses/>.
 
-(define-module (mcron main)
+(define-module (mcron utils)
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 rdelim)
   #:use-module (mcron config)
