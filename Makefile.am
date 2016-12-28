@@ -143,6 +143,7 @@ uninstall-hook:
     fi
 
 EXTRA_DIST = \
+  build-aux/guix.scm \
   .version \
   $(TESTS)
 
