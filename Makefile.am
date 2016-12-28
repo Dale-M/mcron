@@ -97,7 +97,12 @@ TESTS = \
 SUFFIXES = .go
 noinst_SCRIPTS = pre-inst-env
 
+BUILT_SOURCES= .version
+.version:
+	$(AM_V_GEN)echo $(VERSION) > $@-t && mv $@-t $@
+
 dist-hook: gen-ChangeLog
+	$(AM_V_GEN)echo $(VERSION) > $(distdir)/.tarball-version
 
 gen_start_date = 2015-06-26
 .PHONY: gen-ChangeLog
@@ -137,7 +142,10 @@ uninstall-hook:
         rm -f $(fpp){cron,crontab}$(EXEEXT); \
     fi
 
-EXTRA_DIST = $(TESTS)
+EXTRA_DIST = \
+  .version \
+  $(TESTS)
+
 MAINTAINERCLEANFILES = $(dist_man_MANS)
 DISTCLEANFILES = src/config.scm
 CLEANFILES = \

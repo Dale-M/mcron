@@ -24,6 +24,7 @@
 /doc/version.texi
 /mcron
 /mdate-sh
+/.version
 INSTALL
 Makefile
 Makefile.in
