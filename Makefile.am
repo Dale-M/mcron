@@ -17,24 +17,24 @@
 # You should have received a copy of the GNU General Public License
 # along with GNU Mcron.  If not, see <http://www.gnu.org/licenses/>.
 
-bin_PROGRAMS = mcron crontab
-sbin_PROGRAMS = cron
+bin_PROGRAMS = bin/mcron bin/crontab
+sbin_PROGRAMS = bin/cron
 
 AM_CPPFLAGS = -DPACKAGE_LOAD_PATH=\"$(moduledir)\"
 AM_CFLAGS = @GUILE_CFLAGS@
 LDADD = @GUILE_LIBS@
 
-mcron_SOURCES = src/wrapper.c
-mcron_CPPFLAGS = $(AM_CPPFLAGS) -DPROGRAM="\"mcron\""
-mcron_DEPENDENCIES = $(modules:%.scm=%.go)
+bin_mcron_SOURCES = src/wrapper.c
+bin_mcron_CPPFLAGS = $(AM_CPPFLAGS) -DPROGRAM="\"mcron\""
+bin_mcron_DEPENDENCIES = $(modules:%.scm=%.go)
 
-cron_SOURCES = src/wrapper.c
-cron_CPPFLAGS = $(AM_CPPFLAGS) -DPROGRAM="\"cron\""
-cron_DEPENDENCIES = $(modules:%.scm=%.go)
+bin_cron_SOURCES = src/wrapper.c
+bin_cron_CPPFLAGS = $(AM_CPPFLAGS) -DPROGRAM="\"cron\""
+bin_cron_DEPENDENCIES = $(modules:%.scm=%.go)
 
-crontab_SOURCES = src/wrapper.c
-crontab_CPPFLAGS = $(AM_CPPFLAGS) -DPROGRAM="\"crontab\""
-crontab_DEPENDENCIES = $(modules:%.scm=%.go)
+bin_crontab_SOURCES = src/wrapper.c
+bin_crontab_CPPFLAGS = $(AM_CPPFLAGS) -DPROGRAM="\"crontab\""
+bin_crontab_DEPENDENCIES = $(modules:%.scm=%.go)
 
 dist_mcronmodule_DATA = \
   src/mcron/base.scm \
@@ -180,13 +180,13 @@ gen_man = \
     *)    : ;; \
   esac
 
-$(srcdir)/doc/mcron.1: src/mcron/scripts/mcron.scm mcron
+$(srcdir)/doc/mcron.1: src/mcron/scripts/mcron.scm bin/mcron
 	-@prog="mcron"; man_section=1; $(gen_man)
 
-$(srcdir)/doc/crontab.1: src/mcron/scripts/crontab.scm crontab
+$(srcdir)/doc/crontab.1: src/mcron/scripts/crontab.scm bin/crontab
 	-@prog="crontab"; man_section=1; $(gen_man)
 
-$(srcdir)/doc/cron.8: src/mcron/scripts/cron.scm cron
+$(srcdir)/doc/cron.8: src/mcron/scripts/cron.scm bin/cron
 	-@prog="cron"; man_section=8; $(gen_man)
 
 ## -------------- ##

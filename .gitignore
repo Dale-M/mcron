@@ -5,6 +5,9 @@
 *~
 .deps
 .dirstamp
+/bin/cron
+/bin/crontab
+/bin/mcron
 /build-aux/compile
 /build-aux/config.guess
 /build-aux/config.sub
@@ -13,8 +16,6 @@
 /build-aux/mdate-sh
 /build-aux/missing
 /build-aux/texinfo.tex
-/cron
-/crontab
 /doc/config.texi
 /doc/cron.8
 /doc/crontab.1
@@ -22,7 +23,6 @@
 /doc/mcron.info
 /doc/stamp-vti
 /doc/version.texi
-/mcron
 /mdate-sh
 /.version
 INSTALL
