@@ -26,15 +26,15 @@ LDADD = @GUILE_LIBS@
 
 bin_mcron_SOURCES = src/wrapper.c
 bin_mcron_CPPFLAGS = $(AM_CPPFLAGS) -DPROGRAM="\"mcron\""
-bin_mcron_DEPENDENCIES = $(modules:%.scm=%.go)
+bin_mcron_DEPENDENCIES = $(modules:.scm=.go)
 
 bin_cron_SOURCES = src/wrapper.c
 bin_cron_CPPFLAGS = $(AM_CPPFLAGS) -DPROGRAM="\"cron\""
-bin_cron_DEPENDENCIES = $(modules:%.scm=%.go)
+bin_cron_DEPENDENCIES = $(modules:.scm=.go)
 
 bin_crontab_SOURCES = src/wrapper.c
 bin_crontab_CPPFLAGS = $(AM_CPPFLAGS) -DPROGRAM="\"crontab\""
-bin_crontab_DEPENDENCIES = $(modules:%.scm=%.go)
+bin_crontab_DEPENDENCIES = $(modules:.scm=.go)
 
 dist_mcronmodule_DATA = \
   src/mcron/base.scm \
@@ -46,7 +46,7 @@ dist_mcronmodule_DATA = \
   src/mcron/vixie-time.scm
 
 mcronmodule_DATA = \
-  $(dist_mcronmodule_DATA:%.scm=%.go) \
+  $(dist_mcronmodule_DATA:.scm=.go) \
   src/mcron/config.scm \
   src/mcron/config.go
 
@@ -56,7 +56,7 @@ dist_mcronscript_DATA = \
   src/mcron/scripts/crontab.scm \
   src/mcron/scripts/mcron.scm
 
-mcronscript_DATA = $(dist_mcronscript_DATA:%.scm=%.go)
+mcronscript_DATA = $(dist_mcronscript_DATA:.scm=.go)
 
 modules = \
   $(dist_mcronmodule_DATA) \
@@ -150,7 +150,7 @@ EXTRA_DIST = \
 MAINTAINERCLEANFILES = $(dist_man_MANS)
 DISTCLEANFILES = src/config.scm
 CLEANFILES = \
-  $(modules:%.scm=%.go) \
+  $(modules:.scm=.go) \
   src/mcron/config.go
 
 ## --------------- ##
