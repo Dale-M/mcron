@@ -1,6 +1,6 @@
 /* wrapper.c -- C code booting Guile
    Copyright © 2003, 2014 Dale Mellor <dale_mellor@users.sourceforge.net>
-   Copyright © 2015, 2016 Mathieu Lirzin <mthl@gnu.org>
+   Copyright © 2015, 2016, 2017 Mathieu Lirzin <mthl@gnu.org>
 
    This file is part of GNU Mcron.
 
@@ -23,10 +23,13 @@
 
 #include <libguile.h>
 #include <signal.h>
+#include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 /* Forward declarations.  */
+static void wrap_env_path (const char *envar, const char *dir);
 static void inner_main (void *closure, int argc, char **argv);
 static void react_to_terminal_signal (int sig);
 static SCM set_cron_signals (void);
@@ -34,27 +37,52 @@ static SCM set_cron_signals (void);
 int
 main (int argc, char **argv)
 {
+  /* Set Guile load paths to ensure that Mcron modules will be found after
+     installation.  In a build environment let the 'pre-inst-env' script set
+     the correct paths.  */
+  if (getenv ("MCRON_UNINSTALLED") == NULL)
+    {
+      wrap_env_path ("GUILE_LOAD_PATH", PACKAGE_LOAD_PATH);
+      wrap_env_path ("GUILE_LOAD_COMPILED_PATH", PACKAGE_LOAD_PATH);
+    }
+
   scm_boot_guile (argc, argv, inner_main, 0);
 
   return EXIT_SUCCESS;
+}
+
+/* Append DIR in front of ENVAR environment variable value.  If ENVAR is not
+   defined, then define it with DIR.  Bail out if something went wrong.  */
+static void
+wrap_env_path (const char *envar, const char *dir)
+{
+  const char *path = getenv (envar);
+  if (path == NULL)
+    setenv (envar, dir, true);
+  else
+    {
+      char *new_path;
+      int ret = asprintf (&new_path, "%s:%s", dir, path);
+      if (ret >= 0)
+        setenv (envar, new_path, true);
+      else
+        {
+          perror (envar);
+          exit (EXIT_FAILURE);
+        }
+      free (new_path);
+    }
 }
 
 /* Launch the Mcron Guile main program.  */
 static void
 inner_main (void *closure, int argc, char **argv)
 {
-  /* Set Guile load paths to ensure that Mcron modules will be found.  */
-  if (getenv ("MCRON_UNINSTALLED") == NULL)
-    {
-      scm_c_eval_string ("(set! %load-path (cons \""
-                         PACKAGE_LOAD_PATH "\" %load-path))");
-      scm_c_eval_string ("(set! %load-compiled-path (cons \""
-                         PACKAGE_LOAD_PATH "\" %load-compiled-path))");
-    }
   scm_set_current_module (scm_c_resolve_module ("mcron scripts " PROGRAM));
-  /* Register set_cron_signals to be called from Guile.  */
+  /* Register the procedures to be called from Guile.  */
   scm_c_define_gsubr ("c-set-cron-signals", 0, 0, 0, set_cron_signals);
-  scm_c_eval_string ("(main)");
+  /* Call main procedure.  */
+  scm_call_0 (scm_variable_ref (scm_c_lookup ("main")));
 }
 
 /* Set up all the signal handlers as required by the cron personality.  This

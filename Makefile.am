@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in.
 # Copyright © 2003 Dale Mellor <dale_mellor@users.sourceforge.net>
-# Copyright © 2015, 2016 Mathieu Lirzin <mthl@gnu.org>
+# Copyright © 2015, 2016, 2017 Mathieu Lirzin <mthl@gnu.org>
 #
 # This file is part of GNU Mcron.
 #
@@ -20,7 +20,7 @@
 bin_PROGRAMS = bin/mcron bin/crontab
 sbin_PROGRAMS = bin/cron
 
-AM_CPPFLAGS = -DPACKAGE_LOAD_PATH=\"$(moduledir)\"
+AM_CPPFLAGS = -DPACKAGE_LOAD_PATH=\"$(moduledir)\" -D_GNU_SOURCE
 AM_CFLAGS = @GUILE_CFLAGS@
 LDADD = @GUILE_LIBS@
 
