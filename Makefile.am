@@ -105,10 +105,6 @@ TESTS = \
 SUFFIXES = .go
 noinst_SCRIPTS = pre-inst-env
 
-BUILT_SOURCES= .version
-.version:
-	$(AM_V_GEN)echo $(VERSION) > $@-t && mv $@-t $@
-
 dist-hook: gen-ChangeLog
 	$(AM_V_GEN)echo $(VERSION) > $(distdir)/.tarball-version
 
@@ -152,7 +148,6 @@ uninstall-hook:
 
 EXTRA_DIST = \
   build-aux/guix.scm \
-  .version \
   $(TESTS)
 
 MAINTAINERCLEANFILES = $(dist_man_MANS)

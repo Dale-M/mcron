@@ -24,7 +24,6 @@
 /doc/stamp-vti
 /doc/version.texi
 /mdate-sh
-/.version
 INSTALL
 Makefile
 Makefile.in
