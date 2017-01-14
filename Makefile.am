@@ -20,7 +20,11 @@
 bin_PROGRAMS = bin/mcron bin/crontab
 sbin_PROGRAMS = bin/cron
 
-AM_CPPFLAGS = -DPACKAGE_LOAD_PATH=\"$(moduledir)\" -D_GNU_SOURCE
+AM_CPPFLAGS = \
+  -DPACKAGE_LOAD_PATH=\"$(moduledir)\" \
+  -DPACKAGE_LOAD_COMPILED_PATH=\"$(moduledir)\" \
+  -D_GNU_SOURCE
+
 AM_CFLAGS = @GUILE_CFLAGS@
 LDADD = @GUILE_LIBS@
 

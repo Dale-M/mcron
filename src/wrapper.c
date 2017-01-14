@@ -43,7 +43,7 @@ main (int argc, char **argv)
   if (getenv ("MCRON_UNINSTALLED") == NULL)
     {
       wrap_env_path ("GUILE_LOAD_PATH", PACKAGE_LOAD_PATH);
-      wrap_env_path ("GUILE_LOAD_COMPILED_PATH", PACKAGE_LOAD_PATH);
+      wrap_env_path ("GUILE_LOAD_COMPILED_PATH", PACKAGE_LOAD_COMPILED_PATH);
     }
 
   scm_boot_guile (argc, argv, inner_main, 0);
