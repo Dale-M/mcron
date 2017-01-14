@@ -1,7 +1,7 @@
 ## Process this file with autoconf to produce a configure script.
 # Copyright © 2003, 2005, 2012, 2014 Dale Mellor
 # <dale_mellor@users.sourceforge.net>
-# Copyright © 2015, 2016 Mathieu Lirzin <mthl@gnu.org>
+# Copyright © 2015, 2016, 2017 Mathieu Lirzin <mthl@gnu.org>
 #
 # This file is part of GNU Mcron.
 #
@@ -29,9 +29,6 @@ AC_REQUIRE_AUX_FILE([git-version-gen])
 AM_INIT_AUTOMAKE([subdir-objects -Wall -Wno-override])
 AM_SILENT_RULES([yes])		# enables silent rules by default
 
-moduledir="${datarootdir}/guile/site/2.0"
-AC_SUBST([moduledir])
-AC_SUBST([mcronmoduledir], ["${moduledir}/mcron"])
 AC_MSG_CHECKING([whether debugging is requested])
 AC_ARG_ENABLE(debug,
               AC_HELP_STRING([--enable-debug],
@@ -55,16 +52,22 @@ AC_PROG_AWK
 AC_PROG_EGREP
 AM_PROG_CC_C_O
 
-PKG_CHECK_MODULES([GUILE], [guile-2.0 >= 2.0.7])
-AC_PATH_PROG([GUILE], [guile])
+# Check for Guile 2.x. development files
+GUILE_PKG([2.2 2.0])
 
-# search guild
-AC_PATH_PROG([GUILD], [guild])
-AS_IF([test -z "$ac_cv_path_GUILD"],
-  [AC_MSG_ERROR(['guild' program cannot be found.])])
+# Set directories for installed Guile modules
+moduledir="${datarootdir}/guile/site/$GUILE_EFFECTIVE_VERSION"
+AC_SUBST([moduledir])
+AC_SUBST([mcronmoduledir], ["${moduledir}/mcron"])
+
+# Set Guile flags without using GUILE_FLAGS which is requiring the unused
+# 'config.rpath' script.
+PKG_CHECK_MODULES(GUILE, [guile-$GUILE_EFFECTIVE_VERSION])
 
 # Checks for programs.
-  
+
+GUILE_PROGS
+
 AM_MISSING_PROG(HELP2MAN, help2man, $missing_dir)
 
 AC_CHECK_PROGS(SED, sed)
