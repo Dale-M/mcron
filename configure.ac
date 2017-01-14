@@ -55,11 +55,6 @@ AM_PROG_CC_C_O
 # Check for Guile 2.x. development files
 GUILE_PKG([2.2 2.0])
 
-# Set directories for installed Guile modules
-moduledir="${datarootdir}/guile/site/$GUILE_EFFECTIVE_VERSION"
-AC_SUBST([moduledir])
-AC_SUBST([mcronmoduledir], ["${moduledir}/mcron"])
-
 # Set Guile flags without using GUILE_FLAGS which is requiring the unused
 # 'config.rpath' script.
 PKG_CHECK_MODULES(GUILE, [guile-$GUILE_EFFECTIVE_VERSION])

@@ -40,7 +40,11 @@ bin_crontab_SOURCES = src/wrapper.c
 bin_crontab_CPPFLAGS = $(AM_CPPFLAGS) -DPROGRAM="\"crontab\""
 bin_crontab_DEPENDENCIES = $(modules:.scm=.go)
 
-dist_mcronmodule_DATA = \
+# Root directory used for installing Guile modules.
+guilesitedir = $(datarootdir)/guile/site/$(GUILE_EFFECTIVE_VERSION)
+
+pkgmoduledir = $(guilesitedir)/$(PACKAGE)
+dist_pkgmodule_DATA = \
   src/mcron/base.scm \
   src/mcron/environment.scm \
   src/mcron/job-specifier.scm \
@@ -49,22 +53,22 @@ dist_mcronmodule_DATA = \
   src/mcron/vixie-specification.scm \
   src/mcron/vixie-time.scm
 
-mcronmodule_DATA = \
-  $(dist_mcronmodule_DATA:.scm=.go) \
+pkgmodule_DATA = \
+  $(dist_pkgmodule_DATA:.scm=.go) \
   src/mcron/config.scm \
   src/mcron/config.go
 
-mcronscriptdir = $(mcronmoduledir)/scripts
-dist_mcronscript_DATA = \
+pkgscriptdir = $(pkgmoduledir)/scripts
+dist_pkgscript_DATA = \
   src/mcron/scripts/cron.scm \
   src/mcron/scripts/crontab.scm \
   src/mcron/scripts/mcron.scm
 
-mcronscript_DATA = $(dist_mcronscript_DATA:.scm=.go)
+pkgscript_DATA = $(dist_pkgscript_DATA:.scm=.go)
 
 modules = \
-  $(dist_mcronmodule_DATA) \
-  $(dist_mcronscript_DATA) \
+  $(dist_pkgmodule_DATA) \
+  $(dist_pkgscript_DATA) \
   src/mcron/config.scm
 
 TEST_EXTENSIONS = .scm
@@ -79,7 +83,7 @@ TESTS = \
   tests/job-specifier.scm
 
 # Unset 'GUILE_LOAD_COMPILED_PATH' altogether while compiling.  Otherwise, if
-# $GUILE_LOAD_COMPILED_PATH contains $(mcronmoduledir), we may find .go files
+# $GUILE_LOAD_COMPILED_PATH contains $(pkgmoduledir), we may find .go files
 # in there that are newer than the local .scm files (for instance because the
 # user ran 'make install' recently).  When that happens, we end up loading
 # those previously-installed .go files, which may be stale, thereby breaking
