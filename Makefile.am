@@ -30,20 +30,23 @@ LDADD = @GUILE_LIBS@
 
 bin_mcron_SOURCES = src/wrapper.c
 bin_mcron_CPPFLAGS = $(AM_CPPFLAGS) -DPROGRAM="\"mcron\""
-bin_mcron_DEPENDENCIES = $(modules:.scm=.go)
+bin_mcron_DEPENDENCIES = $(compiled_modules)
 
 bin_cron_SOURCES = src/wrapper.c
 bin_cron_CPPFLAGS = $(AM_CPPFLAGS) -DPROGRAM="\"cron\""
-bin_cron_DEPENDENCIES = $(modules:.scm=.go)
+bin_cron_DEPENDENCIES = $(compiled_modules)
 
 bin_crontab_SOURCES = src/wrapper.c
 bin_crontab_CPPFLAGS = $(AM_CPPFLAGS) -DPROGRAM="\"crontab\""
-bin_crontab_DEPENDENCIES = $(modules:.scm=.go)
+bin_crontab_DEPENDENCIES = $(compiled_modules)
 
 # Root directory used for installing Guile modules.
 guilesitedir = $(datarootdir)/guile/site/$(GUILE_EFFECTIVE_VERSION)
+# Root directory used for installing Guile compiled modules.
+guilesitegodir = $(libdir)/guile/$(GUILE_EFFECTIVE_VERSION)/site-ccache
 
 pkgmoduledir = $(guilesitedir)/$(PACKAGE)
+pkgmodule_DATA = src/mcron/config.scm
 dist_pkgmodule_DATA = \
   src/mcron/base.scm \
   src/mcron/environment.scm \
@@ -53,9 +56,9 @@ dist_pkgmodule_DATA = \
   src/mcron/vixie-specification.scm \
   src/mcron/vixie-time.scm
 
-pkgmodule_DATA = \
+pkgmodulegodir = $(guilesitegodir)/$(PACKAGE)
+pkgmodulego_DATA = \
   $(dist_pkgmodule_DATA:.scm=.go) \
-  src/mcron/config.scm \
   src/mcron/config.go
 
 pkgscriptdir = $(pkgmoduledir)/scripts
@@ -64,12 +67,12 @@ dist_pkgscript_DATA = \
   src/mcron/scripts/crontab.scm \
   src/mcron/scripts/mcron.scm
 
-pkgscript_DATA = $(dist_pkgscript_DATA:.scm=.go)
+pkgscriptgodir = $(pkgmodulegodir)/scripts
+pkgscriptgo_DATA = $(dist_pkgscript_DATA:.scm=.go)
 
-modules = \
-  $(dist_pkgmodule_DATA) \
-  $(dist_pkgscript_DATA) \
-  src/mcron/config.scm
+compiled_modules = \
+  $(pkgmodulego_DATA) \
+  $(pkgscriptgo_DATA)
 
 TEST_EXTENSIONS = .scm
 AM_TESTS_ENVIRONMENT = env GUILE_AUTO_COMPILE='0'
@@ -151,10 +154,8 @@ EXTRA_DIST = \
   $(TESTS)
 
 MAINTAINERCLEANFILES = $(dist_man_MANS)
-DISTCLEANFILES = src/config.scm
-CLEANFILES = \
-  $(modules:.scm=.go) \
-  src/mcron/config.go
+DISTCLEANFILES = src/mcron/config.scm
+CLEANFILES = $(compiled_modules)
 
 ## --------------- ##
 ## Documentation.  ##
