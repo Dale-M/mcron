@@ -1,6 +1,6 @@
 ;;;; job-specifier.scm -- public interface for defining jobs
 ;;; Copyright © 2003 Dale Mellor <dale_mellor@users.sourceforge.net>
-;;; Copyright © 2016 Mathieu Lirzin <mthl@gnu.org>
+;;; Copyright © 2016, 2017 Mathieu Lirzin <mthl@gnu.org>
 ;;;
 ;;; This file is part of GNU Mcron.
 ;;;
@@ -32,7 +32,6 @@
   #:use-module (mcron environment)
   #:use-module (mcron vixie-time)
   #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-26)
   #:re-export (append-environment-mods)
   #:export (range
             next-year-from         next-year
@@ -49,7 +48,11 @@
   "Produces a list of values from START up to (but not including) END.  An
 optional STEP may be supplied, and (if positive) only every step'th value will
 go into the list.  For example, (range 1 6 2) returns '(1 3 5)."
-  (unfold (cut >= <> end) identity (cute + <> (max step 1)) start))
+  (let ((step* (max step 1)))
+    (unfold (λ (i) (>= i end))          ;predicate
+            identity                    ;value
+            (λ (i) (+ step* i))         ;next seed
+            start)))                    ;seed
 
 (define (%find-best-next current next-list)
   ;; Takes a value and a list of possible next values.  It returns a pair
