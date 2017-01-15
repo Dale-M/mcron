@@ -171,36 +171,25 @@ recurse the list."
 
 (define number-children 0)
 
-
-
-;; For every job on the list, fork a process to run it (noting the fact by
-;; increasing the number-children counter), and in the new process set up the
-;; run-time environment exactly as it should be before running the job proper.
-;;
-;; In the parent, update the job entry by computing the next time the job needs
-;; to run.
-
-(define (run-jobs jobs-list)
-  (for-each
-   (lambda (job)
-     (if (eqv? (primitive-fork) 0)
-         (dynamic-wind
-           (const #t)
-           (lambda ()
-             (setgid (passwd:gid (job:user job)))
-             (setuid (passwd:uid (job:user job)))
-             (chdir (passwd:dir (job:user job)))
-             (modify-environment (job:environment job) (job:user job))
-             ((job:action job)))
-           (lambda ()
-             (primitive-exit 0)))
-         (begin
-           (set! number-children (+ number-children 1))
-           (job:next-time-set! job ((job:next-time-function job)
-                                    (current-time))))))
-   jobs-list))
-
-
+(define (run-job job)
+  "Run JOB in a separate process. The process is run as JOB user with the
+environment properly set.  Update the NEXT-TIME field of JOB by computing its
+next value."
+  (if (= (primitive-fork) 0)
+      (dynamic-wind                     ;child
+        (const #t)
+        (λ ()
+          (setgid (passwd:gid (job:user job)))
+          (setuid (passwd:uid (job:user job)))
+          (chdir (passwd:dir (job:user job)))
+          (modify-environment (job:environment job) (job:user job))
+          ((job:action job)))
+        (λ ()
+          (primitive-exit 0)))
+      (begin                            ;parent
+        (set! number-children (+ number-children 1))
+        (job:next-time-set! job ((job:next-time-function job)
+                                 (current-time))))))
 
 ;; Give any zombie children a chance to die, and decrease the number known to
 ;; exist.
@@ -242,6 +231,6 @@ recurse the list."
                                            (else
                                             (apply throw key args)))))))))
               (break))
-            (run-jobs next-jobs-lst)
+            (for-each run-job next-jobs-lst)
             (child-cleanup)
             (loop))))))))
