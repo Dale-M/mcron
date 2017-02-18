@@ -153,6 +153,7 @@ uninstall-hook:
     fi
 
 EXTRA_DIST = \
+  bootstrap \
   build-aux/guix.scm \
   $(TESTS)
 
