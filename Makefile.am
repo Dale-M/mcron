@@ -56,6 +56,9 @@ dist_pkgmodule_DATA = \
   src/mcron/vixie-specification.scm \
   src/mcron/vixie-time.scm
 
+# Alias for 'src/mcron/base.scm' kept for backward compatibility.
+dist_pkgmodule_DATA += src/mcron/core.scm
+
 pkgmodulegodir = $(guilesitegodir)/$(PACKAGE)
 pkgmodulego_DATA = \
   $(dist_pkgmodule_DATA:.scm=.go) \
