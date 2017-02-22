@@ -21,8 +21,14 @@
 ## Programs.  ##
 ## ---------- ##
 
-bin_PROGRAMS = bin/mcron bin/crontab
+bin_PROGRAMS = bin/mcron
+
+if MULTI_USER
+bin_PROGRAMS += bin/crontab
 sbin_PROGRAMS = bin/cron
+else
+noinst_PROGRAMS = bin/cron bin/crontab
+endif
 
 AM_CPPFLAGS = \
   -DPACKAGE_LOAD_PATH=\"$(moduledir)\" \
@@ -160,26 +166,10 @@ EXTRA_DIST = \
 #full program prefix
 fpp = $(DESTDIR)$(bindir)/@real_program_prefix@
 
+if MULTI_USER
 install-exec-hook:
-	@if [ "x@NO_VIXIE_CLOBBER@" != "xyes"   -a   "`id -u`" -eq "0" ]; then \
-       rm -f $(fpp)cron$(EXEEXT) > /dev/null 2>&1; \
-       $(INSTALL) --mode='u=rwx' mcron$(EXEEXT) $(fpp)cron$(EXEEXT); \
-       rm -f $(fpp)crontab$(EXEEXT) > /dev/null 2>&1; \
-       $(INSTALL) --mode='u=rwxs,og=rx' mcron$(EXEEXT) $(fpp)crontab$(EXEEXT); \
-       $(INSTALL) -d --mode='u=rwx' $(DESTDIR)/var/cron; \
-       $(INSTALL) -d --mode='u=rwx,og=rx' $(DESTDIR)/var/run; \
-       $(INSTALL) -d --mode='u=rwx,og=rx' $(DESTDIR)@GUILE_SITE@; \
-       $(INSTALL) -d --mode='u=rwx,og=rx' $(DESTDIR)@GUILE_SITE@/mcron; \
-    elif [ "x@NO_VIXIE_CLOBBER@" = "xyes" ]; then \
-       echo "Not installing Vixie-style programs"; \
-    else \
-       echo "+++ WARNING: NON-ROOT INSTALL: ONLY mcron WILL BE INSTALLED, NOT ANY OF THE VIXIE REPLACEMENT PROGRAMS"; \
-    fi
-
-uninstall-hook:
-	if [ "`id -u`" -eq "0" ]; then \
-        rm -f $(fpp){cron,crontab}$(EXEEXT); \
-    fi
+	chmod u+s $(fpp)crontab$(EXEEXT)
+endif
 
 ## --------------- ##
 ## Documentation.  ##
@@ -188,10 +178,18 @@ uninstall-hook:
 info_TEXINFOS = doc/mcron.texi
 doc_mcron_TEXINFOS = doc/fdl.texi
 nodist_doc_mcron_TEXINFOS = doc/config.texi
-dist_man_MANS = \
-  $(srcdir)/doc/mcron.1 \
+dist_man_MANS = $(srcdir)/doc/mcron.1
+extra_mans = \
   $(srcdir)/doc/crontab.1 \
   $(srcdir)/doc/cron.8
+
+if MULTI_USER
+dist_man_MANS += $(extra_mans)
+else
+# Build, distribute, but do not install the extra man pages.
+all-local: $(extra_mans)
+EXTRA_DIST += $(extra_mans)
+endif
 
 # XXX: Allow the inclusion of 'doc/fdl.texi' and 'doc/config.texi' inside
 # 'doc/mcron.texi' for 'dvi' and 'pdf' targets.
@@ -218,7 +216,7 @@ $(srcdir)/doc/crontab.1: src/mcron/scripts/crontab.scm bin/crontab
 $(srcdir)/doc/cron.8: src/mcron/scripts/cron.scm bin/cron
 	-@prog="cron"; man_section=8; $(gen_man)
 
-MAINTAINERCLEANFILES = $(dist_man_MANS)
+MAINTAINERCLEANFILES = $(dist_man_MANS) $(extra_mans)
 
 ## -------------- ##
 ## Silent rules.  ##

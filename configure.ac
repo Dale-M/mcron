@@ -104,18 +104,12 @@ else
 fi
 SENDMAIL=$ac_cv_prog_SENDMAIL
 
-
-# Find out if we are avoiding Vixie.
-
-AC_MSG_CHECKING([whether to avoid clobbering a Vixie installation])
-AC_ARG_ENABLE(no-vixie-clobber,
-              AC_HELP_STRING([--enable-no-vixie-clobber],
-                             [do not install with program names that would override a legacy cron installation]),
-              NO_VIXIE_CLOBBER=$enableval,
-              NO_VIXIE_CLOBBER=[no])
-AC_MSG_RESULT($NO_VIXIE_CLOBBER)
-AC_SUBST(NO_VIXIE_CLOBBER)
-
+AC_ARG_ENABLE([multi-user],
+  [AS_HELP_STRING([--disable-multi-user],
+    [Don't Install legacy cron and crontab programs])],
+  [enable_multi_user="$enableval"],
+  [enable_multi_user="yes"])
+AM_CONDITIONAL([MULTI_USER], [test "x$enable_multi_user" != xyes])
 
 # Configure the various files that mcron uses at runtime.
 
