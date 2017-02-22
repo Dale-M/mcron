@@ -17,6 +17,10 @@
 # You should have received a copy of the GNU General Public License
 # along with GNU Mcron.  If not, see <http://www.gnu.org/licenses/>.
 
+## ---------- ##
+## Programs.  ##
+## ---------- ##
+
 bin_PROGRAMS = bin/mcron bin/crontab
 sbin_PROGRAMS = bin/cron
 
@@ -39,6 +43,13 @@ bin_cron_DEPENDENCIES = $(compiled_modules)
 bin_crontab_SOURCES = src/wrapper.c
 bin_crontab_CPPFLAGS = $(AM_CPPFLAGS) -DPROGRAM="\"crontab\""
 bin_crontab_DEPENDENCIES = $(compiled_modules)
+
+# wrapper to be used in the build environment and for running tests.
+noinst_SCRIPTS = pre-inst-env
+
+## --------------- ##
+## Guile modules.  ##
+## --------------- ##
 
 # Root directory used for installing Guile modules.
 guilesitedir = $(datarootdir)/guile/site/$(GUILE_EFFECTIVE_VERSION)
@@ -77,16 +88,8 @@ compiled_modules = \
   $(pkgmodulego_DATA) \
   $(pkgscriptgo_DATA)
 
-TEST_EXTENSIONS = .scm
-AM_TESTS_ENVIRONMENT = env GUILE_AUTO_COMPILE='0'
-
-SCM_LOG_DRIVER = \
-  $(builddir)/pre-inst-env $(GUILE) \
-  $(srcdir)/build-aux/test-driver.scm
-
-TESTS = \
-  tests/environment.scm \
-  tests/job-specifier.scm
+CLEANFILES = $(compiled_modules)
+DISTCLEANFILES = src/mcron/config.scm
 
 # Unset 'GUILE_LOAD_COMPILED_PATH' altogether while compiling.  Otherwise, if
 # $GUILE_LOAD_COMPILED_PATH contains $(pkgmoduledir), we may find .go files
@@ -99,21 +102,38 @@ TESTS = \
 # XXX: Use the C locale for when Guile lacks
 # <http://git.sv.gnu.org/cgit/guile.git/commit/?h=stable-2.0&id=e2c6bf3866d1186c60bacfbd4fe5037087ee5e3f>.
 .scm.go:
-	$(guilec_verbose)$(MKDIR_P) `dirname "$@"` ;			\
-	export GUILE_AUTO_COMPILE=0 ; unset GUILE_LOAD_COMPILED_PATH ;	\
-	LC_ALL=C							\
-	$(top_builddir)/pre-inst-env $(GUILD) compile			\
-	  --load-path="$(top_builddir)/src"				\
-	  --load-path="$(top_srcdir)/src"				\
-	  --warn=format --warn=unbound-variable --warn=arity-mismatch	\
+	$(guilec_verbose)$(MKDIR_P) `dirname "$@"`; \
+	export GUILE_AUTO_COMPILE=0; unset GUILE_LOAD_COMPILED_PATH; \
+	LC_ALL=C \
+	$(top_builddir)/pre-inst-env $(GUILD) compile \
+	  --load-path="$(builddir)/src" \
+	  --load-path="$(srcdir)/src" \
+	  --warn=format --warn=unbound-variable --warn=arity-mismatch \
 	  --target="$(host)" --output="$@" "$<" $(devnull_verbose)
 
-SUFFIXES = .go
-noinst_SCRIPTS = pre-inst-env
+## ------------ ##
+## Test suite.  ##
+## ------------ ##
+
+TEST_EXTENSIONS = .scm
+AM_TESTS_ENVIRONMENT = env GUILE_AUTO_COMPILE='0'
+
+SCM_LOG_DRIVER = \
+  $(builddir)/pre-inst-env $(GUILE) \
+  $(srcdir)/build-aux/test-driver.scm
+
+TESTS = \
+  tests/environment.scm \
+  tests/job-specifier.scm
+
+## -------------- ##
+## Distribution.  ##
+## -------------- ##
 
 dist-hook: gen-ChangeLog
 	$(AM_V_GEN)echo $(VERSION) > $(distdir)/.tarball-version
 
+# Generate the ChangeLog file from Git commit logs.
 gen_start_date = 2015-06-26
 .PHONY: gen-ChangeLog
 gen-ChangeLog:
@@ -127,6 +147,15 @@ gen-ChangeLog:
 	    { rm -f $(distdir)/ChangeLog &&				\
 	      mv $(distdir)/cl-t $(distdir)/ChangeLog; }		\
 	fi
+
+EXTRA_DIST = \
+  bootstrap \
+  build-aux/guix.scm \
+  $(TESTS)
+
+## -------------- ##
+## Installation.  ##
+## -------------- ##
 
 #full program prefix
 fpp = $(DESTDIR)$(bindir)/@real_program_prefix@
@@ -151,15 +180,6 @@ uninstall-hook:
 	if [ "`id -u`" -eq "0" ]; then \
         rm -f $(fpp){cron,crontab}$(EXEEXT); \
     fi
-
-EXTRA_DIST = \
-  bootstrap \
-  build-aux/guix.scm \
-  $(TESTS)
-
-MAINTAINERCLEANFILES = $(dist_man_MANS)
-DISTCLEANFILES = src/mcron/config.scm
-CLEANFILES = $(compiled_modules)
 
 ## --------------- ##
 ## Documentation.  ##
@@ -197,6 +217,8 @@ $(srcdir)/doc/crontab.1: src/mcron/scripts/crontab.scm bin/crontab
 
 $(srcdir)/doc/cron.8: src/mcron/scripts/cron.scm bin/cron
 	-@prog="cron"; man_section=8; $(gen_man)
+
+MAINTAINERCLEANFILES = $(dist_man_MANS)
 
 ## -------------- ##
 ## Silent rules.  ##
