@@ -43,10 +43,6 @@ else
 fi
 AC_SUBST(CONFIG_DEBUG)
 
-
-# We have no interest (hence a no-op), but Debian wants this.
-AC_ARG_ENABLE(maintainer-mode)
-
 AC_CANONICAL_HOST
 AC_PROG_AWK
 AC_PROG_EGREP
