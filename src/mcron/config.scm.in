@@ -19,7 +19,6 @@
 
 (define-module (mcron config))
 
-(define-public config-debug @CONFIG_DEBUG@)
 (define-public config-package-name "@PACKAGE_NAME@")
 (define-public config-package-version "@PACKAGE_VERSION@")
 (define-public config-package-string "@PACKAGE_STRING@")
@@ -33,3 +32,11 @@
 (define-public config-deny-file "@CONFIG_DENY_FILE@")
 (define-public config-pid-file "@CONFIG_PID_FILE@")
 (define-public config-tmp-dir "@CONFIG_TMP_DIR@")
+
+;;;
+;;; Runtime configuration
+;;;
+
+(define-public config-debug
+  ;; Trigger the display of Guile stack traces on errors.
+  (getenv "MCRON_DEBUG"))

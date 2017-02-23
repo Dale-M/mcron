@@ -29,20 +29,6 @@ AC_REQUIRE_AUX_FILE([git-version-gen])
 AM_INIT_AUTOMAKE([subdir-objects -Wall -Wno-override])
 AM_SILENT_RULES([yes])		# enables silent rules by default
 
-AC_MSG_CHECKING([whether debugging is requested])
-AC_ARG_ENABLE(debug,
-              AC_HELP_STRING([--enable-debug],
-                             [enable debugging and traceback on error]),
-              CONFIG_DEBUG=$enableval,
-              CONFIG_DEBUG=no)
-AC_MSG_RESULT($CONFIG_DEBUG)
-if test "$CONFIG_DEBUG" = "no"; then
-   CONFIG_DEBUG="#f"
-else
-   CONFIG_DEBUG="#t"
-fi
-AC_SUBST(CONFIG_DEBUG)
-
 AC_CANONICAL_HOST
 AC_PROG_AWK
 AC_PROG_EGREP
