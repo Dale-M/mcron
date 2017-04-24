@@ -1,6 +1,6 @@
+*.[oa]
 *.go
 *.log
-*.o
 *.trs
 *~
 .deps
@@ -8,6 +8,7 @@
 /bin/cron
 /bin/crontab
 /bin/mcron
+/build-aux/ar-lib
 /build-aux/compile
 /build-aux/config.guess
 /build-aux/config.sub

@@ -21,6 +21,7 @@
    is needed because the crontab personality requires SUID which is not
    permitted for executable scripts.  */
 
+#include "utils.h"
 #include <libguile.h>
 #include <signal.h>
 #include <stdbool.h>
@@ -29,7 +30,6 @@
 #include <string.h>
 
 /* Forward declarations.  */
-static void wrap_env_path (const char *envar, const char *dir);
 static void inner_main (void *closure, int argc, char **argv);
 static void react_to_terminal_signal (int sig);
 static SCM set_cron_signals (void);
@@ -49,29 +49,6 @@ main (int argc, char **argv)
   scm_boot_guile (argc, argv, inner_main, 0);
 
   return EXIT_SUCCESS;
-}
-
-/* Append DIR in front of ENVAR environment variable value.  If ENVAR is not
-   defined, then define it with DIR.  Bail out if something went wrong.  */
-static void
-wrap_env_path (const char *envar, const char *dir)
-{
-  const char *path = getenv (envar);
-  if (path == NULL)
-    setenv (envar, dir, true);
-  else
-    {
-      char *new_path;
-      int ret = asprintf (&new_path, "%s:%s", dir, path);
-      if (ret >= 0)
-        setenv (envar, new_path, true);
-      else
-        {
-          perror (envar);
-          exit (EXIT_FAILURE);
-        }
-      free (new_path);
-    }
 }
 
 /* Launch the Mcron Guile main program.  */

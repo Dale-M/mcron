@@ -36,7 +36,7 @@ AM_CPPFLAGS = \
   -D_GNU_SOURCE
 
 AM_CFLAGS = @GUILE_CFLAGS@
-LDADD = @GUILE_LIBS@
+LDADD = @GUILE_LIBS@ src/libmcron.a
 
 bin_mcron_SOURCES = src/wrapper.c
 bin_mcron_CPPFLAGS = $(AM_CPPFLAGS) -DPROGRAM="\"mcron\""
@@ -52,6 +52,12 @@ bin_crontab_DEPENDENCIES = $(compiled_modules)
 
 # wrapper to be used in the build environment and for running tests.
 noinst_SCRIPTS = pre-inst-env
+
+# local library.
+noinst_LIBRARIES = src/libmcron.a
+src_libmcron_a_SOURCES = \
+  src/utils.c \
+  src/utils.h
 
 ## --------------- ##
 ## Guile modules.  ##

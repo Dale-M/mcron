@@ -33,6 +33,8 @@ AC_CANONICAL_HOST
 AC_PROG_AWK
 AC_PROG_EGREP
 AM_PROG_CC_C_O
+AC_PROG_RANLIB
+AM_PROG_AR
 
 # Check for Guile 2.x. development files
 GUILE_PKG([2.2 2.0])
