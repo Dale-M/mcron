@@ -38,16 +38,13 @@ AM_CPPFLAGS = \
 AM_CFLAGS = @GUILE_CFLAGS@
 LDADD = @GUILE_LIBS@ src/libmcron.a
 
-bin_mcron_SOURCES = src/wrapper.c
-bin_mcron_CPPFLAGS = $(AM_CPPFLAGS) -DPROGRAM="\"mcron\""
+bin_mcron_SOURCES = src/mcron.c
 bin_mcron_DEPENDENCIES = $(compiled_modules)
 
-bin_cron_SOURCES = src/wrapper.c
-bin_cron_CPPFLAGS = $(AM_CPPFLAGS) -DPROGRAM="\"cron\""
+bin_cron_SOURCES = src/cron.c
 bin_cron_DEPENDENCIES = $(compiled_modules)
 
-bin_crontab_SOURCES = src/wrapper.c
-bin_crontab_CPPFLAGS = $(AM_CPPFLAGS) -DPROGRAM="\"crontab\""
+bin_crontab_SOURCES = src/crontab.c
 bin_crontab_DEPENDENCIES = $(compiled_modules)
 
 # wrapper to be used in the build environment and for running tests.

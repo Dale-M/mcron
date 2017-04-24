@@ -22,7 +22,7 @@ AC_PREREQ(2.61)
 AC_INIT([GNU Mcron],
   m4_esyscmd([build-aux/git-version-gen .tarball-version]),
   [bug-mcron@gnu.org])
-AC_CONFIG_SRCDIR([src/wrapper.c])
+AC_CONFIG_SRCDIR([src/mcron.c])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_REQUIRE_AUX_FILE([test-driver.scm])
 AC_REQUIRE_AUX_FILE([git-version-gen])

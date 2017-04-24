@@ -1,4 +1,4 @@
-/* wrapper.c -- C code booting Guile
+/* cron.c -- run jobs at scheduled times
    Copyright © 2003, 2014 Dale Mellor <dale_mellor@users.sourceforge.net>
    Copyright © 2015, 2016, 2017 Mathieu Lirzin <mthl@gnu.org>
 
@@ -17,25 +17,17 @@
    You should have received a copy of the GNU General Public License
    along with GNU Mcron.  If not, see <http://www.gnu.org/licenses/>.  */
 
-/* This C code represents a thin wrapper around the Guile code of Mcron.  It
-   is needed because the crontab personality requires SUID which is not
-   permitted for executable scripts.  */
-
 #include "utils.h"
 #include <libguile.h>
 #include <signal.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 /* Forward declarations.  */
-static void inner_main (void *closure, int argc, char **argv);
+static void inner_main (void *closure, int argc, char *argv[]);
 static void react_to_terminal_signal (int sig);
 static SCM set_cron_signals (void);
 
 int
-main (int argc, char **argv)
+main (int argc, char *argv[])
 {
   /* Set Guile load paths to ensure that Mcron modules will be found after
      installation.  In a build environment let the 'pre-inst-env' script set
@@ -46,25 +38,23 @@ main (int argc, char **argv)
       wrap_env_path ("GUILE_LOAD_COMPILED_PATH", PACKAGE_LOAD_COMPILED_PATH);
     }
 
-  scm_boot_guile (argc, argv, inner_main, 0);
+  scm_boot_guile (argc, argv, inner_main, NULL);
 
   return EXIT_SUCCESS;
 }
 
 /* Launch the Mcron Guile main program.  */
 static void
-inner_main (void *closure, int argc, char **argv)
+inner_main (void *closure, int argc, char *argv[])
 {
-  scm_set_current_module (scm_c_resolve_module ("mcron scripts " PROGRAM));
-  /* Register the procedures to be called from Guile.  */
+  scm_set_current_module (scm_c_resolve_module ("mcron scripts cron"));
   scm_c_define_gsubr ("c-set-cron-signals", 0, 0, 0, set_cron_signals);
-  /* Call main procedure.  */
   scm_call_0 (scm_variable_ref (scm_c_lookup ("main")));
 }
 
-/* Set up all the signal handlers as required by the cron personality.  This
-   is necessary to perform the signal processing in C because the sigaction
-   function won't work when called from Guile.  */
+/* Set up all the signal handlers.  This is necessary to perform the signal
+   processing in C because the sigaction function won't work when called from
+   Guile.  */
 static SCM
 set_cron_signals ()
 {
@@ -80,8 +70,8 @@ set_cron_signals ()
   return SCM_BOOL_T;
 }
 
-/* Handle signal SIG and exit.  All signals that mcron handles will produce
-   the same behavior so we don't need to use SIG in the implementation.  */
+/* Handle signal SIG and exit.  All signals that cron handles will produce the
+   same behavior so we don't need to use SIG in the implementation.  */
 static void
 react_to_terminal_signal (int sig)
 {
