@@ -18,9 +18,6 @@
 
 #include "utils.h"
 #include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 void
 wrap_env_path (const char *envar, const char *dir)
@@ -41,4 +38,10 @@ wrap_env_path (const char *envar, const char *dir)
         }
       free (new_path);
     }
+}
+
+void
+assq_symbol_set_x (SCM *alst, const char *symbol, SCM val)
+{
+  *alst = scm_assq_set_x (*alst, scm_from_utf8_symbol (symbol), val);
 }

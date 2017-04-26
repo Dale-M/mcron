@@ -19,9 +19,15 @@
 #ifndef MCRON_UTILS_H
 #define MCRON_UTILS_H
 
+#include <libguile.h>
+
 /**
    Append DIR in front of ENVAR environment variable value.  If ENVAR is not
    defined, then define it with DIR.  Bail out if something went wrong.  */
 extern void wrap_env_path (const char *envar, const char *dir);
+
+/**
+   In the association list pointed by ALST, set SYMBOL to VAL.  */
+extern void assq_symbol_set_x (SCM *alst, const char *symbol, SCM val);
 
 #endif /* MCRON_UTILS_H */

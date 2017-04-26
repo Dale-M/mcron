@@ -18,7 +18,6 @@
    along with GNU Mcron.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #include "utils.h"
-#include <libguile.h>
 
 /* Forward declarations.  */
 static void inner_main (void *closure, int argc, char *argv[]);

@@ -19,7 +19,6 @@
 
 #include "utils.h"
 #include <argp.h>
-#include <libguile.h>
 
 /* Forward declarations.  */
 static void inner_main (void *closure, int argc, char *argv[]);
@@ -92,21 +91,18 @@ parse_opt (int key, char *arg, struct argp_state *state)
   switch (key)
     {
     case 's':
-      *config = scm_assq_set_x (*config, scm_from_utf8_symbol ("schedule"),
-                                scm_from_int (atoi (arg)));
+      assq_symbol_set_x (config, "schedule",
+                         scm_from_int (atoi (arg)));
       break;
     case 'd':
-      *config = scm_assq_set_x (*config, scm_from_utf8_symbol ("daemon"),
-                                SCM_BOOL_T);
+      assq_symbol_set_x (config, "daemon", SCM_BOOL_T);
       break;
     case 'i':
       if (strncmp (arg, "vixie", 6) == 0)
-        *config = scm_assq_set_x (*config, scm_from_utf8_symbol ("vixie"),
-                                  SCM_BOOL_T);
+        assq_symbol_set_x (config, "vixie", SCM_BOOL_T);
       break;
     case ARGP_KEY_NO_ARGS:
-      *config = scm_assq_set_x (*config, scm_from_utf8_symbol ("files"),
-                                SCM_EOL);
+      assq_symbol_set_x (config, "files", SCM_EOL);
       break;
     case ARGP_KEY_ARGS:
       {
@@ -117,8 +113,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
         for (int i = filec - 1; i >= 0; i--)
           lst = scm_cons (scm_from_locale_string (filev[i]), lst);
 
-        *config = scm_assq_set_x (*config, scm_from_utf8_symbol ("files"),
-                                  lst);
+        assq_symbol_set_x (config, "files", lst);
         break;
       }
     case ARGP_KEY_ARG:
