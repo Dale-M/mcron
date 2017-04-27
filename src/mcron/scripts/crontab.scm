@@ -42,6 +42,36 @@
     (version  (single-char #\v) (value #f))
     (help     (single-char #\h) (value #f))))
 
+(define (hit-server user-name)
+  "Tell the running cron daemon that the user corresponding to
+USER-NAME has modified his crontab.  USER-NAME is written to the
+'/var/cron/socket' UNIX socket."
+  (catch #t
+    (lambda ()
+      (let ((socket (socket AF_UNIX SOCK_STREAM 0)))
+        (connect socket AF_UNIX config-socket-file)
+        (display user-name socket)
+        (close socket)))
+    (lambda (key . args)
+      (display "Warning: a cron daemon is not running.\n"))))
+
+(define (in-access-file? file name)
+  "Scan FILE which should contain one user name per line (such as
+'/var/cron/allow' and '/var/cron/deny').  Return #t if NAME is in there, and
+#f otherwise.  if FILE cannot be opened, a error is signaled."
+  (catch #t
+    (lambda ()
+      (with-input-from-file file
+        (lambda ()
+          (let loop ((input (read-line)))
+            (cond ((eof-object? input)
+                   #f)
+                  ((string=? input name)
+                   #t)
+                  (else
+                   (loop (read-line))))))))
+    (const '())))
+
 
 ;;;
 ;;; Entry point.
@@ -57,41 +87,10 @@
           ((option-ref opts 'version #f)
            (show-version "crontab")
            (exit 0)))
-    (let ((hit-server
-           (λ (user-name)
-             ;; Procedure to communicate with running cron daemon that a user
-             ;; has modified his crontab. The user name is written to the
-             ;; /var/cron/socket UNIX socket.
-             (catch #t
-               (λ ()
-                 (let ((socket (socket AF_UNIX SOCK_STREAM 0)))
-                   (connect socket AF_UNIX config-socket-file)
-                   (display user-name socket)
-                   (close socket)))
-               (λ (key . args)
-                 (display "Warning: a cron daemon is not running.\n")))))
-
-          ;; Procedure to scan a file containing one user name per line (such
-          ;; as /var/cron/allow and /var/cron/deny), and determine if the
-          ;; given name is in there. The procedure returns #t, #f, or '() if
-          ;; the file does not exist.
-          (in-access-file?
-           (λ (file name)
-             (catch #t
-               (λ ()
-                 (with-input-from-file file
-                   (λ ()
-                     (let loop ((input (read-line)))
-                       (if (eof-object? input)
-                           #f
-                           (if (string=? input name)
-                               #t
-                               (loop (read-line))))))))
-               (λ (key . args) '()))))
-
-          ;; This program should have been installed SUID root. Here we get
-          ;; the passwd entry for the real user who is running this program.
-          (crontab-real-user (passwd:name (getpw (getuid)))))
+    (let ((crontab-real-user
+           ;; This program should have been installed SUID root. Here we get
+           ;; the passwd entry for the real user who is running this program.
+           (passwd:name (getpw (getuid)))))
 
       ;; If the real user is not allowed to use crontab due to the
       ;; /var/cron/allow and/or /var/cron/deny files, bomb out now.
