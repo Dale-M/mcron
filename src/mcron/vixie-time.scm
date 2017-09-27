@@ -1,29 +1,26 @@
-;;   Copyright (C) 2003 Dale Mellor
-;; 
-;;   This file is part of GNU mcron.
-;;
-;;   GNU mcron is free software: you can redistribute it and/or modify it under
-;;   the terms of the GNU General Public License as published by the Free
-;;   Software Foundation, either version 3 of the License, or (at your option)
-;;   any later version.
-;;
-;;   GNU mcron is distributed in the hope that it will be useful, but WITHOUT
-;;   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-;;   FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-;;   more details.
-;;
-;;   You should have received a copy of the GNU General Public License along
-;;   with GNU mcron.  If not, see <http://www.gnu.org/licenses/>.
-
+;;;; vixie-time.scm -- parse Vixie-style times
+;;; Copyright © 2003 Dale Mellor <dale_mellor@users.sourceforge.net>
+;;;
+;;; This file is part of GNU Mcron.
+;;;
+;;; GNU Mcron is free software: you can redistribute it and/or modify
+;;; it under the terms of the GNU General Public License as published by
+;;; the Free Software Foundation, either version 3 of the License, or
+;;; (at your option) any later version.
+;;;
+;;; GNU Mcron is distributed in the hope that it will be useful,
+;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;; GNU General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU General Public License
+;;; along with GNU Mcron.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (mcron vixie-time)
-  #:export (parse-vixie-time)
-  #:use-module (mcron job-specifier))
-
-
-(use-modules (srfi srfi-1) (srfi srfi-13) (srfi srfi-14)
-             (ice-9 regex))
-
+  #:use-module (ice-9 regex)
+  #:use-module (mcron job-specifier)
+  #:use-module (srfi srfi-1)
+  #:export (parse-vixie-time))
 
 ;; In Vixie-style time specifications three-letter symbols are allowed to stand
 ;; for the numbers corresponding to months and days of the week. We deal with
@@ -179,11 +176,12 @@
 ;; simply unreadable without all of these aliases.
 
 (define (increment-time-component time time-spec)
-  (let* ((time-list   (time-spec:list   time-spec))
-         (getter      (time-spec:getter time-spec))
-         (setter      (time-spec:setter time-spec))
-         (next-best   (find-best-next (getter time) time-list))
-         (wrap-around (eqv? (cdr next-best) 9999)))
+  (let* ((time-list      (time-spec:list   time-spec))
+         (getter         (time-spec:getter time-spec))
+         (setter         (time-spec:setter time-spec))
+         (find-best-next (@@ (mcron job-specifier) %find-best-next))
+         (next-best      (find-best-next (getter time) time-list))
+         (wrap-around    (eqv? (cdr next-best) 9999)))
     (setter time ((if wrap-around car cdr) next-best))
     wrap-around))
 

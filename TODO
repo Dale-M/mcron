@@ -1,5 +1,6 @@
 GNU mcron --- TODO                                  -*-text-*-
 
+  Copyright (C) 2015, 2016  Mathieu Lirzin
   Copyright (C) 2003, 2005, 2006, 2014  Dale Mellor
 
   Copying and distribution of this file, with or without modification,
@@ -19,6 +20,11 @@ Maybe in the near future...
        core or other users' files up. Then allow scheme code in the system
        crontabs.
               
+    * Provide a test suite using SRFI-64 API.
+      <http://srfi.schemers.org/srfi-64/srfi-64.html>.
+
+    * Internationalize Mcron using GNU Gettext and ask the Translation
+      Project to handle the localization.
 
 
 There are no plans to actually do the following any time soon...

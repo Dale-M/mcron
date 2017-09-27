@@ -1,18 +1,3 @@
-Authors of GNU mcron.
-
-  Copyright (C) 2003, 2005, 2006  Dale Mellor
-
-  Copying and distribution of this file, with or without modification,
-  are permitted in any medium without royalty provided the copyright
-  notice and this notice are preserved.
-
-
-
-Dale Mellor (dale_mellor@users.sourceforge.net)
-    wrote everything from scratch, with some reference to Paul Vixie's code,
-    with the exceptions noted below.
-
-The section of the manual which describes in detail the syntax for Vixie-style
-    configuration files is copied verbatim from Paul Vixie's own distribution,
-    on the understanding that this is permitted under his copyright notice,
-    which is reproduced in its entirety in this section of the manual.
+Dale Mellor <dale_mellor@users.sourceforge.net>
+Mathieu Lirzin <mthl@gnu.org>
+Sergey Poznyakoff <cray@gnu.org.ua>

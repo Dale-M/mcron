@@ -1,0 +1,35 @@
+;;;; config.scm -- variables defined at configure time
+;;; Copyright © 2003 Dale Mellor <dale_mellor@users.sourceforge.net>
+;;; Copyright © 2015, 2016 Mathieu Lirzin <mthl@gnu.org>
+;;;
+;;; This file is part of GNU Mcron.
+;;;
+;;; GNU Mcron is free software: you can redistribute it and/or modify
+;;; it under the terms of the GNU General Public License as published by
+;;; the Free Software Foundation, either version 3 of the License, or
+;;; (at your option) any later version.
+;;;
+;;; GNU Mcron is distributed in the hope that it will be useful,
+;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;; GNU General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU General Public License
+;;; along with GNU Mcron.  If not, see <http://www.gnu.org/licenses/>.
+
+(define-module (mcron config))
+
+(define-public config-debug @CONFIG_DEBUG@)
+(define-public config-package-name "@PACKAGE_NAME@")
+(define-public config-package-version "@PACKAGE_VERSION@")
+(define-public config-package-string "@PACKAGE_STRING@")
+(define-public config-package-bugreport "@PACKAGE_BUGREPORT@")
+(define-public config-package-url "@PACKAGE_URL@")
+(define-public config-sendmail "@SENDMAIL@")
+
+(define-public config-spool-dir "@CONFIG_SPOOL_DIR@")
+(define-public config-socket-file "@CONFIG_SOCKET_FILE@")
+(define-public config-allow-file "@CONFIG_ALLOW_FILE@")
+(define-public config-deny-file "@CONFIG_DENY_FILE@")
+(define-public config-pid-file "@CONFIG_PID_FILE@")
+(define-public config-tmp-dir "@CONFIG_TMP_DIR@")

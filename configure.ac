@@ -1,30 +1,37 @@
-#                                               -*- Autoconf -*-
-# Process this file with autoconf to produce a configure script.
-
-  
-#    Copyright (C) 2003, 2005, 2012, 2014  Dale Mellor
-#   
-#    This file is part of GNU mcron.
-# 
-#    GNU mcron is free software: you can redistribute it and/or modify it under
-#    the terms of the GNU General Public License as published by the Free
-#    Software Foundation, either version 3 of the License, or (at your option)
-#    any later version.
-# 
-#    GNU mcron is distributed in the hope that it will be useful, but WITHOUT
-#    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-#    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-#    more details.
-# 
-#    You should have received a copy of the GNU General Public License along
-#    with GNU mcron.  If not, see <http://www.gnu.org/licenses/>.
-
+## Process this file with autoconf to produce a configure script.
+# Copyright © 2003, 2005, 2012, 2014 Dale Mellor
+# <dale_mellor@users.sourceforge.net>
+# Copyright © 2015, 2016 Mathieu Lirzin <mthl@gnu.org>
+#
+# This file is part of GNU Mcron.
+#
+# GNU Mcron is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# GNU Mcron is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GNU Mcron.  If not, see <http://www.gnu.org/licenses/>.
 
 AC_PREREQ(2.61)
-AC_INIT([mcron], [1.0.8], [dale_mellor@users.sourceforge.net])
-AM_INIT_AUTOMAKE
+AC_INIT([GNU Mcron],
+  m4_esyscmd([build-aux/git-version-gen .tarball-version]),
+  [bug-mcron@gnu.org])
+AC_CONFIG_SRCDIR([src/wrapper.c])
+AC_CONFIG_AUX_DIR([build-aux])
+AC_REQUIRE_AUX_FILE([test-driver.scm])
+AC_REQUIRE_AUX_FILE([git-version-gen])
+AM_INIT_AUTOMAKE([subdir-objects -Wall -Wno-override])
+AM_SILENT_RULES([yes])		# enables silent rules by default
 
-
+moduledir="${datarootdir}/guile/site/2.0"
+AC_SUBST([moduledir])
+AC_SUBST([mcronmoduledir], ["${moduledir}/mcron"])
 AC_MSG_CHECKING([whether debugging is requested])
 AC_ARG_ENABLE(debug,
               AC_HELP_STRING([--enable-debug],
@@ -43,12 +50,18 @@ AC_SUBST(CONFIG_DEBUG)
 # We have no interest (hence a no-op), but Debian wants this.
 AC_ARG_ENABLE(maintainer-mode)
 
-
+AC_CANONICAL_HOST
 AC_PROG_AWK
 AC_PROG_EGREP
 AM_PROG_CC_C_O
 
-PKG_CHECK_MODULES(GUILE, guile-2.0)
+PKG_CHECK_MODULES([GUILE], [guile-2.0 >= 2.0.7])
+AC_PATH_PROG([GUILE], [guile])
+
+# search guild
+AC_PATH_PROG([GUILD], [guild])
+AS_IF([test -z "$ac_cv_path_GUILD"],
+  [AC_MSG_ERROR(['guild' program cannot be found.])])
 
 # Checks for programs.
   
@@ -61,10 +74,6 @@ fi
 AC_CHECK_PROGS(HEAD, head)
 if test "x$ac_cv_prog_HEAD" = "x"; then
    AC_MSG_ERROR(head not found)
-fi
-AC_CHECK_PROGS(ED, ed)
-if test "x$ac_cv_prog_ED" = "x"; then
-   AC_MSG_ERROR(ed not found)
 fi
 AC_CHECK_PROGS(WHICH, which)
 if test "x$ac_cv_prog_WHICH" = "x"; then
@@ -174,6 +183,9 @@ AC_SUBST(CONFIG_TMP_DIR)
 real_program_prefix=`echo $program_prefix | sed s/NONE//`
 AC_SUBST(real_program_prefix)
 
-        
-AC_CONFIG_FILES(mcron.texinfo makefile scm/mcron/makefile scm/mcron/config.scm)
+AC_CONFIG_FILES([pre-inst-env:build-aux/pre-inst-env.in],
+  [chmod +x pre-inst-env])
+AC_CONFIG_FILES([doc/config.texi
+                 Makefile
+                 src/mcron/config.scm])
 AC_OUTPUT

@@ -1,45 +1,45 @@
-;;   Copyright (C) 2003 Dale Mellor
-;; 
-;;   This file is part of GNU mcron.
-;;
-;;   GNU mcron is free software: you can redistribute it and/or modify it under
-;;   the terms of the GNU General Public License as published by the Free
-;;   Software Foundation, either version 3 of the License, or (at your option)
-;;   any later version.
-;;
-;;   GNU mcron is distributed in the hope that it will be useful, but WITHOUT
-;;   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-;;   FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-;;   more details.
-;;
-;;   You should have received a copy of the GNU General Public License along
-;;   with GNU mcron.  If not, see <http://www.gnu.org/licenses/>.
+;;;; vixie-specification.scm -- read Vixie-sytle configuration file
+;;; Copyright © 2003 Dale Mellor <dale_mellor@users.sourceforge.net>
+;;;
+;;; This file is part of GNU Mcron.
+;;;
+;;; GNU Mcron is free software: you can redistribute it and/or modify
+;;; it under the terms of the GNU General Public License as published by
+;;; the Free Software Foundation, either version 3 of the License, or
+;;; (at your option) any later version.
+;;;
+;;; GNU Mcron is distributed in the hope that it will be useful,
+;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;; GNU General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU General Public License
+;;; along with GNU Mcron.  If not, see <http://www.gnu.org/licenses/>.
 
-
-
-;; This file provides methods for reading a complete Vixie-style configuration
-;; file, either from a real file or an already opened port. It also exposes the
-;; method for parsing the time-specification part of a Vixie string, so that
-;; these can be used to form the next-time-function of a job in a Guile
-;; configuration file.
+;;;; Commentary:
+;;;
+;;; Methods for reading a complete Vixie-style configuration file, either from
+;;; a real file or an already opened port. It also exposes the method for
+;;; parsing the time-specification part of a Vixie string, so that these can
+;;; be used to form the next-time-function of a job in a Guile configuration
+;;; file.
+;;;
+;;;; Code:
 
 (define-module (mcron vixie-specification)
+  #:use-module (ice-9 regex)
+  #:use-module (ice-9 rdelim)
+  #:use-module (mcron base)
+  #:use-module (mcron config)
+  #:use-module (mcron job-specifier)
+  #:use-module (mcron redirect)
+  #:use-module (mcron vixie-time)
+  #:use-module (srfi srfi-1)
   #:export (parse-user-vixie-line
             parse-system-vixie-line
             read-vixie-port
             read-vixie-file
-            check-system-crontab)
-  #:use-module ((mcron config) :select (config-socket-file))
-  #:use-module (mcron core)
-  #:use-module (mcron job-specifier)
-  #:use-module (mcron redirect)
-  #:use-module (mcron vixie-time))
-
-
-(use-modules (ice-9 regex) (ice-9 rdelim)
-             (srfi srfi-1) (srfi srfi-2) (srfi srfi-13) (srfi srfi-14))
-
-
+            check-system-crontab))
 
 ;; A line in a Vixie-style crontab file which gives a command specification
 ;; carries two pieces of information: a time specification consisting of five
@@ -108,11 +108,9 @@
     (if match
         (append-environment-mods (match:substring match 1)
                                  (match:substring match 2))
-        (and-let* ((match (regexp-exec parse-vixie-environment-regexp4 string)))
-                  (append-environment-mods (match:substring match 1) #f)))))
-
-
-
+        (and=> (regexp-exec parse-vixie-environment-regexp4 string)
+               (λ (match)
+                 (append-environment-mods (match:substring match 1) #f))))))
 
 ;; The next procedure reads an entire Vixie-style file. For each line in the
 ;; file there are three possibilities (after continuation lines have been
@@ -162,13 +160,11 @@
                          (parse-vixie-environment line)
                          (parse-vixie-line line)))
                    (lambda (key exit-code . msg)
-                     (throw
-                      'mcron-error
-                      exit-code
-                      (apply string-append
-                             (number->string report-line)
-                             ": "
-                             msg)))))))))
+                     (throw 'mcron-error exit-code
+                            (apply string-append
+                                   (number->string report-line)
+                                   ": "
+                                   msg)))))))))
 
 
 
