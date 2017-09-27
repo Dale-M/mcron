@@ -2,7 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
   
-#    Copyright (C) 2003, 2005, 2012, 2014, 2015  Dale Mellor
+#    Copyright (C) 2003, 2005, 2012, 2014  Dale Mellor
+#    Copyright (C) 2015  Mathieu Lirzin
 #   
 #    This file is part of GNU mcron.
 # 
@@ -23,13 +24,8 @@
 AC_PREREQ(2.61)
 AC_INIT([GNU Mcron], [1.0.8], [bug-mcron@gnu.org])
 AC_CONFIG_AUX_DIR([build-aux])
-AM_INIT_AUTOMAKE([silent-rules])
+AM_INIT_AUTOMAKE
 
-# Enable silent rules by default.
-AM_SILENT_RULES([yes])
-
-guilemoduledir="${datarootdir}/guile/site/2.0"
-AC_SUBST([guilemoduledir])
 
 AC_MSG_CHECKING([whether debugging is requested])
 AC_ARG_ENABLE(debug,
@@ -49,19 +45,12 @@ AC_SUBST(CONFIG_DEBUG)
 # We have no interest (hence a no-op), but Debian wants this.
 AC_ARG_ENABLE(maintainer-mode)
 
-AC_CANONICAL_HOST
+
 AC_PROG_AWK
 AC_PROG_EGREP
 AM_PROG_CC_C_O
 
-PKG_CHECK_MODULES([GUILE], [guile-2.0 >= 2.0.7])
-AC_PATH_PROG([GUILE], [guile])
-
-# search guild
-AC_PATH_PROG([GUILD], [guild])
-if test "x$GUILD" = "x"; then
-   AC_MSG_ERROR(['guild' binary not found; please check your guile-2.x installation.])
-fi
+PKG_CHECK_MODULES(GUILE, guile-2.0)
 
 # Checks for programs.
   
@@ -74,6 +63,10 @@ fi
 AC_CHECK_PROGS(HEAD, head)
 if test "x$ac_cv_prog_HEAD" = "x"; then
    AC_MSG_ERROR(head not found)
+fi
+AC_CHECK_PROGS(ED, ed)
+if test "x$ac_cv_prog_ED" = "x"; then
+   AC_MSG_ERROR(ed not found)
 fi
 AC_CHECK_PROGS(WHICH, which)
 if test "x$ac_cv_prog_WHICH" = "x"; then

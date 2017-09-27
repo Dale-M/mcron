@@ -1,6 +1,5 @@
 ;; -*-scheme-*-
 
-;;   Copyright (C) 2015 Mathieu Lirzin
 ;;   Copyright (C) 2003 Dale Mellor
 ;; 
 ;;   This file is part of GNU mcron.
@@ -24,11 +23,8 @@
 (define-module (mcron config))
 
 (define-public config-debug @CONFIG_DEBUG@)
-(define-public config-package-name "@PACKAGE_NAME@")
-(define-public config-package-version "@PACKAGE_VERSION@")
 (define-public config-package-string "@PACKAGE_STRING@")
 (define-public config-package-bugreport "@PACKAGE_BUGREPORT@")
-(define-public config-package-url "@PACKAGE_URL@")
 (define-public config-sendmail "@SENDMAIL@")
 
 (define-public config-spool-dir "@CONFIG_SPOOL_DIR@")

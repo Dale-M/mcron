@@ -1,5 +1,6 @@
 ## Makefile for the toplevel directory of mcron.
-## Copyright (C) 2003, 2015 Dale Mellor
+## Copyright (C) 2003 Dale Mellor
+## Copyright (C) 2015 Mathieu Lirzin
 ##
 #    This file is part of GNU mcron.
 # 
@@ -16,13 +17,20 @@
 #    You should have received a copy of the GNU General Public License along
 #    with GNU mcron.  If not, see <http://www.gnu.org/licenses/>.
 
-## Process this file with automake to produce makefile.in
+## Process this file with automake to produce Makefile.in
 
 SUBDIRS = scm/mcron .
 
+ED = @ED@   # !!!! Are these needed?
 CP = @CP@
 
-EXTRA_DIST = BUGS
+MAINTAINERCLEANFILES = configure makefile makefile.in config.guess config.sub \
+                       install-sh missing texinfo.tex INSTALL \
+                       aclocal.m4 compile depcomp doc/mcron.1
+
+CLEANFILES = mcron.c
+
+EXTRA_DIST = makefile.ed mcron.c.template BUGS
 
 info_TEXINFOS = doc/mcron.texi
 
@@ -34,7 +42,14 @@ mcron_LDADD = @GUILE_LIBS@
 
 # The second option is so that we can execute the binary in the local directory,
 # in turn so that we can do mcron --help during the build process.
-mcron_CFLAGS = @GUILE_CFLAGS@ -DGUILE_LOAD_PATH=\"$(datadir):./scm:...\"
+mcron_CFLAGS  = @GUILE_CFLAGS@ -DGUILE_LOAD_PATH=\"$(datadir):./scm:...\"
+
+
+mcron.c : scm/mcron/main.scm scm/mcron/crontab.scm makefile.ed mcron.c.template
+	@echo 'Building mcron.c...'
+	@$(ED) < makefile.ed > /dev/null 2>&1
+	@rm -f mcron.escaped.scm > /dev/null 2>&1
+
 
 # Full program prefix.
 fpp = $(DESTDIR)$(bindir)/@real_program_prefix@
@@ -64,15 +79,11 @@ uninstall-hook:
 
 
 # Not part of formal package building, but a rule for manual use to get the
-# elemental man page.
-doc/mcron.1 : mcron
+# elemental man page.  Will only work once the mcron program is installed.
+$(dist_man_MANS): mcron.c
 	$(HELP2MAN) -n 'a program to run tasks at regular (or not) intervals' \
-	    ./mcron > doc/mcron.1
+	    ./mcron > $@
 
-
-MAINTAINERCLEANFILES = configure makefile makefile.in config.guess config.sub \
-                       install-sh missing texinfo.tex INSTALL \
-                       aclocal.m4 compile depcomp doc/mcron.1
 
 maintainer-clean-local:
 	rm -r build-aux

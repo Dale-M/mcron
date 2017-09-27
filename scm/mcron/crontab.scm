@@ -221,8 +221,8 @@
  ;; The user is being silly. The message here is identical to the one Vixie cron
  ;; used to put out, for total compatibility.
 
- (else (mcron-error 15
-         "usage error: file name must be specified for replace.")))
+ (else
+  (mcron-error 15 "usage error: file name must be specified for replace.")))
 
 
 )) ;; End of file-level let-scopes.

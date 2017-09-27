@@ -30,7 +30,7 @@
             read-vixie-file
             check-system-crontab)
   #:use-module ((mcron config) :select (config-socket-file))
-  #:use-module (mcron mcron-core)
+  #:use-module (mcron core)
   #:use-module (mcron job-specifier)
   #:use-module (mcron redirect)
   #:use-module (mcron vixie-time))
@@ -162,11 +162,13 @@
                          (parse-vixie-environment line)
                          (parse-vixie-line line)))
                    (lambda (key exit-code . msg)
-                     (throw 'mcron-error exit-code
-                            (apply string-append
-                                   (number->string report-line)
-                                   ": "
-                                   msg)))))))))
+                     (throw
+                      'mcron-error
+                      exit-code
+                      (apply string-append
+                             (number->string report-line)
+                             ": "
+                             msg)))))))))
 
 
 

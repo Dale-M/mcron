@@ -1,16 +1,3 @@
-2015-10-22  Dale Mellor  <dale@rdmp.org>
-
-	Taken on board suggestions of Mathieu Lirzin.  This is mostly
-	cosmetic code re-arranging and refresh for newer features of
-	guile, but also:
-
-	* Eliminate the hacked embedding of the main scheme unit into the
-	C source code.
-
-	* Compile all the guile modules before installation.
-
-
-	
 2015-07-01  Mathieu Lirzin  <mthl@openmailbox.org>
 
 	* configure.ac: Fix package name and bug reports email address.
@@ -23,7 +10,7 @@
 	* .gitignore: Ignore 'mcron' only in the top-level directory.
 
 
-2014-05-25  Dale Mellor  <dale_mellor@users.sourceforge.net>
+2014-05-25  Dale Mellor <dale_mellor@users.sourceforge.net>
 
 	* Juggled build infrastructure so that we can make the minimal man
 	page in the proper autotools way.
@@ -31,14 +18,14 @@
 	* configure.ac: version to 1.0.8.
 
 
-2014-04-28  Dale Mellor  <dale_mellor@users.sourceforge.net>
+2014-04-28  Dale Mellor <dale_mellor@users.sourceforge.net>
 
 	* We now run against, and require, guile-2.0.
 
 	* configure.ac: version to 1.0.7.
 
 
-2012-02-04  Dale Mellor  <dale_mellor@users.sourceforge.net>
+2012-02-04  Dale Mellor <dale_mellor@users.sourceforge.net>
 
 	* main.scm: added search for initial files in
 	$XDG_CONFIG_HOME/cron directory, defaulting to ~/.config/cron if
@@ -47,7 +34,7 @@
 	standards).
 
 
-2010-06-13  Dale Mellor  <dale_mellor@users.sourceforge.net>
+2010-06-13  Dale Mellor <dale_mellor@users.sourceforge.net>
 
 	* configure.ac: added --enable-no-vixie-clobber argument to
 	configure so that the root user can avoid overwriting a legacy
@@ -60,7 +47,7 @@
 	former is not supplied with the latest automake (1.11).
 
 
-2008-02-21  Dale Mellor  <dale_mellor@users.sourceforge.net>
+2008-02-21  Dale Mellor <dale_mellor@users.sourceforge.net>
 
 	* ALL FILES: Replaced version 2 GPL notices with version 3 ones.
 
@@ -71,7 +58,7 @@
 	* configure.ac: Bumped version to 1.0.4.
 
 
-2008-01-25  Dale Mellor  <dale_mellor@users.sourceforge.net>
+2008-01-25  Dale Mellor <dale_mellor@users.sourceforge.net>
 
 	* main.scm (command-type): Files which are listed on the command
 	line are assumed to be guile configurations if they do not end in
@@ -89,7 +76,7 @@
 	* Version is currently at 1.0.3.
 
 
-2005-09-02  Dale Mellor  <dale_mellor@users.sourceforge.net>
+2005-09-02  Dale Mellor <dale_mellor@users.sourceforge.net>
 
 	* makefile.am, mcron.c.template (main): Modified install-exec-hook
 	so that a proper installation of a Vixie-compatible cron only
@@ -106,7 +93,7 @@
 	* Bumped version to 1.0.2.
 
 
-2004-05-15  Dale Mellor  <dale_mellor@users.sourceforge.net>
+2004-05-15  Dale Mellor <dale_mellor@users.sourceforge.net>
 
 	* Modified all auxiliary files to reflect that the package is now
 	properly homed at www.gnu.org.
@@ -114,7 +101,7 @@
 	* Bumped version to 1.0.1.
 
 
-2003-12-11  Dale Mellor  <dale_mellor@users.sourceforge.net>
+2003-12-11  Dale Mellor <dale_mellor@users.sourceforge.net>
 
 	* Modified all auxiliary files to reflect that we are now a GNU
 	package.
@@ -122,7 +109,7 @@
 	* Bumped version to 1.0.0.
 
 
-2003-12-07  Dale Mellor  <dale_mellor@users.sourceforge.net>
+2003-12-07  Dale Mellor <dale_mellor@users.sourceforge.net>
 
 	* configure.ac: Added switches for files and directories used by
 	mcron: --spool-dir, --socket-file, --allow-file, --deny-file,
@@ -131,14 +118,14 @@
 	manual).
 
 
-2003-12-05  Dale Mellor  <dale_mellor@users.sourceforge.net>
+2003-12-05  Dale Mellor <dale_mellor@users.sourceforge.net>
 
 	* configure.ac: Added test for guile version >= 1.6.4.
 
 	* bumped version to 0.99.4.
 
 
-2003-08-03  Dale Mellor  <dale_mellor@users.sourceforge.net>
+2003-08-03  Dale Mellor <dale_mellor@users.sourceforge.net>
 
         * Third cut, fully functional, modular, production quality, still
 	needs testing...
@@ -149,7 +136,7 @@
 	* Bumped version to 0.99.3.
 
 
-2003-07-20  Dale Mellor  <dale_mellor@users.sourceforge.net>
+2003-07-20  Dale Mellor <dale_mellor@users.sourceforge.net>
 
         * Second cut, now _really_ fully functional (100% Vixie
 	compatible), production quality code, still needs lots of testing
@@ -167,7 +154,7 @@
 	* Bumped version to 0.99.2.
 
 
-2003-06-28  Dale Mellor  <dale_mellor@users.sourceforge.net>
+2003-06-28  Dale Mellor <dale_mellor@users.sourceforge.net>
 
 	* First cut, fully functional, production quality code, just needs
 	testing...
