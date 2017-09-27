@@ -1,7 +1,6 @@
 GNU mcron --- README--git                                  -*-text-*-
 
   Copyright (C)  2012, 2014  Dale Mellor
-  Copyright (C)  2015  Mathieu Lirzin
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
@@ -11,9 +10,13 @@ GNU mcron --- README--git                                  -*-text-*-
 If you have pulled mcron from the GIT repository, these are the steps you will
 need to take to build it the first time:
 
-1) autoreconf -vfi
-2) ./configure --prefix={wherever}
-3) make install
+1) aclocal
+2) autoconf
+3) automake -a    (will error)
+4) ./configure    (will error)
+5) automake -a
+6) ./configure --prefix={wherever}
+7) make install
 
 
 After that it should just be a simple matter of typing `make install' when you
