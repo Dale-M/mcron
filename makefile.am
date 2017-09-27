@@ -51,7 +51,7 @@ mcron.c : scm/mcron/main.scm scm/mcron/crontab.scm makefile.ed mcron.c.template
 	@rm -f mcron.escaped.scm > /dev/null 2>&1
 
 
-# Full program prefix.
+#full program prefix
 fpp = $(DESTDIR)$(bindir)/@real_program_prefix@
 
 
@@ -83,7 +83,3 @@ uninstall-hook:
 $(dist_man_MANS): mcron.c
 	$(HELP2MAN) -n 'a program to run tasks at regular (or not) intervals' \
 	    ./mcron > $@
-
-
-maintainer-clean-local:
-	rm -r build-aux
