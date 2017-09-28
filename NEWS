@@ -1,106 +1,89 @@
-Historic moments in the life of mcron.                        -*-text-*-
+GNU Mcron NEWS                                    -*- outline -*-
 
-  Copyright (C) 2003, 2005, 2006  Dale Mellor
+* Noteworthy changes in release ?.? (????-??-??) [?]
 
-  Copying and distribution of this file, with or without modification,
-  are permitted in any medium without royalty provided the copyright
-  notice and this notice are preserved.
+* Noteworthy changes in release 1.0.8 (2014-04-28) [stable]
 
+  Man page is now generated with GNU Help2man before installation and
+  distributed in the tarball.
 
-Please send bug reports to bug-mcron@gnu.org.
+* Noteworthy changes in release 1.0.7 (2012-02-04) [stable]
 
+  Mcron is now compatible with Guile 2.0.
 
-Saturday, 4th February 2012
+  FreeDesktop.org's standard user configuration directories are now used to
+  find the user script files.
 
-    Received a suggestion from Antono Vasiljev to look in FreeDesktop.org's
-    standard user configuration directories for user script files.  This is
-    implemented in the GIT repository.
+* Noteworthy changes in release 1.0.6 (2010-06-20) [stable]
 
+  The copyright notices are now standardized on all auxiliary files. This
+  follows the example set by the GNU hello program.
 
-Sunday, 20th June 2010
+  immutable end texts from the texinfo document are now removed, to
+  accomodate with Debian requirements.
 
-    Standardized the copyright notices on all auxiliary files (including this
-    one!) according to the example set by the GNU hello program.  Removed
-    immutable end texts from the texinfo document.  These changes are required
-    for Debianization.  Released as version 1.0.6.
+* Noteworthy changes in release 1.0.5 (2010-06-13) [stable]
 
+  Some technical changes to the build system has been made to help the
+  distribution to Debian.
 
-Sunday, 13th June 2010
+  The Git repository has been completely re-hashed, and now represents a
+  complete and faithful history of the package's development since its
+  inception.
 
-    Made some technical changes to the build system to aid Debianization.
-    Released without announcement as version 1.0.5.
+* Noteworthy changes in release 1.0.4 (2008-02-21) [stable]
 
-    The GIT repository has been completely re-hashed, and now represents a
-    complete and faithful history of the package's development since its
-    inception.
-    
+  The source code is now held in a Git repository, which can be checked-out at
+  <git://git.savannah.gnu.org/mcron.git>.
 
-Thursday, 21st February 2008
+  The code is now covered by the GPLv3 license.
 
-    The source code is now held in a GIT repository, at
-    git://git.savannah.gnu.org/mcron.git.
+* Noteworthy changes in release 1.0.3 (2006-04-16) [stable]
 
-    Released version 1.0.4, under the new GPLv3 license, after some prodding by
-    Karl Berry.
+  daylight savings time shifts are now properly handled
 
+  Parsing Vixie-style input files has been improved.
 
-Sunday, 16th April 2006
-    Released version 1.0.3.  Incorporated many coding suggestions by Sergey
-    Poznyakoff, which makes the program work with daylight savings time shifts,
-    fixes a bug in parsing Vixie-style input files, allows a user the
-    opportunity to correct a crontab entry instead of just wiping out the file.
-    Made it work with Guile 1.8.  Updated the manual with GFDL and some minor
-    suggestions from Karl Berry.
+  Crontab entries can now be corrected instead of just wiping out the file.
 
+  Mcron is now compatible with Guile 1.8.
 
-Monday, 2nd January 2006
-    Released version 1.0.2.
+  The manual is now licensed under the GNU Free Documentation License (GFDL)
 
+* Noteworthy changes in release 1.0.2 (2006-01-02) [stable]
 
-Saturday, 15th May 2004
-    Set up Savannah and the mailing lists so that we are now homed properly at
-    gnu.org. Released version 1.0.1 to reflect this, with CVS tag release_1-0-1
-    (no branch). Hopefully we will now get some feedback!
+* Noteworthy changes in release 1.0.1 (2004-05-15) [stable]
 
+  The mailing list <bug-mcron@gnu.org> has been set-up.
 
-Friday, 12th December 2003
-    Released version 1.0.0 through rdmp.org. No CVS tag has been created.
+* Noteworthy changes in release 1.0 (2003-12-12) [stable]
 
+  Mcron is now officially a GNU program.
 
-Tuesday, 2nd December 2003
-    Mcron is now officially a GNU program. Unfortunately Savannah, the
-    development environment, has been mauled so an immediate GNU release is not
-    likely. No CVS tag has been created.
+* Noteworthy changes in release 0.99.3 (2003-08-05) [stable]
 
+  The code is now splitted into modules.
 
-Tuesday, 5th August 2003
-    Released version 0.99.3. The CVS tag will be release_0-99-3 (no branch).
+* Noteworthy changes in release 0.99.2 (2003-07-20) [stable]
 
+  The implementation is now really 100% Vixie compatible.
 
-Sunday, 3rd August 2003
-    Broken the code into modules (which is not the same as saying the code is
-    broken ;-) ).
+  Some Guile limitations such as the absence of POSIX threads and signals has
+  been worked around.
 
+* Noteworthy changes in release 0.99.1 (2003-07-05) [stable]
 
-Sunday, 20th July 2003
-    Released version 0.99.2. (Now fully functional). The CVS tag is
-    release_0-99-2 (no branch).
+  Installation of cron and crontab is now disabled by default (suspect problems
+  with Guile internals are preventing these from working properly).
 
+  The project is now managed on Savannah.  A CVS repository and web page have been
+  created.
 
-Sunday, 20th July 2003
-    It has been a long and painful journey, but we have at last worked out how
-    to work around all the faults in Guile (an implementation with no threads
-    and no UNIX signals!). The code is now really 100% Vixie compatible.
+========================================================================
 
+Copyright © 2003, 2005, 2006 Dale Mellor <dale_mellor@users.sourceforge.net>
+Copyright © 2017 Mathieu Lirzin <mthl@gnu.org>
 
-Saturday, 5th July 2003
-    Released version 0.99.1, with installation of cron and crontab disabled by
-    default (suspect problems with Guile internals are preventing these from
-    working properly). The CVS tag is release_0-99-1 (no branch has been
-    created for it).
-
-
-Friday, 4th July 2003
-    We have been accepted as a Savannah project. A CVS repository and web home
-    page have been created. We're still waiting for acceptance as a GNU
-    project.
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
