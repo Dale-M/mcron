@@ -913,9 +913,9 @@ that socket consisting of a user name whose crontabs have been
 changed.  In this case, the program will re-read that user's crontab.
 This is for correct functioning with the crontab program.
 
-Further, if the @code{--noetc} option was not used, a job is scheduled
-to run every minute to check if /etc/crontab has been modified
-recently.  If so, this file will also be re-read.
+Further, unless the @code{--noetc} option is used, a job is scheduled to run
+every minute to check if @code{/etc/crontab} has been modified.  If so, this
+file will also be re-read.
 
 The options which may be used with this program are as follows.
 
