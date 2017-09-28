@@ -2,6 +2,51 @@ GNU Mcron NEWS                                    -*- outline -*-
 
 * Noteworthy changes in release ?.? (????-??-??) [?]
 
+** New features
+
+  The 'job' procedure has now a '#:user' keyword argument which allows
+  specifying a different user that will run it.
+
+  Additional man pages for 'cron(8)' and 'crontab(1)' are now generated using
+  GNU Help2man.
+
+** Bug fixes
+
+  Child process created when executing a job are now properly cleaned even
+  when execution fails by using 'dynamic-wind' construct.
+
+** Improvements
+
+  GNU Guile 2.2 is now supported.
+
+  Some procedures are now written using functional style and include a
+  docstring.  'def-macro' usages are now replaced with hygienic macros.
+
+  Compilation is now done using a non-recursive Makefile, supports out of tree
+  builds, and use silent rules by default.
+
+  Guile object files creation don't rely on auto-compilation anymore and are
+  installed in 'site-ccache' directory.
+
+  Jobs are now internally represented using SRFI-9 records instead of vectors.
+
+  Changelog are generated from Git logs when generating the tarball using
+  Gnulib gitlog-to-changelog script.
+
+  A test suite is now available and can be run with 'make check'.
+
+** Changes in behavior
+
+  The "--enable-debug" configure variable has been removed and replaced with
+  MCRON_DEBUG environment variable.
+
+  The "--disable-multi-user" configure variable is now used to not build and
+  install the 'cron' and 'crontab' programs.  It has replaced the
+  "--enable-no-vixie-clobber" which had similar effect.
+
+  (mcron core) module is now deprecated and has been superseeded by
+  (mcron base).
+
 * Noteworthy changes in release 1.0.8 (2014-04-28) [stable]
 
   Man page is now generated with GNU Help2man before installation and
