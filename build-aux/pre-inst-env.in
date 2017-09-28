@@ -32,4 +32,7 @@ export PATH
 MCRON_UNINSTALLED=1
 export MCRON_UNINSTALLED
 
+srcdir="@srcdir@"
+export srcdir
+
 exec "$@"

@@ -16,6 +16,7 @@
 /build-aux/install-sh
 /build-aux/mdate-sh
 /build-aux/missing
+/build-aux/test-driver
 /build-aux/texinfo.tex
 /doc/config.texi
 /doc/cron.8

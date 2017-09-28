@@ -124,14 +124,17 @@ DISTCLEANFILES = src/mcron/config.scm
 ## Test suite.  ##
 ## ------------ ##
 
-TEST_EXTENSIONS = .scm
+TEST_EXTENSIONS = .scm .sh
 AM_TESTS_ENVIRONMENT = env GUILE_AUTO_COMPILE='0'
+
+SH_LOG_COMPILER = ./pre-inst-env $(SHELL)
 
 SCM_LOG_DRIVER = \
   $(builddir)/pre-inst-env $(GUILE) \
   $(srcdir)/build-aux/test-driver.scm
 
 TESTS = \
+  tests/basic.sh \
   tests/environment.scm \
   tests/job-specifier.scm
 
@@ -160,6 +163,7 @@ gen-ChangeLog:
 EXTRA_DIST = \
   bootstrap \
   build-aux/guix.scm \
+  tests/init.sh \
   $(TESTS)
 
 ## -------------- ##
