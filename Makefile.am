@@ -163,6 +163,7 @@ gen-ChangeLog:
 EXTRA_DIST = \
   bootstrap \
   build-aux/guix.scm \
+  HACKING \
   tests/init.sh \
   $(TESTS)
 
