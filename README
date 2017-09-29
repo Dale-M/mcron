@@ -60,10 +60,7 @@ programs are included here.
 Features which might be implemented sometime sooner or later are noted in the
 TODO file.
 
-Please send all other bug reports to bug-mcron@gnu.org. Other mailing lists you
-could subscribe to are help-mcron@gnu.org (for help and advice from the
-community, including the author) and info-mcron@gnu.org (for news as it
-happens).
+Please send all other bug reports to bug-mcron@gnu.org.
 
 Mcron is free software. See the file COPYING for copying conditions.
 
