@@ -187,7 +187,10 @@ go into the list.  For example, (range 1 6 2) returns '(1 3 5)."
 ;; the job actually runs.
 
 (define configuration-user (getpw (getuid)))
-(define configuration-time (current-time))
+
+(define configuration-time
+  ;; Use SOURCE_DATE_EPOCH environment variable to support reproducible tests.
+  (if (getenv "SOURCE_DATE_EPOCH") 0 (current-time)))
 
 (define (set-configuration-user user)
   (set! configuration-user (if (or (string? user)
