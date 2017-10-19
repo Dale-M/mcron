@@ -20,9 +20,10 @@
 
 (define-module (mcron core)
   #:use-module (mcron base)
+  #:export (;; Deprecated
+            get-schedule)
   #:re-export (add-job
                remove-user-jobs
-               get-schedule
                run-job-loop
                clear-environment-mods
                append-environment-mods
@@ -30,3 +31,7 @@
                use-system-job-list
                use-user-job-list
                clear-system-jobs))
+
+(define (get-schedule count)
+  (with-output-to-string
+    (lambda () (display-schedule count))))

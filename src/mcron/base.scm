@@ -26,7 +26,7 @@
   #:use-module (srfi srfi-9)
   #:export (add-job
             remove-user-jobs
-            get-schedule
+            display-schedule
             run-job-loop
             ;; Deprecated and undocumented procedures.
             use-system-job-list
@@ -136,35 +136,27 @@ recurse the list."
                (else
                 (loop rest next-time next-jobs))))))))
 
-;; Create a string containing a textual list of the next count jobs to run.
-;;
-;; Enter a loop of displaying the next set of jobs to run, artificially
-;; forwarding the time to the next time point (instead of waiting for it to
-;; occur as we would do in a normal run of mcron), and recurse around the loop
-;; count times.
-;;
-;; Note that this has the effect of mutating the job timings. Thus the program
-;; must exit after calling this function; the internal data state will be left
-;; unusable.
-
-(define (get-schedule count)
-  (with-output-to-string
-    (lambda ()
-      (do ((count count (- count 1)))
-          ((eqv? count 0))
-        (and-let*
-         ((next-jobs (find-next-jobs))
-          (time (car next-jobs))
-          (date-string (strftime "%c %z\n" (localtime time))))
+(define* (display-schedule count #:optional (port (current-output-port)))
+  "Display on PORT a textual list of the next COUNT jobs to run.  This
+simulates the run of the job loop to display the resquested information.
+Since calling this procedure has the effect of mutating the job timings, the
+program must exit after.  Otherwise the internal data state will be left
+unusable."
+  (unless (<= count 0)
+    (match (find-next-jobs)
+      ((#f . jobs)
+       #f)
+      ((time . jobs)
+       (let ((date-string (strftime "%c %z\n" (localtime time))))
          (for-each (lambda (job)
-                     (display date-string)
-                     (display (job:displayable job))
-                     (newline)(newline)
+                     (display date-string port)
+                     (display (job:displayable job) port)
+                     (newline port)
+                     (newline port)
                      (job:next-time-set! job ((job:next-time-function job)
                                               (job:next-time job))))
-                   (cdr next-jobs)))))))
-
-
+                   jobs))))
+    (display-schedule (- count 1) port)))
 
 ;; For proper housekeeping, it is necessary to keep a record of the number of
 ;; child processes we fork off to run the jobs.

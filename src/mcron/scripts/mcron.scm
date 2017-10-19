@@ -83,7 +83,7 @@ $XDG_CONFIG_HOME is not defined uses ~/.config/cron instead)."
 
   (cond ((assq-ref opts 'schedule) ;display jobs schedule
          => (λ (count)
-              (display (get-schedule (max 1 count)))
+              (display-schedule (max 1 count))
               (exit 0)))
         ((assq-ref opts 'daemon) ;run mcron as a daemon
          (case (primitive-fork)

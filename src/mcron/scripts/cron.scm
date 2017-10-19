@@ -157,7 +157,7 @@ option.\n")
                       (option-ref opts 'noetc #f))
       (cond ((option-ref opts 'schedule #f) ;display jobs schedule
              => (λ (count)
-                  (display (get-schedule (max 1 (string->number count))))
+                  (display-schedule (max 1 (string->number count)))
                   (exit 0)))
             (else (case (primitive-fork) ;run the daemon
                     ((0)

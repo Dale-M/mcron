@@ -1233,9 +1233,12 @@ entry.  All jobs on the current job list that are scheduled to be run
 under this personality are removed from the job list.
 @end deffn
 
-@deffn{Scheme procedure} get-schedule count
+@deffn{Scheme procedure} display-schedule @var{count} [@var{port}]
 @cindex schedule of jobs
-The argument @var{count} should be an integer value giving the number
+This procedure is used to display a textual list of the next COUNT jobs
+to run.
+
+The argument @var{count} must be an integer value giving the number
 of time-points in the future to report that jobs will run as.  Note
 that this procedure is disruptive; if @code{run-job-loop} is called
 after this procedure, the first job to run will be the one after the
