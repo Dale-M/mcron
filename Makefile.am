@@ -39,13 +39,13 @@ AM_CFLAGS = @GUILE_CFLAGS@
 LDADD = @GUILE_LIBS@ src/libmcron.a
 
 bin_mcron_SOURCES = src/mcron.c
-bin_mcron_DEPENDENCIES = $(compiled_modules)
+bin_mcron_DEPENDENCIES = $(compiled_modules) $(noinst_LIBRARIES)
 
 bin_cron_SOURCES = src/cron.c
-bin_cron_DEPENDENCIES = $(compiled_modules)
+bin_cron_DEPENDENCIES = $(compiled_modules) $(noinst_LIBRARIES)
 
 bin_crontab_SOURCES = src/crontab.c
-bin_crontab_DEPENDENCIES = $(compiled_modules)
+bin_crontab_DEPENDENCIES = $(compiled_modules) $(noinst_LIBRARIES)
 
 # wrapper to be used in the build environment and for running tests.
 noinst_SCRIPTS = pre-inst-env
