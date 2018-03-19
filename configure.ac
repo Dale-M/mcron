@@ -133,14 +133,6 @@ AC_ARG_WITH(tmp-dir,
 AC_MSG_RESULT($CONFIG_TMP_DIR)
 AC_SUBST(CONFIG_TMP_DIR)
 
-
-
-        
-# This is to support `make DESTDIR=...'
-                        
-real_program_prefix=`echo $program_prefix | sed s/NONE//`
-AC_SUBST(real_program_prefix)
-
 AC_CONFIG_FILES([pre-inst-env:build-aux/pre-inst-env.in],
   [chmod +x pre-inst-env])
 AC_CONFIG_FILES([doc/config.texi

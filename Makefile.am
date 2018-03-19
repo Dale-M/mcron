@@ -172,12 +172,13 @@ EXTRA_DIST = \
 ## Installation.  ##
 ## -------------- ##
 
-#full program prefix
-fpp = $(DESTDIR)$(bindir)/@real_program_prefix@
+# Sed command for Transforming program names.
+transform_exe = s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/
 
 if MULTI_USER
 install-exec-hook:
-	chmod u+s $(fpp)crontab$(EXEEXT)
+	tcrontab=`echo crontab$(EXEEXT) | sed '$(transform_exe)'`; \
+	chmod u+s $(DESTDIR)$(bindir)/$${tcrontab}
 endif
 
 ## --------------- ##
