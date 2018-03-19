@@ -31,8 +31,8 @@ noinst_PROGRAMS = bin/cron bin/crontab
 endif
 
 AM_CPPFLAGS = \
-  -DPACKAGE_LOAD_PATH=\"$(moduledir)\" \
-  -DPACKAGE_LOAD_COMPILED_PATH=\"$(moduledir)\" \
+  -DPACKAGE_LOAD_PATH=\"$(guilesitedir)\" \
+  -DPACKAGE_LOAD_COMPILED_PATH=\"$(guilesitegodir)\" \
   -D_GNU_SOURCE
 
 AM_CFLAGS = @GUILE_CFLAGS@

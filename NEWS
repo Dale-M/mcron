@@ -7,6 +7,9 @@ GNU Mcron NEWS                                    -*- outline -*-
   The "--disable-multi-user" configure variable is not reversed anymore.
   'cron' and 'crontab' are now installed unless this option is used.
 
+  The programs now sets the GUILE_LOAD_PATH and GUILE_LOAD_COMPILED_PATH
+  environment variables with the location of the installed Guile modules.
+
 * Noteworthy changes in release 1.1 (2018-03-19) [stable]
 
 ** New features
