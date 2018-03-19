@@ -49,24 +49,6 @@ GUILE_PROGS
 
 AM_MISSING_PROG(HELP2MAN, help2man, $missing_dir)
 
-AC_CHECK_PROGS(SED, sed)
-if test "x$ac_cv_prog_SED" = "x"; then
-   AC_MSG_ERROR(sed not found)
-fi
-AC_CHECK_PROGS(HEAD, head)
-if test "x$ac_cv_prog_HEAD" = "x"; then
-   AC_MSG_ERROR(head not found)
-fi
-AC_CHECK_PROGS(WHICH, which)
-if test "x$ac_cv_prog_WHICH" = "x"; then
-    AC_MSG_ERROR(which not found)
-fi
-AC_CHECK_PROGS(CP, cp)
-if test "x$ac_cv_prog_CP" = "x"; then
-    AC_MSG_ERROR(cp not found)
-fi
-
-
 # Now find a sendmail or equivalent.
 
 AC_CHECK_PROGS(SENDMAIL, sendmail)
