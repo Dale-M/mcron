@@ -2,6 +2,10 @@ GNU Mcron NEWS                                    -*- outline -*-
 
 * Noteworthy changes in release ?.? (????-??-??) [?]
 
+** Bug fixes
+
+  The "--disable-multi-user" configure variable is not reversed anymore.
+  'cron' and 'crontab' are now installed unless this option is used.
 
 * Noteworthy changes in release 1.1 (2018-03-19) [stable]
 

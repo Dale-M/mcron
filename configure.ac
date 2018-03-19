@@ -75,7 +75,7 @@ AC_ARG_ENABLE([multi-user],
     [Don't Install legacy cron and crontab programs])],
   [enable_multi_user="$enableval"],
   [enable_multi_user="yes"])
-AM_CONDITIONAL([MULTI_USER], [test "x$enable_multi_user" != xyes])
+AM_CONDITIONAL([MULTI_USER], [test "x$enable_multi_user" = xyes])
 
 # Configure the various files that mcron uses at runtime.
 
