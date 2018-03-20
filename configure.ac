@@ -26,7 +26,7 @@ AC_CONFIG_SRCDIR([src/mcron.c])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_REQUIRE_AUX_FILE([test-driver.scm])
 AC_REQUIRE_AUX_FILE([git-version-gen])
-AM_INIT_AUTOMAKE([subdir-objects -Wall -Wno-override])
+AM_INIT_AUTOMAKE([subdir-objects -Wall -Wno-override std-options])
 AM_SILENT_RULES([yes])		# enables silent rules by default
 
 AC_CANONICAL_HOST

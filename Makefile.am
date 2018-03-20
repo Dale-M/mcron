@@ -181,6 +181,22 @@ install-exec-hook:
 	chmod u+s $(DESTDIR)$(bindir)/$${tcrontab}
 endif
 
+installcheck-local:
+## Check that only expected programs are installed and configured
+	tmcron=`echo mcron$(EXEEXT) | sed '$(transform_exe)'`; \
+	test -e $(DESTDIR)$(bindir)/$${tmcron}
+if MULTI_USER
+	tcrontab=`echo crontab$(EXEEXT) | sed '$(transform_exe)'`; \
+	test -u $(DESTDIR)$(bindir)/$${tcrontab}
+	tcron=`echo cron$(EXEEXT) | sed '$(transform_exe)'`; \
+	test -e $(DESTDIR)$(sbindir)/$${tcron}
+else !MULTI_USER
+	tcrontab=`echo crontab$(EXEEXT) | sed '$(transform_exe)'`; \
+	test ! -u $(DESTDIR)$(bindir)/$${tcrontab}
+	tcron=`echo cron$(EXEEXT) | sed '$(transform_exe)'`; \
+	test ! -f $(DESTDIR)$(sbindir)/$${tcron}
+endif !MULTI_USER
+
 ## --------------- ##
 ## Documentation.  ##
 ## --------------- ##
