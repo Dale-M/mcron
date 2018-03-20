@@ -1,7 +1,7 @@
 ## Process this file with autoconf to produce a configure script.
 # Copyright © 2003, 2005, 2012, 2014 Dale Mellor
 # <dale_mellor@users.sourceforge.net>
-# Copyright © 2015, 2016, 2017 Mathieu Lirzin <mthl@gnu.org>
+# Copyright © 2015, 2016, 2017, 2018 Mathieu Lirzin <mthl@gnu.org>
 #
 # This file is part of GNU Mcron.
 #
