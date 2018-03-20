@@ -1,6 +1,6 @@
 ;;;; utils.scm -- helper procedures
 ;;; Copyright © 2003, 2012 Dale Mellor <dale_mellor@users.sourceforge.net>
-;;; Copyright © 2015, 2016 Mathieu Lirzin <mthl@gnu.org>
+;;; Copyright © 2015, 2016, 2018 Mathieu Lirzin <mthl@gnu.org>
 ;;;
 ;;; This file is part of GNU Mcron.
 ;;;
@@ -29,7 +29,6 @@
             parse-args
             show-version
             show-package-information
-            for-each-file
             process-update-request)
   #:re-export (option-ref
                read-string))
@@ -80,18 +79,6 @@ General help using GNU software: <http://www.gnu.org/gethelp/>\n"
 		 config-package-bugreport
 		 config-package-name
 		 config-package-url))
-
-(define (for-each-file proc directory)
-  "Apply PROC to each file in DIRECTORY.  DIRECTORY must be a valid directory name.
-PROC must be a procedure that take one file name argument.  The return value
-is not specified"
-  (let ((dir (opendir directory)))
-    (let loop ((file-name (readdir dir)))
-      (if (eof-object? file-name)
-          (closedir dir)
-          (begin
-            (proc file-name)
-            (loop (readdir dir)))))))
 
 (define (process-update-request fdes-list)
   "Read a user name from the socket, dealing with the /etc/crontab special

@@ -41,14 +41,10 @@ EOF
 
 cat > expected <<EOF
 Thu Jan  1 00:00:01 1970 +0000
-(display foo
+(display bar
 )
 
 Thu Jan  1 00:00:01 1970 +0000
-(display bar
-)
-
-Thu Jan  1 00:00:02 1970 +0000
 (display foo
 )
 
@@ -56,7 +52,7 @@ Thu Jan  1 00:00:02 1970 +0000
 (display bar
 )
 
-Thu Jan  1 00:00:03 1970 +0000
+Thu Jan  1 00:00:02 1970 +0000
 (display foo
 )
 
@@ -64,7 +60,7 @@ Thu Jan  1 00:00:03 1970 +0000
 (display bar
 )
 
-Thu Jan  1 00:00:04 1970 +0000
+Thu Jan  1 00:00:03 1970 +0000
 (display foo
 )
 
@@ -72,7 +68,7 @@ Thu Jan  1 00:00:04 1970 +0000
 (display bar
 )
 
-Thu Jan  1 00:00:05 1970 +0000
+Thu Jan  1 00:00:04 1970 +0000
 (display foo
 )
 
@@ -80,7 +76,7 @@ Thu Jan  1 00:00:05 1970 +0000
 (display bar
 )
 
-Thu Jan  1 00:00:06 1970 +0000
+Thu Jan  1 00:00:05 1970 +0000
 (display foo
 )
 
@@ -88,7 +84,7 @@ Thu Jan  1 00:00:06 1970 +0000
 (display bar
 )
 
-Thu Jan  1 00:00:07 1970 +0000
+Thu Jan  1 00:00:06 1970 +0000
 (display foo
 )
 
@@ -96,7 +92,7 @@ Thu Jan  1 00:00:07 1970 +0000
 (display bar
 )
 
-Thu Jan  1 00:00:08 1970 +0000
+Thu Jan  1 00:00:07 1970 +0000
 (display foo
 )
 
@@ -104,7 +100,7 @@ Thu Jan  1 00:00:08 1970 +0000
 (display bar
 )
 
-Thu Jan  1 00:00:09 1970 +0000
+Thu Jan  1 00:00:08 1970 +0000
 (display foo
 )
 
@@ -112,12 +108,16 @@ Thu Jan  1 00:00:09 1970 +0000
 (display bar
 )
 
-Thu Jan  1 00:00:10 1970 +0000
+Thu Jan  1 00:00:09 1970 +0000
 (display foo
 )
 
 Thu Jan  1 00:00:10 1970 +0000
 (display bar
+)
+
+Thu Jan  1 00:00:10 1970 +0000
+(display foo
 )
 
 EOF

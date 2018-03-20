@@ -1,6 +1,6 @@
 ;;;; cron -- daemon for running jobs at scheduled times
 ;;; Copyright © 2003, 2012 Dale Mellor <dale_mellor@users.sourceforge.net>
-;;; Copyright © 2015, 2016 Mathieu Lirzin <mthl@gnu.org>
+;;; Copyright © 2015, 2016, 2018 Mathieu Lirzin <mthl@gnu.org>
 ;;;
 ;;; This file is part of GNU Mcron.
 ;;;
@@ -18,6 +18,7 @@
 ;;; along with GNU Mcron.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (mcron scripts cron)
+  #:use-module (ice-9 ftw)
   #:use-module (mcron base)
   #:use-module (mcron config)
   #:use-module (mcron job-specifier)
@@ -84,13 +85,13 @@ operation.  The permissions on the /var/cron/tabs directory enforce this."
 
   (catch #t
     (λ ()
-      (for-each-file
+      (for-each
        (λ (user)
          (and-let* ((entry (user-entry user))) ;crontab without user?
            (set-configuration-user entry)
            (catch-mcron-error
             (read-vixie-file (string-append config-spool-dir "/" user)))))
-       config-spool-dir))
+       (scandir config-spool-dir)))
     (λ (key . args)
       (mcron-error 4
         "You do not have permission to access the system crontabs."))))

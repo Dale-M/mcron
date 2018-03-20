@@ -1,6 +1,6 @@
 ;;;; mcron -- run jobs at scheduled times
 ;;; Copyright © 2003, 2012 Dale Mellor <dale_mellor@users.sourceforge.net>
-;;; Copyright © 2015, 2016 Mathieu Lirzin <mthl@gnu.org>
+;;; Copyright © 2015, 2016, 2018 Mathieu Lirzin <mthl@gnu.org>
 ;;;
 ;;; This file is part of GNU Mcron.
 ;;;
@@ -18,6 +18,7 @@
 ;;; along with GNU Mcron.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (mcron scripts mcron)
+  #:use-module (ice-9 ftw)
   #:use-module (mcron base)
   #:use-module (mcron config)
   #:use-module (mcron job-specifier)    ;for user/system files
@@ -49,11 +50,10 @@ $XDG_CONFIG_HOME is not defined uses ~/.config/cron instead)."
     (map (λ (dir)
            (catch #t
              (λ ()
-               (for-each-file
-                (λ (file)
-                  (process-user-file (string-append dir "/" file)
-                                     #:input input-type))
-                dir))
+               (for-each (λ (file)
+                           (process-user-file (string-append dir "/" file)
+                                              #:input input-type))
+                         (scandir dir)))
              (λ (key . args)
                (set! errors (1+ errors)))))
          (list (string-append home-directory "/.cron")

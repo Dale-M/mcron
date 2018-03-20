@@ -15,6 +15,8 @@ GNU Mcron NEWS                                    -*- outline -*-
   Some basic tests for the installed programs can be run after 'make install'
   with 'make installcheck'.
 
+  The configuration files are now processed using a deterministic order.
+
 * Noteworthy changes in release 1.1 (2018-03-19) [stable]
 
 ** New features
