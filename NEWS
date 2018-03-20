@@ -10,6 +10,11 @@ GNU Mcron NEWS                                    -*- outline -*-
   The programs now sets the GUILE_LOAD_PATH and GUILE_LOAD_COMPILED_PATH
   environment variables with the location of the installed Guile modules.
 
+** Improvements
+
+  Some basic tests for the installed programs can be run after 'make install'
+  with 'make installcheck'.
+
 * Noteworthy changes in release 1.1 (2018-03-19) [stable]
 
 ** New features
