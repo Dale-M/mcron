@@ -237,11 +237,10 @@ go into the list.  For example, (range 1 6 2) returns '(1 3 5)."
                        "job: invalid first argument (next-time-function; "
                        "should be function, string or list)"))))
         (displayable
-         (cond (displayable displayable)
+         (cond (displayable         displayable)
                ((procedure? action) "Lambda function")
-               ((string? action) action)
-               ((list? action) (with-output-to-string
-                                 (lambda () (display action))))))
+               ((string? action)    action)
+               ((list? action)      (simple-format #f "~A" action))))
         (user* (if (or (string? user) (integer? user))
                    (getpw user)
                    user)))
