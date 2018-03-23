@@ -43,6 +43,12 @@ GUILE_PKG([2.2 2.0])
 # 'config.rpath' script.
 PKG_CHECK_MODULES(GUILE, [guile-$GUILE_EFFECTIVE_VERSION])
 
+# Check for 'argp' program arguments parser.
+AC_CHECK_FUNC(argp_parse, [], AC_MSG_ERROR([argp not found]))
+
+# Check for non-POSIX string formatting function.
+AC_CHECK_FUNC(asprintf, [], AC_MSG_ERROR([asprintf not found]))
+
 # Checks for programs.
 
 GUILE_PROGS
