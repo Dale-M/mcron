@@ -136,6 +136,7 @@ SCM_LOG_DRIVER = \
 TESTS = \
   tests/basic.sh \
   tests/schedule.sh \
+  tests/base.scm \
   tests/environment.scm \
   tests/job-specifier.scm
 
