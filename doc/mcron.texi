@@ -12,6 +12,7 @@
 program for running jobs at scheduled times.
 
 Copyright @copyright{}  2003, 2005, 2006, 2012, 2014  Dale Mellor
+Copyright @copyright{}  2018  Mathieu Lirzin
 
 @quotation
 Permission is granted to copy, distribute and/or modify this
@@ -1196,7 +1197,9 @@ This procedure causes all the environment modifiers that have been
 specified so far to be forgotten.
 @end deffn
 
-@deffn{Scheme procedure} add-job time-proc action displayable configuration-time configuration-user
+@deffn{Scheme procedure} add-job time-proc action displayable @
+  configuration-time configuration-user @
+  [#:schedule @var{%global-schedule}]
 This procedure adds a job specification to the list of all jobs to
 run.  @var{time-proc} should be a procedure taking exactly one argument
 which will be a UNIX time.  This procedure must compute the next time
@@ -1211,7 +1214,8 @@ computed.  Finally, @var{configuration-user} should be the passwd entry
 for the user under whose personality the job is to run.
 @end deffn
 
-@deffn{Scheme procedure} run-job-loop . fd-list
+@deffn{Scheme procedure} run-job-loop @var{fd-list} @
+  [#:schedule @var{%global-schedule}]
 @cindex file descriptors
 @cindex interrupting the mcron loop
 This procedure returns only under exceptional circumstances, but
@@ -1225,15 +1229,16 @@ before calling the @code{run-job-loop} procedure again to resume execution of
 the mcron base.
 @end deffn
 
-@deffn{Scheme procedure} remove-user-jobs user
-
+@deffn{Scheme procedure} remove-user-jobs user @
+  [#:schedule @var{%global-schedule}]
 The argument @var{user} should be a string naming a user (his
 login name), or an integer UID, or an object representing the user's passwd
 entry.  All jobs on the current job list that are scheduled to be run
 under this personality are removed from the job list.
 @end deffn
 
-@deffn{Scheme procedure} display-schedule @var{count} [@var{port}]
+@deffn{Scheme procedure} display-schedule @var{count} [@var{port}] @
+  [#:schedule @var{%global-schedule}]
 @cindex schedule of jobs
 This procedure is used to display a textual list of the next COUNT jobs
 to run.

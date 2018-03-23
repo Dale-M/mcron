@@ -1,6 +1,6 @@
 ;;;; base.scm -- core procedures
 ;;; Copyright © 2003 Dale Mellor <dale_mellor@users.sourceforge.net>
-;;; Copyright © 2015, 2016 Mathieu Lirzin <mthl@gnu.org>
+;;; Copyright © 2015, 2016, 2018 Mathieu Lirzin <mthl@gnu.org>
 ;;; Copyright © 2016 Ludovic Courtès <ludo@gnu.org>
 ;;;
 ;;; This file is part of GNU Mcron.
@@ -17,6 +17,13 @@
 ;;;
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with GNU Mcron.  If not, see <http://www.gnu.org/licenses/>.
+
+;;;; Commentary:
+;;;
+;;; This module provides the core data structures for scheduling jobs and the
+;;; procedures for running those jobs.
+;;;
+;;;; Code:
 
 (define-module (mcron base)
   #:use-module (ice-9 match)
@@ -35,30 +42,6 @@
   #:re-export (clear-environment-mods
                append-environment-mods))
 
-;; The list of all jobs known to the system. Each element of the list is
-;;
-;;  (make-job user next-time-function action environment displayable next-time)
-;;
-;; where action must be a procedure, and the environment is an alist of
-;; modifications that need making to the UNIX environment before the action is
-;; run. The next-time element is the only one that is modified during the
-;; running of a cron process (i.e. all the others are set once and for all at
-;; configuration time).
-;;
-;; The reason we maintain two lists is that jobs in /etc/crontab may be placed
-;; in one, and all other jobs go in the other. This makes it possible to remove
-;; all the jobs in the first list in one go, and separately we can remove all
-;; jobs from the second list which belong to a particular user. This behaviour
-;; is required for full vixie compatibility.
-
-(define system-job-list '())
-(define user-job-list '())
-
-(define configuration-source 'user)
-
-(define (use-system-job-list) (set! configuration-source 'system))
-(define (use-user-job-list) (set! configuration-source 'user))
-
 ;; A cron job.
 (define-record-type <job>
   (make-job user time-proc action environment displayable next-time)
@@ -66,52 +49,78 @@
   (user        job:user)                ;object : passwd entry
   (time-proc   job:next-time-function)  ;proc   : with one 'time' parameter
   (action      job:action)              ;thunk  : user's code
+  ;; Environment variables that need to be set before the ACTION is run.
   (environment job:environment)         ;alist  : environment variables
   (displayable job:displayable)         ;string : visible in schedule
   (next-time   job:next-time            ;number : time in UNIX format
                job:next-time-set!))
 
-;; Remove jobs from the user-job-list belonging to this user.
+;; A schedule of cron jobs.
+(define-record-type <schedule>
+  ;; The schedule is composed of a 'user' and 'system' schedule.  This makes
+  ;; removing all the jobs belonging to one group easy, which is required for
+  ;; full vixie compatibility.
+  (make-schedule user system current)
+  schedule?
+  ;; list for jobs that may be placed in '/etc/crontab'.
+  (system  schedule-system  set-schedule-system!)   ;list of <job>
+  ;; list for all other jobs.
+  (user    schedule-user    set-schedule-user!)     ;list of <job>
+  (current schedule-current set-schedule-current!)) ;symbol 'user or 'system
 
-(define (remove-user-jobs user)
-  (if (or (string? user)
-          (integer? user))
-      (set! user (getpw user)))
-    (set! user-job-list
-          (remove (lambda (job) (eqv? (passwd:uid user)
-                                      (passwd:uid (job:user job))))
-                  user-job-list)))
+(define %global-schedule
+  ;; Global schedule used by 'mcron' and 'cron'.
+  (make-schedule '() '() 'user))
 
+(define* (use-system-job-list #:key (schedule %global-schedule))
+  "Mutate '%global-schedule' to use system jobs.
+This procedure is deprecated."
+  (set-schedule-current! schedule 'system))
 
+(define* (use-user-job-list #:key (schedule %global-schedule))
+  "Mutate '%global-schedule' to use user jobs.
+This procedure is deprecated."
+  (set-schedule-current! schedule 'user))
 
-;; Remove all the jobs on the system job list.
+(define* (remove-user-jobs user #:key (schedule %global-schedule))
+  "Remove user jobs from SCHEDULE belonging to USER.  USER must be either a
+username, a UID, or a passwd entry."
+  (let ((user* (if (or (string? user) (integer? user))
+                   (getpw user)
+                   user)))
+    (set-schedule-user! schedule
+                        (filter (lambda (job)
+                                  (not (eqv? (passwd:uid user*)
+                                             (passwd:uid (job:user job)))))
+                                (schedule-user schedule)))))
 
-(define (clear-system-jobs) (set! system-job-list '()))
+(define* (clear-system-jobs #:key (schedule %global-schedule))
+  "Remove all the system jobs from SCHEDULE."
+  (set-schedule-system! schedule '()))
 
-
-
-;; Add a new job with the given specifications to the head of the appropriate
-;; jobs list.
-
-(define (add-job time-proc action displayable configuration-time
-                 configuration-user)
+(define* (add-job time-proc action displayable configuration-time
+                 configuration-user
+                 #:key (schedule %global-schedule))
+  "Add a new job with the given specifications to the current job set in
+SCHEDULE."
   (let ((entry (make-job configuration-user
                          time-proc
                          action
                          (get-current-environment-mods-copy)
                          displayable
                          (time-proc configuration-time))))
-    (if (eq? configuration-source 'user)
-      (set! user-job-list (cons entry user-job-list))
-      (set! system-job-list (cons entry system-job-list)))))
+    (if (eq? (schedule-current schedule) 'user)
+        (set-schedule-user! schedule (cons entry (schedule-user schedule)))
+        (set-schedule-system! schedule
+                              (cons entry (schedule-system schedule))))))
 
-(define (find-next-jobs)
-  "Procedure to locate the jobs in the global job-list with the
-lowest (soonest) next-times.  These are the jobs for which we must schedule
-the mcron program (under any personality) to next wake up.  The return value
-is a cons cell consisting of the next time (maintained in the next-time
-variable) and a list of the job entries that are to run at this
-time (maintained in the next-jobs-list variable).
+(define* (find-next-jobs #:key (schedule %global-schedule))
+  "Procedure to locate the jobs in SCHEDULE with the lowest (soonest)
+next-times.  These are the jobs for which we must schedule the mcron
+program (under any personality) to next wake up.  The return value is a cons
+cell consisting of the next time (maintained in the next-time variable) and a
+list of the job entries that are to run at this time (maintained in the
+next-jobs-list variable).
 
 The procedure works by first obtaining the time of the first job on the list,
 and setting this job in the next-jobs-list.  Then for each other entry on the
@@ -121,7 +130,8 @@ accomodate, or the job runs at the same time as the next job, in which case
 the next-jobs-list is simply augmented with the new job, or else the job runs
 later than others noted in which case we ignore it for now and continue to
 recurse the list."
-  (let loop ((jobs      (append system-job-list user-job-list))
+  (let loop ((jobs
+              (append (schedule-system schedule) (schedule-user schedule)))
              (next-time (inf))
              (next-jobs '()))
     (match jobs
@@ -136,14 +146,15 @@ recurse the list."
                (else
                 (loop rest next-time next-jobs))))))))
 
-(define* (display-schedule count #:optional (port (current-output-port)))
+(define* (display-schedule count #:optional (port (current-output-port))
+                           #:key (schedule %global-schedule))
   "Display on PORT a textual list of the next COUNT jobs to run.  This
 simulates the run of the job loop to display the resquested information.
 Since calling this procedure has the effect of mutating the job timings, the
 program must exit after.  Otherwise the internal data state will be left
 unusable."
   (unless (<= count 0)
-    (match (find-next-jobs)
+    (match (find-next-jobs #:schedule schedule)
       ((#f . jobs)
        #f)
       ((time . jobs)
@@ -156,7 +167,7 @@ unusable."
                      (job:next-time-set! job ((job:next-time-function job)
                                               (job:next-time job))))
                    jobs))))
-    (display-schedule (- count 1) port)))
+    (display-schedule (- count 1) port #:schedule schedule)))
 
 ;; For proper housekeeping, it is necessary to keep a record of the number of
 ;; child processes we fork off to run the jobs.
@@ -191,7 +202,7 @@ next value."
 	      (eqv? (car (waitpid WAIT_ANY WNOHANG)) 0)))
     (set! number-children (- number-children 1))))
 
-(define* (run-job-loop #:optional fd-list)
+(define* (run-job-loop #:optional fd-list #:key (schedule %global-schedule))
   ;; Loop over all job specifications, get a list of the next ones to run (may
   ;; be more than one).  Set an alarm and go to sleep.  When we wake, run the
   ;; jobs and reap any children (old jobs) that have completed. Repeat ad
@@ -205,7 +216,7 @@ next value."
   (call-with-current-continuation
    (lambda (break)
      (let loop ()
-       (match (find-next-jobs)
+       (match (find-next-jobs #:schedule schedule)
          ((next-time . next-jobs-lst)
           (let ((sleep-time (if next-time
                                 (- next-time (current-time))
