@@ -182,13 +182,13 @@ next value."
         (job:next-time-set! job ((job:next-time-function job)
                                  (current-time))))))
 
-;; Give any zombie children a chance to die, and decrease the number known to
-;; exist.
-
 (define (child-cleanup)
-  (do () ((or (<= number-children 0)
-	      (eqv? (car (waitpid WAIT_ANY WNOHANG)) 0)))
-    (set! number-children (- number-children 1))))
+  ;; Give any zombie children a chance to die, and decrease the number known
+  ;; to exist.
+  (unless (or (<= number-children 0)
+              (= (car (waitpid WAIT_ANY WNOHANG)) 0))
+    (set! number-children (- number-children 1))
+    (child-cleanup)))
 
 (define* (run-job-loop #:optional fd-list #:key (schedule %global-schedule))
   ;; Loop over all job specifications, get a list of the next ones to run (may
