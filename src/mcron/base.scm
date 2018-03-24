@@ -32,6 +32,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-2)
   #:use-module (srfi srfi-9)
+  #:use-module (srfi srfi-111)
   #:export (add-job
             remove-user-jobs
             display-schedule
@@ -157,10 +158,18 @@ unusable."
                    jobs))))
     (display-schedule (- count 1) port #:schedule schedule)))
 
-;; For proper housekeeping, it is necessary to keep a record of the number of
-;; child processes we fork off to run the jobs.
+;;;
+;;; Running jobs
+;;;
 
-(define number-children 0)
+(define number-children
+  ;; For proper housekeeping, it is necessary to keep a record of the number
+  ;; of child processes we fork off to run the jobs.
+  (box 0))
+
+(define (update-number-children! proc)
+  ;; Apply PROC to the value stored in 'number-children'.
+  (set-box! number-children (proc (unbox number-children))))
 
 (define (run-job job)
   "Run JOB in a separate process. The process is run as JOB user with the
@@ -178,16 +187,16 @@ next value."
         (λ ()
           (primitive-exit 0)))
       (begin                            ;parent
-        (set! number-children (+ number-children 1))
+        (update-number-children! 1+)
         (job:next-time-set! job ((job:next-time-function job)
                                  (current-time))))))
 
 (define (child-cleanup)
   ;; Give any zombie children a chance to die, and decrease the number known
   ;; to exist.
-  (unless (or (<= number-children 0)
+  (unless (or (<= (unbox number-children) 0)
               (= (car (waitpid WAIT_ANY WNOHANG)) 0))
-    (set! number-children (- number-children 1))
+    (update-number-children! 1-)
     (child-cleanup)))
 
 (define* (run-job-loop #:optional fd-list #:key (schedule %global-schedule))

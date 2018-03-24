@@ -17,6 +17,7 @@
 ;;; along with GNU Mcron.  If not, see <http://www.gnu.org/licenses/>.
 
 (use-modules (srfi srfi-64)
+             (srfi srfi-111)
              (mcron base))
 
 (test-begin "base")
@@ -147,5 +148,36 @@
     ""
     (with-output-to-string
       (λ () (display-schedule 1 #:schedule schdl)))))
+
+;;;
+;;; Running jobs
+;;;
+
+;;; Import private global.
+(define number-children (@@ (mcron base) number-children))
+
+;;; Import private procedures.
+(define update-number-children! (@@ (mcron base) update-number-children!))
+
+;;; Check 'number-children' initial value.
+(let ((schdl (make-schedule '() '() 'user)))
+  (test-equal "number-children: init"
+    0
+    (unbox number-children)))
+
+;;; Check 'update-number-children!' incrementation.
+(let ((schdl (make-schedule '() '() 'user)))
+  (update-number-children! 1+)
+  (update-number-children! 1+)
+  (test-equal "update-number-children!: 1+"
+    2
+    (unbox number-children)))
+
+;;; Check 'update-number-children!' decrementation.
+(let ((schdl (make-schedule '() '() 'user)))
+  (update-number-children! 1-)
+  (test-equal "update-number-children!: 1-"
+    1
+    (unbox number-children)))
 
 (test-end)
