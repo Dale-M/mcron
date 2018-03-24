@@ -52,10 +52,16 @@ follows.
   Run the command "git format-patch --stdout -1", and email its output in,
   using the output's subject line.
 
+* Updating auxilary scripts
+
+  Fetch new versions of the files that are maintained in other GNU
+  repositories by running "cd build-aux; ./gnu-fetch".  In case any file in the
+  Mcron repository has been updated, commit and re-run the testsuite.
+
 -----
 
 Copyright © 2002-2017 Free Software Foundation, Inc.
-Copyright © 2017 Mathieu Lirzin <mthl@gnu.org>
+Copyright © 2017, 2018 Mathieu Lirzin <mthl@gnu.org>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -1,0 +1,97 @@
+#!/bin/sh
+# Fetch files maintained in other GNU repositories.
+
+scriptversion=2018-03-24.21; # UTC
+
+# Copyright © 2018 Mathieu Lirzin <mthl@gnu.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+set -e
+
+WGET=wget
+
+# Git repositories on Savannah.
+git_sv_host='git.savannah.gnu.org'
+
+# Some repositories we sync files from.
+sv_git_am="https://${git_sv_host}/gitweb/?p=automake.git;a=blob_plain;hb=HEAD;f="
+sv_git_gl="https://${git_sv_host}/gitweb/?p=gnulib.git;a=blob_plain;hb=HEAD;f="
+
+# Files that we fetch and which we compare against.
+# Note that the 'lib/COPYING' file must still be synced by hand.
+FETCHFILES="
+  ${sv_git_am}contrib/test-driver.scm
+  ${sv_git_gl}build-aux/gitlog-to-changelog
+  ${sv_git_gl}build-aux/do-release-commit-and-tag
+  ${sv_git_gl}build-aux/gnu-web-doc-update
+  ${sv_git_gl}build-aux/gnupload
+"
+
+usage="Usage: $0
+
+fetch files maintained in other GNU repositories
+"
+
+while test -n "$1"
+do
+  case $1 in
+  -*)
+    case $1 in
+    --help)
+      echo "$usage"
+      exit $?
+      ;;
+    --version)
+      echo "gnu-fetch $scriptversion"
+      exit $?
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      echo "$0: Unknown option '$1', try '$0 --help'" 1>&2
+      exit 1
+      ;;
+    esac
+    ;;
+  esac
+  shift
+done
+
+rm -rf Fetchdir
+mkdir Fetchdir
+for url in ${FETCHFILES}
+do
+  file=`printf '%s\n' "$url" | sed 's|^.*/||; s|^.*=||'`
+  "$WGET" -nv "$url" -O "Fetchdir/$file" || exit 1
+  if cmp "Fetchdir/$file" "$file" >/dev/null; then
+      : Nothing to do
+  else
+    echo "$0: updating file $file"
+    cp "Fetchdir/$file" "$file" || exit 1
+  fi
+done
+rm -rf Fetchdir
+
+exit 0
+
+# Local variables:
+# eval: (add-hook 'before-save-hook 'time-stamp)
+# time-stamp-start: "scriptversion="
+# time-stamp-format: "%:y-%02m-%02d.%02H"
+# time-stamp-time-zone: "UTC0"
+# time-stamp-end: "; # UTC"
+# End:
