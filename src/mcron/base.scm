@@ -115,21 +115,10 @@ SCHEDULE."
                               (cons entry (schedule-system schedule))))))
 
 (define* (find-next-jobs #:key (schedule %global-schedule))
-  "Procedure to locate the jobs in SCHEDULE with the lowest (soonest)
-next-times.  These are the jobs for which we must schedule the mcron
-program (under any personality) to next wake up.  The return value is a cons
-cell consisting of the next time (maintained in the next-time variable) and a
-list of the job entries that are to run at this time (maintained in the
-next-jobs-list variable).
-
-The procedure works by first obtaining the time of the first job on the list,
-and setting this job in the next-jobs-list.  Then for each other entry on the
-job-list, either the job runs earlier than any other that have been scanned,
-in which case the next-time and next-jobs-list are re-initialized to
-accomodate, or the job runs at the same time as the next job, in which case
-the next-jobs-list is simply augmented with the new job, or else the job runs
-later than others noted in which case we ignore it for now and continue to
-recurse the list."
+  "Locate the jobs in SCHEDULE with the lowest (soonest) next-times.  Return a
+list where the head is the next scheduled time and the rest are all the job
+entries that are to run at this time.  When SCHEDULE is empty next time is
+'#f'."
   (let loop ((jobs
               (append (schedule-system schedule) (schedule-user schedule)))
              (next-time (inf))
