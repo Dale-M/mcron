@@ -28,6 +28,7 @@
 (define-module (mcron base)
   #:use-module (ice-9 match)
   #:use-module (mcron environment)
+  #:use-module (mcron utils)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-2)
   #:use-module (srfi srfi-9)
@@ -85,9 +86,7 @@ This procedure is deprecated."
 (define* (remove-user-jobs user #:key (schedule %global-schedule))
   "Remove user jobs from SCHEDULE belonging to USER.  USER must be either a
 username, a UID, or a passwd entry."
-  (let ((user* (if (or (string? user) (integer? user))
-                   (getpw user)
-                   user)))
+  (let ((user* (get-user user)))
     (set-schedule-user! schedule
                         (filter (lambda (job)
                                   (not (eqv? (passwd:uid user*)

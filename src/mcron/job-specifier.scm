@@ -1,6 +1,6 @@
 ;;;; job-specifier.scm -- public interface for defining jobs
 ;;; Copyright © 2003 Dale Mellor <dale_mellor@users.sourceforge.net>
-;;; Copyright © 2016, 2017 Mathieu Lirzin <mthl@gnu.org>
+;;; Copyright © 2016, 2017, 2018 Mathieu Lirzin <mthl@gnu.org>
 ;;;
 ;;; This file is part of GNU Mcron.
 ;;;
@@ -30,6 +30,7 @@
   #:use-module (ice-9 match)
   #:use-module (mcron base)
   #:use-module (mcron environment)
+  #:use-module (mcron utils)
   #:use-module (mcron vixie-time)
   #:use-module (srfi srfi-1)
   #:re-export (append-environment-mods)
@@ -241,9 +242,7 @@ go into the list.  For example, (range 1 6 2) returns '(1 3 5)."
                ((procedure? action) "Lambda function")
                ((string? action)    action)
                ((list? action)      (simple-format #f "~A" action))))
-        (user* (if (or (string? user) (integer? user))
-                   (getpw user)
-                   user)))
+        (user* (get-user user)))
     (add-job (lambda (current-time)
                (parameterize ((%current-action-time current-time))
                  ;; Allow for daylight savings time changes.

@@ -29,7 +29,8 @@
             parse-args
             show-version
             show-package-information
-            process-update-request)
+            process-update-request
+            get-user)
   #:re-export (option-ref
                read-string))
 
@@ -101,3 +102,13 @@ comes in on the above socket."
            (remove-user-jobs user)
            (set-configuration-user user)
            (read-vixie-file (string-append config-spool-dir "/" user-name)))))))
+
+(define (get-user spec)
+  "Return the passwd entry corresponding to SPEC.  If SPEC is passwd entry
+then return it.  If SPEC is not a valid specification throw an exception."
+  (cond ((or (string? spec) (integer? spec))
+         (getpw spec))
+        ((vector? spec)                 ;assume a user passwd entry
+         spec)
+        (else
+         (throw 'invalid-user-specification spec))))
