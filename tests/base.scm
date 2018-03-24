@@ -161,24 +161,23 @@
 (define run-job (@@ (mcron base) run-job))
 
 ;;; Check 'number-children' initial value.
-(let ((schdl (make-schedule '() '() 'user)))
-  (test-equal "number-children: init"
-    0
-    (unbox number-children)))
+(test-equal "number-children: init"
+  0
+  (unbox number-children))
 
 ;;; Check 'update-number-children!' incrementation.
-(let ((schdl (make-schedule '() '() 'user)))
-  (update-number-children! 1+)
-  (update-number-children! 1+)
-  (test-equal "update-number-children!: 1+"
-    2
+(test-equal "update-number-children!: 1+"
+  2
+  (begin
+    (update-number-children! 1+)
+    (update-number-children! 1+)
     (unbox number-children)))
 
 ;;; Check 'update-number-children!' decrementation.
-(let ((schdl (make-schedule '() '() 'user)))
-  (update-number-children! 1-)
-  (test-equal "update-number-children!: 1-"
-    1
+(test-equal "update-number-children!: 1-"
+  1
+  (begin
+    (update-number-children! 1-)
     (unbox number-children)))
 
 ;;; Check 'run-job' basic call.
