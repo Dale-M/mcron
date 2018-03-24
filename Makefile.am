@@ -138,7 +138,8 @@ TESTS = \
   tests/schedule.sh \
   tests/base.scm \
   tests/environment.scm \
-  tests/job-specifier.scm
+  tests/job-specifier.scm \
+  tests/utils.scm
 
 ## -------------- ##
 ## Distribution.  ##
