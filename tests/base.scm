@@ -158,6 +158,7 @@
 
 ;;; Import private procedures.
 (define update-number-children! (@@ (mcron base) update-number-children!))
+(define run-job (@@ (mcron base) run-job))
 
 ;;; Check 'number-children' initial value.
 (let ((schdl (make-schedule '() '() 'user)))
@@ -179,5 +180,20 @@
   (test-equal "update-number-children!: 1-"
     1
     (unbox number-children)))
+
+;;; Check 'run-job' basic call.
+;;; XXX: Having to use the filesystem for a unit test is wrong.
+(let* ((filename (tmpnam))
+       (action (λ () (close-port (open-output-file filename))))
+       (job (make-dummy-job #:user (getpw (getuid)) #:action action)))
+  (dynamic-wind
+    (λ ()
+      (run-job job)
+      (waitpid WAIT_ANY))
+    (λ ()
+      (test-assert "run-job: basic"
+        (access? filename F_OK)))
+    (λ ()
+      (delete-file filename))))
 
 (test-end)
