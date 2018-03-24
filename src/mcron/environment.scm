@@ -1,6 +1,6 @@
 ;;;; environment.scm -- interact with the job process environment
 ;;; Copyright © 2003 Dale Mellor <dale_mellor@users.sourceforge.net>
-;;; Copyright © 2015, 2016 Mathieu Lirzin <mthl@gnu.org>
+;;; Copyright © 2015, 2016, 2018 Mathieu Lirzin <mthl@gnu.org>
 ;;;
 ;;; This file is part of GNU Mcron.
 ;;;
@@ -32,47 +32,50 @@
 ;;;; Code:
 
 (define-module (mcron environment)
+  #:use-module (srfi srfi-111)
   #:export (modify-environment
             clear-environment-mods
             append-environment-mods
             get-current-environment-mods-copy))
-            
 
+;;;
+;;; Configuration files
+;;;
 
-;; As we parse configuration files, we build up an alist of environment
-;; variables here.
+(define %current-environment-mods
+  ;; Global variable containing an alist of environment variables populated as
+  ;; we parse configuration files.
+  (box '()))
 
-(define current-environment-mods '())
+(define* (get-current-environment-mods-copy
+          #:key (environ %current-environment-mods))
+  "Return a snapshot of the current environment modifications from ENVIRON.
+This snapshot is a copy of the environment so that modifying it doesn't
+impact ENVIRON."
+  ;; Each time a job is registered we should call this procedure.
+  (list-copy (unbox environ)))
 
+(define* (clear-environment-mods #:key (environ %current-environment-mods))
+  "Remove all entries in the ENVIRON environment."
+  ;; When we start to parse a new configuration file, we want to start with a
+  ;; fresh environment (actually an umodified version of the pervading mcron
+  ;; environment) by calling this procedure.
+  (set-box! environ '()))
 
-
-;; Each time a job is added to the system, we take a snapshot of the current
-;; set of environment modifiers.
-
-(define (get-current-environment-mods-copy)
-  (list-copy current-environment-mods))
-
-
-
-;; When we start to parse a new configuration file, we want to start with a
-;; fresh environment (actually an umodified version of the pervading mcron
-;; environment).
-
-(define (clear-environment-mods)
-  (set! current-environment-mods '()))
-
-
-
-;; Procedure to add another environment setting to the alist above. This is
-;; used both implicitly by the Vixie parser, and can be used directly by users
-;; in scheme configuration files. The return value is purely for the
-;; convenience of the parse-vixie-environment in the vixie-specification module
-;; (yuk).
-
-(define (append-environment-mods name value)
-  (set! current-environment-mods (append current-environment-mods
-                                         (list (cons name value))))
+(define* (append-environment-mods name value
+                                  #:key (environ %current-environment-mods))
+  "Set NAME to VALUE in the ENVIRON environment.  If VALUES is #f then NAME is
+considered unset."
+  ;; This procedure is used implicitly by the Vixie parser, and can be used
+  ;; directly by users in scheme configuration files.
+  (set-box! environ (append (unbox environ) `((,name . ,value))))
+  ;; XXX: The return value is purely for the convenience of the
+  ;; '(@ (mcron vixie-specification) parse-vixie-environment)'.
   #t)
+
+;;;
+;;; Job runtime
+;;;
 
 (define (modify-environment env passwd-entry)
   "Modify the environment (in the UNIX sense) by setting the variables from
