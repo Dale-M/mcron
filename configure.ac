@@ -139,6 +139,12 @@ AC_ARG_WITH(tmp-dir,
 AC_MSG_RESULT($CONFIG_TMP_DIR)
 AC_SUBST(CONFIG_TMP_DIR)
 
+# Include the Maintainer's Makefile fragment, if it's here.
+MAINT_MAKEFILE=/dev/null
+AS_IF([test -r "$srcdir/maint.mk"],
+  [MAINT_MAKEFILE="$srcdir/maint.mk"])
+AC_SUBST_FILE([MAINT_MAKEFILE])
+
 AC_CONFIG_FILES([pre-inst-env:build-aux/pre-inst-env.in],
   [chmod +x pre-inst-env])
 AC_CONFIG_FILES([doc/config.texi

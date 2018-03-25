@@ -257,3 +257,9 @@ guilec_verbose_0 = @echo "  GUILEC  " $@;
 devnull_verbose = $(devnull_verbose_@AM_V@)
 devnull_verbose_ = $(devnull_verbose_@AM_DEFAULT_V@)
 devnull_verbose_0 = >/dev/null
+
+## ------------- ##
+## Maintenance.  ##
+## ------------- ##
+
+@MAINT_MAKEFILE@
