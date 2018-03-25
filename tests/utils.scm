@@ -16,10 +16,52 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with GNU Mcron.  If not, see <http://www.gnu.org/licenses/>.
 
-(use-modules (srfi srfi-64)
+(use-modules (ice-9 match)
+             (ice-9 rdelim)
+             (srfi srfi-64)
              (mcron utils))
 
 (test-begin "utils")
+
+;;; Check 'mcron-error' error code return value.
+(test-equal "mcron-error: exit code"
+  42
+  (match (primitive-fork)
+    (0                                  ;child
+     (mcron-error 42 "exit with 42"))
+    ((= waitpid (pid . exit-code))      ;parent
+     (status:exit-val exit-code))))
+
+;;; Check 'mcron-error' output with basic error code.
+(test-equal "mcron-error: output"
+  "mcron: token"
+  (call-with-output-string
+    (λ (port)
+      (match (pipe)
+        ((in . out)
+         (match (primitive-fork)
+           (0                           ;child
+            (close in)
+            (with-error-to-port out
+              (λ () (mcron-error 37 "token"))))
+           ((= waitpid (pid . exit-code)) ;parent
+            (close out)
+            (display (read-line in) port))))))))
+
+;;; Check mcron-error output when error code is 0.
+(test-equal "mcron-error: output no-exit"
+  "mcron: foobar\n"
+  (call-with-output-string
+    (λ (port)
+      (with-error-to-port port
+        (λ ()
+          (mcron-error 0 "foo" "bar"))))))
+
+;;; Check that mcron-error doesn't print anything on the standard output.
+(test-equal "mcron-error: only stderr"
+  ""
+  (with-output-to-string
+    (λ () (mcron-error 0 "foo" "bar"))))
 
 (define entry
   ;; Random user entry.
