@@ -55,7 +55,7 @@ follows.
 * Updating auxilary scripts
 
   Fetch new versions of the files that are maintained in other GNU
-  repositories by running "cd build-aux; ./gnu-fetch".  In case any file in the
+  repositories by running "make fetch".  In case any file in the
   Mcron repository has been updated, commit and re-run the testsuite.
 
 * Code coverage
