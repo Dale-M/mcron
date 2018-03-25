@@ -58,6 +58,14 @@ follows.
   repositories by running "cd build-aux; ./gnu-fetch".  In case any file in the
   Mcron repository has been updated, commit and re-run the testsuite.
 
+* Code coverage
+
+  Assuming 'lcov' is installed, it is possible to check the actual code
+  coverage achieved by the test suite by running the following commands:
+
+  $ make check SCM_LOG_DRIVER_FLAGS="--coverage=yes"
+  $ genhtml tests/*.info --output-directory out
+
 -----
 
 Copyright © 2002-2017 Free Software Foundation, Inc.
