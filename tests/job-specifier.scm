@@ -18,6 +18,7 @@
 
 (use-modules (ice-9 match)
              (srfi srfi-64)
+             (srfi srfi-111)
              (mcron job-specifier))
 
 (test-begin "job-specifier")
@@ -85,5 +86,50 @@
   '(52 15)
   (list (next-second '(52 55))
         (next-second-from 14)))
+
+;;;
+;;; Check 'configuration-user' manipulation
+;;;
+
+(define configuration-user (@@ (mcron job-specifier) configuration-user))
+
+;;; Call 'set-configuration-user' with a valid uid.
+(let ((uid (getuid)))
+  (test-equal "set-configuration-user: uid"
+    uid
+    (begin
+      (set-configuration-user uid)
+      (passwd:uid (unbox configuration-user)))))
+
+(define entry
+  ;; Random user entry.
+  (getpw))
+
+;;; Call 'set-configuration-user' with a valid user name.
+(let ((name (passwd:name entry)))
+  (test-equal "set-configuration-user: name"
+    name
+    (begin
+      (set-configuration-user name)
+      (passwd:name (unbox configuration-user)))))
+
+(define root-entry (getpw 0))
+
+;;; Call 'set-configuration-user' with a passwd entry.
+(test-equal "set-configuration-user: passwd entry"
+  root-entry
+  (begin
+    (set-configuration-user root-entry)
+    (unbox configuration-user)))
+
+;;; Call 'set-configuration-user' with an invalid uid.
+(test-error "set-configuration-user: invalid uid"
+   #t
+   (set-configuration-user -20000))
+
+;;; Call 'set-configuration-user' with an invalid spec.
+(test-error "set-configuration-user: invalid spec"
+   #t
+   (set-configuration-user 'wrong))
 
 (test-end)

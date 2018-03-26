@@ -33,6 +33,7 @@
   #:use-module (mcron utils)
   #:use-module (mcron vixie-time)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-111)
   #:re-export (append-environment-mods)
   #:export (range
             next-year-from         next-year
@@ -186,17 +187,14 @@ go into the list.  For example, (range 1 6 2) returns '(1 3 5)."
 ;; time; a UID is stored with each job and it is that which takes effect when
 ;; the job actually runs.
 
-(define configuration-user (getpw (getuid)))
+(define configuration-user (box (getpw (getuid))))
 
 (define configuration-time
   ;; Use SOURCE_DATE_EPOCH environment variable to support reproducible tests.
   (if (getenv "SOURCE_DATE_EPOCH") 0 (current-time)))
 
 (define (set-configuration-user user)
-  (set! configuration-user (if (or (string? user)
-                                   (integer? user))
-                               (getpw user)
-                               user)))
+  (set-box! configuration-user (get-user user)))
 (define (set-configuration-time time) (set! configuration-time time))
 
 
@@ -218,7 +216,7 @@ go into the list.  For example, (range 1 6 2) returns '(1 3 5)."
 ;; right at the top of this program).
 
 (define* (job time-proc action #:optional displayable
-              #:key (user configuration-user))
+              #:key (user (unbox configuration-user)))
   (let ((action (cond ((procedure? action) action)
                       ((list? action) (lambda () (primitive-eval action)))
                       ((string? action) (lambda () (system action)))
