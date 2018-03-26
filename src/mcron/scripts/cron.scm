@@ -18,6 +18,7 @@
 ;;; along with GNU Mcron.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (mcron scripts cron)
+  #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 ftw)
   #:use-module (mcron base)
   #:use-module (mcron config)
@@ -134,7 +135,7 @@ option.\n")
 ;;;
 
 (define* (main #:optional (args (command-line)))
-  (let ((opts (parse-args args %options)))
+  (let ((opts (getopt-long args %options)))
     (when config-debug
       (debug-enable 'backtrace))
     (cond

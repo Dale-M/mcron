@@ -18,7 +18,6 @@
 ;;; along with GNU Mcron.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (mcron utils)
-  #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 rdelim)
   #:use-module (mcron config)
   #:use-module (mcron base)
@@ -26,13 +25,11 @@
   #:use-module (mcron vixie-specification)
   #:export (catch-mcron-error
             mcron-error
-            parse-args
             show-version
             show-package-information
             process-update-request
             get-user)
-  #:re-export (option-ref
-               read-string))
+  #:re-export (read-string))
 
 (define (mcron-error exit-code . rest)
   "Print an error message (made up from the parts of REST), and if the
@@ -52,13 +49,6 @@ and exit with its error code."
     (lambda () exp ...)
     (lambda (key exit-code . msg)
       (apply mcron-error exit-code msg))))
-
-(define (parse-args args option-desc-list)
-  "Parse ARGS with OPTION-DESC-LIST specification."
-  (catch 'misc-error
-    (lambda () (getopt-long args option-desc-list))
-    (lambda (key func fmt args . rest)
-      (mcron-error 1 (apply format (append (list #f fmt) args))))))
 
 (define (show-version command)
   "Display version information for COMMAND and quit."
