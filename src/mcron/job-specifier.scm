@@ -60,12 +60,16 @@ go into the list.  For example, (range 1 6 2) returns '(1 3 5)."
   ;; consisting of the smallest element of the NEXT-LIST, and the smallest
   ;; element larger than the CURRENT value.  If an example of the latter
   ;; cannot be found, +INF.0 will be returned.
+  (define (exact-min a b)
+    ;; An implement of 'min' which preserves the exactness its arguments.
+    (if (< a b) a b))
+
   (let loop ((smallest (inf)) (closest+ (inf)) (lst next-list))
     (match lst
       (() (cons smallest closest+))
       ((time . rest)
-       (loop (min time smallest)
-             (if (> time current) (min time closest+) closest+)
+       (loop (exact-min time smallest)
+             (if (> time current) (exact-min time closest+) closest+)
              rest)))))
 
 (define (bump-time time value-list component higher-component

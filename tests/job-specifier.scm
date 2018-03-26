@@ -16,7 +16,8 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with GNU Mcron.  If not, see <http://www.gnu.org/licenses/>.
 
-(use-modules (srfi srfi-64)
+(use-modules (ice-9 match)
+             (srfi srfi-64)
              (mcron job-specifier))
 
 (test-begin "job-specifier")
@@ -39,5 +40,13 @@
 
 (test-assert "range: reverse boundaries"
   (range 10 3))
+
+(define %find-best-next (@@ (mcron job-specifier) %find-best-next))
+
+(test-assert "%find-best-next: exact"
+  ;; Ensure that '%find-best-next' preserves the exactness of the numbers
+  ;; inside the NEXT-LIST argument.
+  (match (pk 'match (%find-best-next 1 '(0 2)))
+    ((a . b) (and (exact? a) (exact? b)))))
 
 (test-end)
