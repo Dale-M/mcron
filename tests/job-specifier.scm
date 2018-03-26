@@ -49,4 +49,8 @@
   (match (pk 'match (%find-best-next 1 '(0 2)))
     ((a . b) (and (exact? a) (exact? b)))))
 
+(test-equal "next-hour-from"
+  7200
+  (next-hour-from 10 '(0 3 7)))
+
 (test-end)

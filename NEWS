@@ -10,6 +10,12 @@ GNU Mcron NEWS                                    -*- outline -*-
   The programs now sets the GUILE_LOAD_PATH and GUILE_LOAD_COMPILED_PATH
   environment variables with the location of the installed Guile modules.
 
+  'next-year-from', 'next-year', 'next-month-from', 'next-month',
+  'next-day-from', 'next-day', 'next-hour-from', 'next-hour',
+  'next-minute-from', 'next-minute', 'next-second-from', and 'next-second' no
+  longer crashes when passing an optional arguments.
+  [bug introduced in mcron-1.1]
+
 ** Improvements
 
   Some basic tests for the installed programs can be run after 'make install'
