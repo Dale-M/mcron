@@ -158,6 +158,7 @@
 
 ;;; Import private procedures.
 (define update-number-children! (@@ (mcron base) update-number-children!))
+(define child-cleanup (@@ (mcron base) child-cleanup))
 (define run-job (@@ (mcron base) run-job))
 
 ;;; Check 'number-children' initial value.
@@ -180,19 +181,35 @@
     (update-number-children! 1-)
     (unbox number-children)))
 
-;;; Check 'run-job' basic call.
+;;; Check 'update-number-children!' constant value.
+(test-equal "update-number-children!: set value"
+  0
+  (begin
+    (update-number-children! (const 0))
+    (unbox number-children)))
+
+;;; Check 'run-job' and 'child-cleanup'.
 ;;; XXX: Having to use the filesystem for a unit test is wrong.
 (let* ((filename (tmpnam))
        (action (λ () (close-port (open-output-file filename))))
        (job (make-dummy-job #:user (getpw (getuid)) #:action action)))
   (dynamic-wind
+    (const #t)
     (λ ()
+      (sigaction SIGCHLD (const #t))
       (run-job job)
-      (waitpid WAIT_ANY))
+      ;; Wait for the SIGCHLD signal sent when job exits.
+      (pause)
+      ;; Check 'run-job' result and if the number of children is up-to-date.
+      (test-equal "run-job: basic"
+        1
+        (and (access? filename F_OK)
+             (unbox number-children)))
+      (child-cleanup)
+      ;; Check that 'child-cleanup' updates the number of children.
+      (test-equal "child-cleanup: one" 0 (unbox number-children)))
     (λ ()
-      (test-assert "run-job: basic"
-        (access? filename F_OK)))
-    (λ ()
-      (delete-file filename))))
+      (and (access? filename F_OK) (delete-file filename))
+      (sigaction SIGCHLD SIG_DFL))))
 
 (test-end)
