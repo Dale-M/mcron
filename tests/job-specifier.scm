@@ -132,4 +132,41 @@
    #t
    (set-configuration-user 'wrong))
 
+;;;
+;;; Check the 'job' procedure
+;;;
+
+(test-assert "job: procedure timeproc"
+  (job 1+ "dummy action"))
+
+(test-assert "job: list timeproc"
+  (job '(next-hour '(0)) "dummy action"))
+
+(test-assert "job: string timeproc"
+  (job "30 4 1,15 * 5" "dummy action"))
+
+(test-error "job: invalid string timeproc"
+  'mcron-error
+  (job "30 4 1,15 * WRONG" "dummy action"))
+
+(test-error "job: invalid timeproc"
+  'mcron-error
+  (job 42 "dummy action"))
+
+(test-assert "job: procedure action"
+  (job 1+ (λ () (display "hello\n"))))
+
+(test-assert "job: list action"
+  (job 1+ '(display "hello\n")))
+
+(test-assert "job: string action"
+  (job 1+ "echo hello"))
+
+(test-error "job: string action"
+  'mcron-error
+  (job 1+ 42))
+
+(test-assert "job: user name"
+  (job 1+ "dummy action" #:user (getuid)))
+
 (test-end)
