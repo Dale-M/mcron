@@ -49,8 +49,41 @@
   (match (pk 'match (%find-best-next 1 '(0 2)))
     ((a . b) (and (exact? a) (exact? b)))))
 
-(test-equal "next-hour-from"
-  7200
-  (next-hour-from 10 '(0 3 7)))
+;;;
+;;; Check 'next-...' procedures.
+;;;
+
+;;; TODO: Find more meaningful date examples.
+
+(test-equal "next-year"
+  (list 59989762800 1546293600)
+  (list (next-year '(1971))
+        (next-year-from 1522095469)))
+
+(test-equal "next-month"
+  (list 28854000 5094000)
+  (list (next-month '(11))
+        (next-month-from 101 '(0 2 4))))
+
+(test-equal "next-day"
+  (list 2588400 342000)
+  (list (next-day '(31))
+        (next-day-from 4337 '(0 5 10))))
+
+(test-equal "next-hour"
+  '(3600 82800 3600)
+  (list (next-hour)
+        (next-hour '(0))
+        (next-hour-from 3 '(0 1 2 3 4))))
+
+(test-equal "next-minute"
+  '(240 60)
+  (list (next-minute '(4 9))
+        (next-minute-from 8)))
+
+(test-equal "next-second"
+  '(52 15)
+  (list (next-second '(52 55))
+        (next-second-from 14)))
 
 (test-end)
