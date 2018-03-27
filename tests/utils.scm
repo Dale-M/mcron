@@ -19,6 +19,7 @@
 (use-modules (ice-9 match)
              (ice-9 rdelim)
              (srfi srfi-64)
+             (mcron config)
              (mcron utils))
 
 (test-begin "utils")
@@ -62,6 +63,23 @@
   ""
   (with-output-to-string
     (λ () (mcron-error 0 "foo" "bar"))))
+
+;;;
+;;; Check user interface conformance to GNU Coding Standards
+;;;
+
+(test-assert "show-version"
+  (let ((out (with-output-to-string (λ () (show-version "dummy")))))
+    (and (string-contains out config-package-version)
+         (string-contains out config-package-name))))
+
+(test-assert "show-package-information"
+  (let ((out (with-output-to-string (λ () (show-package-information)))))
+    (string-contains out config-package-bugreport)))
+
+;;;
+;;; Check 'get-user'
+;;;
 
 (define entry
   ;; Random user entry.
