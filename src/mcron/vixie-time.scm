@@ -1,5 +1,6 @@
 ;;;; vixie-time.scm -- parse Vixie-style times
 ;;; Copyright © 2003 Dale Mellor <dale_mellor@users.sourceforge.net>
+;;; Copyright © 2018 Mathieu Lirzin <mthl@gnu.org>
 ;;;
 ;;; This file is part of GNU Mcron.
 ;;;
@@ -17,6 +18,7 @@
 ;;; along with GNU Mcron.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (mcron vixie-time)
+  #:use-module (ice-9 match)
   #:use-module (ice-9 regex)
   #:use-module (mcron job-specifier)
   #:use-module (srfi srfi-1)
@@ -176,16 +178,17 @@
 ;; simply unreadable without all of these aliases.
 
 (define (increment-time-component time time-spec)
-  (let* ((time-list      (time-spec:list   time-spec))
-         (getter         (time-spec:getter time-spec))
-         (setter         (time-spec:setter time-spec))
-         (find-best-next (@@ (mcron job-specifier) %find-best-next))
-         (next-best      (find-best-next (getter time) time-list))
-         (wrap-around    (eqv? (cdr next-best) 9999)))
-    (setter time ((if wrap-around car cdr) next-best))
-    wrap-around))
-
-
+  (let ((time-list      (time-spec:list   time-spec))
+        (getter         (time-spec:getter time-spec))
+        (setter         (time-spec:setter time-spec))
+        (find-best-next (@@ (mcron job-specifier) %find-best-next)))
+    (match (find-best-next (getter time) time-list)
+      ((smallest . closest+)
+       (let ((infinite (inf? closest+)))
+         (if infinite
+             (setter time smallest)
+             (setter time closest+))
+         infinite)))))
 
 ;; There now follows a set of procedures for adjusting an element of time,
 ;; i.e. taking it to the next acceptable value. In each case, the head of the
