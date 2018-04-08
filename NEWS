@@ -13,7 +13,7 @@ GNU Mcron NEWS                                    -*- outline -*-
   'next-year-from', 'next-year', 'next-month-from', 'next-month',
   'next-day-from', 'next-day', 'next-hour-from', 'next-hour',
   'next-minute-from', 'next-minute', 'next-second-from', and 'next-second' no
-  longer crashes when passing an optional arguments.
+  longer crashes when passing an optional argument.
   [bug introduced in mcron-1.1]
 
 ** Improvements
@@ -22,6 +22,9 @@ GNU Mcron NEWS                                    -*- outline -*-
   with 'make installcheck'.
 
   The configuration files are now processed using a deterministic order.
+
+  The test suite code coverage for mcron modules is now at 66.8% in term of
+  number of lines (mcron-1.1 was at 23.7%).
 
 * Noteworthy changes in release 1.1 (2018-03-19) [stable]
 
