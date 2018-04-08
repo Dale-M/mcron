@@ -139,7 +139,8 @@ TESTS = \
   tests/base.scm \
   tests/environment.scm \
   tests/job-specifier.scm \
-  tests/utils.scm
+  tests/utils.scm \
+  tests/vixie-time.scm
 
 ## -------------- ##
 ## Distribution.  ##
