@@ -1,18 +1,11 @@
-GNU mcron --- README                                  -*-text-*-
+This is GNU Mcron, a tool to run jobs at scheduled times.  It is a complete
+replacement for Vixie cron.  Besides supporting the traditional Vixie syntax
+for its configuration files, GNU Mcron offers the possibility to define jobs
+using the Scheme language.
 
-  Copyright (C) 2003, 2005, 2006, 2012, 2014  Dale Mellor
-
-  Copying and distribution of this file, with or without modification,
-  are permitted in any medium without royalty provided the copyright
-  notice and this notice are preserved.
-
-
-This is version 1.0.8 of the GNU mcron program.  It is designed and written by
-Dale Mellor, and replaces and hugely enhances Vixie cron. It is functionally
-complete, production quality code (did you expect less?), but has not received
-much testing yet. It has only been built on a GNU/Linux system, and will most
-likely fail on others (but you never know...).
-
+See the INSTALL file for generic information about how to configure and
+install GNU Mcron.  If this file is not present, see HACKING for
+preliminary build instructions.
 
 ----------------------------------------------------------------------
 IMPORTANT NOTICES
@@ -20,8 +13,8 @@ IMPORTANT NOTICES
 Do not (yet) install this software on a machine which relies for its
 functioning on its current set of crontabs.
 
-For use as a replacement cron daemon on a system, the package must be installed
-by root.
+To not replace the cron daemon on a system, the package must be installed
+with the --disable-multi-user configure option.
 
 Before installing this package for the first time, it is necessary to terminate
 any running cron daemons on your system. If your old cron is not Vixie or
@@ -50,8 +43,6 @@ m.mcron, m.cron (or m.crond) and m.crontab.
 ----------------------------------------------------------------------
 
 
-See the file INSTALL for generic building and installation instructions.
-
 After compilation, read the info file for full instructions for use (typing
 'info -f doc/mcron.info' at the command line should suffice).  Notes for end
 users, sysadmins, and developers who wish to incorporate mcron into their own
@@ -66,3 +57,13 @@ Mcron is free software. See the file COPYING for copying conditions.
 
 The mcron development home page is at http://www.gnu.org/software/mcron, and it
 can be obtained from ftp://ftp.gnu.org/pub/gnu/mcron.
+
+-----
+
+Copyright © 2003, 2005, 2006, 2012, 2014 Dale Mellor
+Copyright © 2018 Mathieu Lirzin
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.  This file is offered as-is,
+without warranty of any kind.
