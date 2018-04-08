@@ -122,27 +122,20 @@
                 (parse-vixie-subelement sub-element base limit))
         (string-tokenize string (char-set-complement (char-set #\,))))))
 
-
-
-;; Consider there are two lists, one of days in the month, the other of days in
-;; the week. This procedure returns an augmented list of days in the month with
-;; weekdays accounted for.
-
 (define (interpolate-weekdays mday-list wday-list month year)
+  "Given a list of days in the month MDAY-LIST and a list of days in the week
+WDAY-LIST, return an augmented list of days in the month with weekdays
+accounted for."
   (let ((t (localtime 0)))
-    (set-tm:mday  t 1)
-    (set-tm:mon   t month)
-    (set-tm:year  t year)
+    (set-tm:mday t 1)
+    (set-tm:mon t month)
+    (set-tm:year t year)
     (let ((first-day (tm:wday (cdr (mktime t)))))
-      (apply append
-             mday-list
-             (map (lambda (wday)
-                    (let ((first (- wday first-day)))
-                      (if (< first 0) (set! first (+ first 7)))
-                      (range (+ 1 first) 32 7)))
-                  wday-list)))))
-
-
+      (define (range-wday wday)
+        (let* ((first  (- wday first-day))
+               (first* (if (negative? first) (+ 7 first) first)))
+          (range (1+ first*) 32 7)))
+      (apply append mday-list (map range-wday wday-list)))))
 
 ;; Return the number of days in a month. Fix up a tm object for the zero'th day
 ;; of the next month, rationalize the object and extract the day.
