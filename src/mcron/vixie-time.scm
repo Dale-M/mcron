@@ -307,73 +307,68 @@ accounted for."
      ((< (length tokens) 5)
       (throw 'mcron-error 9
              "Not enough fields in Vixie-style time specification")))
-    (let ((time-spec-list
-           (map-in-order (lambda (x) (vector
-                                      (let* ((n (vector-ref x 0))
-                                             (tok (list-ref tokens n)))
-                                        (cond
-                                         ((and (= n 4)
-                                               (string=? tok "*")
-                                               (not (string=?
-                                                     (list-ref tokens 2) "*")))
-                                          '())
-                                         ((and (= n 2)
-                                               (string=? tok "*")
-                                               (not (string=?
-                                                     (list-ref tokens 4) "*")))
-                                          '())
-                                         (else
-                                          (parse-vixie-element
-                                           tok
-                                           (vector-ref x 1)
-                                           (vector-ref x 2)))))  ; [0]
-                                      (vector-ref x 3)
-                                      (vector-ref x 4)))
-                 ;; token range-top+1   getter    setter
-                 `( #( 0     0     60      ,tm:min   ,set-tm:min   )
-                    #( 1     0     24      ,tm:hour  ,set-tm:hour  )
-                    #( 2     1     32      ,tm:mday  ,set-tm:mday  )
-                    #( 3     0     12      ,tm:mon   ,set-tm:mon   )
-                    #( 4     0      7      ,tm:wday  ,set-tm:wday  )))))  ;; [1]
+    (match (map-in-order
+            (λ (x)
+              (vector
+               (let* ((n (vector-ref x 0))
+                      (tok (list-ref tokens n)))
+                 (cond
+                  ((and (= n 4)
+                        (string=? tok "*")
+                        (not (string=?
+                              (list-ref tokens 2) "*")))
+                   '())
+                  ((and (= n 2)
+                        (string=? tok "*")
+                        (not (string=?
+                              (list-ref tokens 4) "*")))
+                   '())
+                  (else
+                   (parse-vixie-element
+                    tok
+                    (vector-ref x 1)
+                    (vector-ref x 2))))) ; [0]
+               (vector-ref x 3)
+               (vector-ref x 4)))
+            ;; token range-top+1   getter    setter
+            `( #( 0     0     60      ,tm:min   ,set-tm:min   )
+               #( 1     0     24      ,tm:hour  ,set-tm:hour  )
+               #( 2     1     32      ,tm:mday  ,set-tm:mday  )
+               #( 3     0     12      ,tm:mon   ,set-tm:mon   )
+               #( 4     0      7      ,tm:wday  ,set-tm:wday  ))) ;; [1]
+      ((and time-spec-list (min hour day month wday))
+       (vector-set! wday
+                    0
+                    (map (lambda (time-spec)
+                           (if (eqv? time-spec 7) 0 time-spec))
+                         (vector-ref wday 0))) ;; [2]
 
-      (vector-set! (car (last-pair time-spec-list))
-                   0
-                   (map (lambda (time-spec)
-                          (if (eqv? time-spec 7) 0 time-spec))
-                        (vector-ref (car (last-pair time-spec-list)) 0))) ;; [2]
+       (vector-set! day
+                    0
+                    (remove (lambda (d) (eqv? d 0))
+                            (vector-ref day 0)))  ;; [2.1]
 
-      (vector-set! (caddr time-spec-list)
-                   0
-                   (remove (lambda (day) (eqv? day 0))
-                           (vector-ref (caddr time-spec-list) 0)))  ;; [2.1]
+       (λ (current-time)     ;; [3]
+         (let ((time (localtime current-time)))  ;; [4]
+           (unless (member (tm:mon time) (time-spec:list month))
+             (nudge-month! time (cdddr time-spec-list))
+             (set-tm:mday time 0))
+           (when (or (eqv? (tm:mday time) 0)
+                     (not (member (tm:mday time)
+                                  (interpolate-weekdays
+                                   (time-spec:list day)
+                                   (time-spec:list wday)
+                                   (tm:mon time)
+                                   (tm:year time)))))
+             (nudge-day! (pk time) (pk (cddr time-spec-list)))
+             (set-tm:hour time -1))
+           (unless (member (tm:hour time)
+                           (time-spec:list hour))
+             (nudge-hour! time (cdr time-spec-list))
+             (set-tm:min time -1))   ;; [5]
 
-
-      (lambda (current-time)     ;; [3]
-        (let ((time (localtime current-time)))  ;; [4]
-
-          (if (not (member (tm:mon time)
-                           (time-spec:list (cadddr time-spec-list))))
-              (begin
-                (nudge-month! time (cdddr time-spec-list))
-                (set-tm:mday  time 0)))
-          (if (or (eqv? (tm:mday time) 0)
-                  (not (member (tm:mday time)
-                               (interpolate-weekdays
-                                (time-spec:list (caddr time-spec-list))
-                                (time-spec:list (caddr (cddr time-spec-list)))
-                                (tm:mon time)
-                                (tm:year time)))))
-              (begin
-                (nudge-day! time (cddr time-spec-list))
-                (set-tm:hour time -1)))
-          (if (not (member (tm:hour time)
-                           (time-spec:list (cadr time-spec-list))))
-              (begin
-                (nudge-hour! time (cdr time-spec-list))
-                (set-tm:min time -1)))   ;; [5]
-
-          (set-tm:sec time 0)
-          (nudge-min! time time-spec-list)  ;; [6]
-          (car (mktime time))))))) ;; [7]
+           (set-tm:sec time 0)
+           (nudge-min! time time-spec-list)  ;; [6]
+           (first (mktime time)))))))) ;; [7]
 
 
