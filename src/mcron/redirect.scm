@@ -1,5 +1,6 @@
 ;;;; redirect.scm -- modify job outputs
 ;;; Copyright © 2003 Dale Mellor <dale_mellor@users.sourceforge.net>
+;;; Copyright © 2018 宋文武 <iyzsong@member.fsf.org>
 ;;;
 ;;; This file is part of GNU Mcron.
 ;;;
@@ -170,10 +171,9 @@
           (set-current-output-port (if (and (string? mailto)
                                             (string=? mailto ""))
                                        (open-output-file "/dev/null")
-                                       (open-output-pipe
-                                          (string-append config-sendmail
-                                                         " "
-                                                         user))))
+                                       ;; The sendmail command should read
+                                       ;; recipients from the message header.
+                                       (open-output-pipe config-sendmail)))
           (set-current-input-port (car child->parent))
           (display "To: ") (display user) (newline)
           (display "From: mcron") (newline)

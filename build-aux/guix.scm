@@ -1,5 +1,6 @@
 ;;;; guix.scm -- Guix package definition
 ;;; Copyright © 2016 Mathieu Lirzin <mthl@gnu.org>
+;;; Copyright © 2018 宋文武 <iyzsong@member.fsf.org>
 ;;;
 ;;; This file is part of GNU Mcron.
 ;;;
@@ -62,5 +63,4 @@
      ("automake" ,(specification->package "automake"))
      ("help2man" ,(specification->package "help2man"))
      ("pkg-config" ,(specification->package "pkg-config"))
-     ("texinfo" ,(specification->package "texinfo"))
-     ("which" ,(specification->package "which")))))
+     ("texinfo" ,(specification->package "texinfo")))))

@@ -2,6 +2,11 @@ GNU Mcron NEWS                                    -*- outline -*-
 
 * Noteworthy changes in release ?.? (????-??-??) [?]
 
+** Improvements
+
+  The "--with-sendmail" configure variable has been added to allow the usage
+  of a different Mail Transfert Agent (MTA) than 'sendmail -t'.  The MTA must
+  be able to guess the actual recipients from the 'To:' message header.
 
 * Noteworthy changes in release 1.1.1 (2018-04-08) [stable]
 
@@ -157,6 +162,7 @@ GNU Mcron NEWS                                    -*- outline -*-
 
 Copyright © 2003, 2005, 2006 Dale Mellor <dale_mellor@users.sourceforge.net>
 Copyright © 2017, 2018 Mathieu Lirzin <mthl@gnu.org>
+Copyright © 2018 宋文武 <iyzsong@member.fsf.org>
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

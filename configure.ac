@@ -2,6 +2,7 @@
 # Copyright © 2003, 2005, 2012, 2014 Dale Mellor
 # <dale_mellor@users.sourceforge.net>
 # Copyright © 2015, 2016, 2017, 2018 Mathieu Lirzin <mthl@gnu.org>
+# Copyright © 2018 宋文武 <iyzsong@member.fsf.org>
 #
 # This file is part of GNU Mcron.
 #
@@ -55,26 +56,15 @@ GUILE_PROGS
 
 AM_MISSING_PROG(HELP2MAN, help2man, $missing_dir)
 
-# Now find a sendmail or equivalent.
-
-AC_CHECK_PROGS(SENDMAIL, sendmail)
-if test "x$ac_cv_prog_SENDMAIL" != "x"; then
-   AC_MSG_CHECKING(sendmail path and arguments)
-   ac_cv_prog_SENDMAIL="`$ac_cv_prog_WHICH sendmail` -FCronDaemon -odi -oem "
-dnl  -or0s"
-   AC_MSG_RESULT($ac_cv_prog_SENDMAIL)
-
-else
-   AC_CHECK_PROGS(SENDMAIL, mail)
-   if test "x$ac_cv_prog_SENDMAIL" != "x"; then
-      AC_MSG_CHECKING(mail path)
-      ac_cv_prog_SENDMAIL="`$ac_cv_prog_WHICH mail` -d "
-      AC_MSG_RESULT($ac_cv_prog_SENDMAIL)
-   else
-      AC_MSG_RESULT(No mail program found)
-   fi
-fi
-SENDMAIL=$ac_cv_prog_SENDMAIL
+# Let users choose the Mail Transfert Agent (MTA) of their choice.  Default to
+# a non-absolute program name to make it a loose dependency resolved at
+# runtime.
+AC_ARG_WITH([sendmail],
+  [AS_HELP_STRING([--with-sendmail=COMMAND],
+    [command to read an email message from standard input, and send it])],
+  [SENDMAIL="$withval"],
+  [SENDMAIL="sendmail -t"])
+AC_SUBST([SENDMAIL])
 
 AC_ARG_ENABLE([multi-user],
   [AS_HELP_STRING([--disable-multi-user],
