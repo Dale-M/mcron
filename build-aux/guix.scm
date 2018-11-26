@@ -38,17 +38,9 @@
 (define %srcdir
   (or (current-source-directory) "."))
 
-(define (git-version-gen)
-  ;; Return a string containing Cuirass version number.
-  (let* ((cmd  "git-version-gen .version")
-         (port (open-input-pipe (string-append %srcdir "/" cmd)))
-         (str  (read-line port)))
-    (close-pipe port)
-    str))
-
 (package
   (inherit (specification->package "mcron2"))
-  (version (git-version-gen))
+  (version "1.1.2")
   (source (local-file (dirname %srcdir) #:recursive? #t
                       #:select? keep-mcron-file?))
   (arguments

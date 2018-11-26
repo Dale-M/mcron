@@ -37,7 +37,6 @@ sv_git_gl = 'https://$(git_sv_host)/gitweb/?p=gnulib.git;a=blob_plain;hb=HEAD;f=
 fetchfiles = \
   $(sv_git_am)contrib/test-driver.scm \
   $(sv_git_gl)build-aux/do-release-commit-and-tag \
-  $(sv_git_gl)build-aux/gitlog-to-changelog \
   ${sv_git_gl}build-aux/gnu-web-doc-update \
   $(sv_git_gl)build-aux/gnupload
 

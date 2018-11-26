@@ -146,24 +146,6 @@ TESTS = \
 ## Distribution.  ##
 ## -------------- ##
 
-dist-hook: gen-ChangeLog
-	$(AM_V_GEN)echo $(VERSION) > $(distdir)/.tarball-version
-
-# Generate the ChangeLog file from Git commit logs.
-gen_start_date = 2015-06-26
-.PHONY: gen-ChangeLog
-gen-ChangeLog:
-	$(AM_V_GEN)if test -d $(srcdir)/.git; then			\
-	  log_fix="$(srcdir)/build-aux/git-log-fix";			\
-	  test -e "$$log_fix"						\
-	    && amend_git_log="--amend=$$log_fix"			\
-	    || amend_git_log=;						\
-	  $(top_srcdir)/build-aux/gitlog-to-changelog			\
-	    $$amend_git_log --since=$(gen_start_date) > $(distdir)/cl-t && \
-	    { rm -f $(distdir)/ChangeLog &&				\
-	      mv $(distdir)/cl-t $(distdir)/ChangeLog; }		\
-	fi
-
 EXTRA_DIST = \
   bootstrap \
   build-aux/guix.scm \
