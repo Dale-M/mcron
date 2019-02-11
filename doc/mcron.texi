@@ -434,7 +434,7 @@ the student to understand how this works!).
        (let* ((next-month (next-month-from current-time))
               (first-day (tm:wday (localtime next-month)))
               (second-sunday (if (eqv? first-day 0)
-                                 8
+                                 7
                                  (- 14 first-day))))
          (+ next-month (* 24 60 60 second-sunday))))
      "my-program")
