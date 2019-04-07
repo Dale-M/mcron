@@ -1,6 +1,7 @@
 ;;;; guix.scm -- Guix package definition
 ;;; Copyright © 2016 Mathieu Lirzin <mthl@gnu.org>
 ;;; Copyright © 2018 宋文武 <iyzsong@member.fsf.org>
+;;; Copyright © 2019 Efraim Flashner <efraim@flashner.co.il>
 ;;;
 ;;; This file is part of GNU Mcron.
 ;;;
@@ -39,20 +40,16 @@
   (or (current-source-directory) "."))
 
 (package
-  (inherit (specification->package "mcron2"))
+  (inherit (specification->package "mcron"))
   (version "1.1.2")
   (source (local-file (dirname %srcdir) #:recursive? #t
                       #:select? keep-mcron-file?))
-  (arguments
-   '(#:phases
-     (modify-phases %standard-phases
-       (add-before 'configure 'bootstrap
-         (λ _ (zero? (system* "autoreconf" "-vfi")))))))
   (inputs
-   `(("guile" ,(specification->package "guile@2.0"))))
+   `(("guile" ,(specification->package "guile@2.2"))))
   (native-inputs
    `(("autoconf" ,(specification->package "autoconf"))
      ("automake" ,(specification->package "automake"))
      ("help2man" ,(specification->package "help2man"))
      ("pkg-config" ,(specification->package "pkg-config"))
-     ("texinfo" ,(specification->package "texinfo")))))
+     ("texinfo" ,(specification->package "texinfo"))
+     ("tzdata" ,(specification->package "tzdata")))))
