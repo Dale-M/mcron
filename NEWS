@@ -1,5 +1,13 @@
 GNU Mcron NEWS                                    -*- outline -*-
 
+* Noteworthy changes in release 1.1.3 (2019-11-17) [stable]
+
+** Improvements
+  Package contains configure script by default
+  Authors file change (addition)
+  Doc fix for 'every second sunday'
+  guix.scm update
+
 * Noteworthy changes in release 1.1.2 (2018-11-26) [stable]
 
 ** Improvements

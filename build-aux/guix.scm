@@ -41,7 +41,7 @@
 
 (package
   (inherit (specification->package "mcron"))
-  (version "1.1.2")
+  (version "1.1.3")
   (source (local-file (dirname %srcdir) #:recursive? #t
                       #:select? keep-mcron-file?))
   (inputs
