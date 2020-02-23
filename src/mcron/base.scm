@@ -1,7 +1,7 @@
 ;;;; base.scm -- core procedures
 ;;; Copyright © 2003 Dale Mellor <dale_mellor@users.sourceforge.net>
 ;;; Copyright © 2015, 2016, 2018 Mathieu Lirzin <mthl@gnu.org>
-;;; Copyright © 2016 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2016, 2020 Ludovic Courtès <ludo@gnu.org>
 ;;;
 ;;; This file is part of GNU Mcron.
 ;;;
@@ -210,6 +210,20 @@ next value."
   ;; case we break out of the loop here, and let the main procedure deal with
   ;; the situation (it will eventually re-call this function, thus maintaining
   ;; the loop).
+  (cond-expand
+    ((or guile-3.0 guile-2.2)                     ;2.2 and 3.0
+     (define select* select))
+    (else
+     ;; On Guile 2.0, 'select' could throw upon EINTR or EAGAIN.
+     (define (select* read write except time)
+       (catch 'system-error
+         (lambda ()
+           (select read write except time))
+         (lambda args
+           (if (member (system-error-errno args) (list EAGAIN EINTR))
+               '(() () ())
+               (apply throw args)))))))
+
   (call-with-current-continuation
    (lambda (break)
      (let loop ()
@@ -218,19 +232,17 @@ next value."
           (let ((sleep-time (if next-time
                                 (- next-time (current-time))
                                 2000000000)))
-            (when (and
-                   (> sleep-time 0)
-                   (not (null? (catch 'system-error
-                                 (λ ()
-                                   (car (select fd-list '() '() sleep-time)))
-                                 (λ (key . args)
-                                   (let ((err (car (last args))))
-                                     (cond ((member err (list EINTR EAGAIN))
-                                            (child-cleanup)
-                                            '())
-                                           (else
-                                            (apply throw key args)))))))))
-              (break))
+            (when (> sleep-time 0)
+              (match (select* fd-list '() '() sleep-time)
+                ((() () ())
+                 ;; 'select' returned an empty set, perhaps because it got
+                 ;; EINTR or EAGAIN.  It's a good time to wait for child
+                 ;; processes.
+                 (child-cleanup))
+                (((lst ...) () ())
+                 ;; There's some activity so leave the loop.
+                 (break))))
+
             (for-each run-job next-jobs-lst)
             (child-cleanup)
             (loop))))))))
