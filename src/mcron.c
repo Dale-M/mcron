@@ -19,6 +19,7 @@
 
 #include "utils.h"
 #include <argp.h>
+#include <string.h>
 
 /* Forward declarations.  */
 static void inner_main (void *closure, int argc, char *argv[]);

@@ -18,6 +18,7 @@
 
 #include "utils.h"
 #include <stdbool.h>
+#include <stdio.h>
 
 void
 wrap_env_path (const char *envar, const char *dir)
