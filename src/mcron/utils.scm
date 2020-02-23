@@ -56,7 +56,7 @@ and exit with its error code."
          (short-name (cadr (string-split name #\space)))
          (version    config-package-version))
     (simple-format #t "~a (~a) ~a
-Copyright (C) 2018 the ~a authors.
+Copyright (C) 2020 the ~a authors.
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.\n"
