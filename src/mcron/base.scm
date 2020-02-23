@@ -27,6 +27,7 @@
 
 (define-module (mcron base)
   #:use-module (ice-9 match)
+  #:use-module (ice-9 control)
   #:use-module (mcron environment)
   #:use-module (mcron utils)
   #:use-module (srfi srfi-1)
@@ -224,25 +225,24 @@ next value."
                '(() () ())
                (apply throw args)))))))
 
-  (call-with-current-continuation
-   (lambda (break)
-     (let loop ()
-       (match (find-next-jobs #:schedule schedule)
-         ((next-time . next-jobs-lst)
-          (let ((sleep-time (if next-time
-                                (- next-time (current-time))
-                                2000000000)))
-            (when (> sleep-time 0)
-              (match (select* fd-list '() '() sleep-time)
-                ((() () ())
-                 ;; 'select' returned an empty set, perhaps because it got
-                 ;; EINTR or EAGAIN.  It's a good time to wait for child
-                 ;; processes.
-                 (child-cleanup))
-                (((lst ...) () ())
-                 ;; There's some activity so leave the loop.
-                 (break))))
+  (let/ec break
+    (let loop ()
+      (match (find-next-jobs #:schedule schedule)
+        ((next-time . next-jobs-lst)
+         (let ((sleep-time (if next-time
+                               (- next-time (current-time))
+                               2000000000)))
+           (when (> sleep-time 0)
+             (match (select* fd-list '() '() sleep-time)
+               ((() () ())
+                ;; 'select' returned an empty set, perhaps because it got
+                ;; EINTR or EAGAIN.  It's a good time to wait for child
+                ;; processes.
+                (child-cleanup))
+               (((lst ...) () ())
+                ;; There's some activity so leave the loop.
+                (break))))
 
-            (for-each run-job next-jobs-lst)
-            (child-cleanup)
-            (loop))))))))
+           (for-each run-job next-jobs-lst)
+           (child-cleanup)
+           (loop)))))))
