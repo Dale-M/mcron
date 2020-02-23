@@ -34,8 +34,8 @@ AM_PROG_CC_C_O
 AC_PROG_RANLIB
 AM_PROG_AR
 
-# Check for Guile 2.x. development files
-GUILE_PKG([2.2 2.0])
+# Check for Guile development files.
+GUILE_PKG([3.0 2.2 2.0])
 
 # Set Guile flags without using GUILE_FLAGS which is requiring the unused
 # 'config.rpath' script.
