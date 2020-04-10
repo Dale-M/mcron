@@ -158,10 +158,10 @@ example, take the system load into consideration.
 Turns out to be easy to provide complete backwards compatibility with
 Vixie cron.
 @item
-Each user looks after his own files in his own directory.  He can use
+Each user looks after their own files in their own directory.  They can use
 more than one to break up complicated cron specifications.
 @item
-Each user can run his own daemon.  This removes the need for suid
+Each user can run their own daemon.  This removes the need for suid
 programs to manipulate the crontabs, and eliminates many security
 concerns that surround all existing cron programs.
 @item
@@ -516,7 +516,7 @@ second-to-last day of every month.
 @emph{NOTE} that this section is definitive.  If there is a difference in
 behaviour between the mcron program and this part of the manual, then
 there is a bug in the program.  This section is also copied verbatim
-from Paul Vixie's documentation for his cron program, and his
+from Paul Vixie's documentation for their cron program, and their
 copyright notice is duly reproduced below.
 
 There are three problems with this specification.
@@ -815,7 +815,7 @@ place in the part which implements the mcron personality.
 @cindex mcron arguments
 @cindex command line, mcron
 @cindex mcron command line
-Mcron should be run by the user who wants to schedule his jobs.  It
+Mcron should be run by the user who wants to schedule their jobs.  It
 may be made a background job using the facilities of the shell.  The
 basic command is @code{mcron [OPTION ...] [file ...]}  which has the
 effect of reading all the configuration files specified (subject to
@@ -1026,7 +1026,7 @@ Delete the user's crontab file, and exit.
 @item -e
 @item --edit
 Using the editor specified in the user's VISUAL or EDITOR environment
-variables, allow the user to edit his crontab.  Once the user exits the
+variables, allow the user to edit their crontab.  Once the user exits the
 editor, the crontab is checked for parseability, and if it is okay
 then it is installed as the user's new crontab and the daemon is
 notified that a change has taken place, so that the new file will
@@ -1231,7 +1231,7 @@ the mcron base.
 
 @deffn{Scheme procedure} remove-user-jobs user @
   [#:schedule @var{%global-schedule}]
-The argument @var{user} should be a string naming a user (his
+The argument @var{user} should be a string naming a user (their
 login name), or an integer UID, or an object representing the user's passwd
 entry.  All jobs on the current job list that are scheduled to be run
 under this personality are removed from the job list.
