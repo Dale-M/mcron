@@ -20,7 +20,7 @@
 # along with GNU Mcron.  If not, see <http://www.gnu.org/licenses/>.
 
 AC_PREREQ(2.61)
-AC_INIT([GNU Mcron], [1.1.3], [bug-mcron@gnu.org])
+AC_INIT([GNU Mcron], [1.1.4], [bug-mcron@gnu.org])
 AC_CONFIG_SRCDIR([src/mcron.c])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_REQUIRE_AUX_FILE([test-driver.scm])

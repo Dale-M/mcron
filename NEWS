@@ -1,5 +1,15 @@
 GNU Mcron NEWS                                    -*- outline -*-
 
+* Noteworthy changes in release 1.1.4 (2020-04-12) [stable]
+
+** Improvements
+  Added missing #include directives
+  Support Guile 3.0
+  Call 'child-cleanup' when 'select' returns an empty set
+  Avoid 'call-with-current-continuation'
+  Date changes for Copyrights changed for 2020
+  Email updates in documentation
+
 * Noteworthy changes in release 1.1.3 (2019-11-17) [stable]
 
 ** Improvements
