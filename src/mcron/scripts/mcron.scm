@@ -19,6 +19,7 @@
 
 (define-module (mcron scripts mcron)
   #:use-module (ice-9 ftw)
+  #:use-module (ice-9 rdelim)
   #:use-module (mcron base)
   #:use-module (mcron config)
   #:use-module (mcron job-specifier)    ;for user/system files
@@ -36,9 +37,11 @@ silently ignored."
       (cond ((string=? "-" file-name)
              (if (string=? input "vixie")
                  (read-vixie-port (current-input-port))
-                 (eval-string (read-string))))
+                      (eval-string (read-string)
+                                   (resolve-module '(mcron job-specifier)))))
             ((or guile-syntax? (regexp-exec guile-regexp file-name))
-             (load file-name))
+                  (eval-string (read-delimited "" (open-input-file file-name))
+                               (resolve-module '(mcron job-specifier))))
             ((regexp-exec vixie-regexp file-name)
              (read-vixie-file file-name))))))
 
