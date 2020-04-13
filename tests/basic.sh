@@ -27,6 +27,9 @@ cat > cron/foo.guile <<EOF
 (job '(next-second) '(display "foo\n"))
 EOF
 
+mcron --schedule=1 cron/foo.guile > "output$$"
+grep -e "foo" "output$$" || fail_ "'foo.guile' job is not scheduled"
+
 mcron --schedule=1 > "output$$"
 grep -e "foo" "output$$" || fail_ "'foo.guile' job is not scheduled"
 
