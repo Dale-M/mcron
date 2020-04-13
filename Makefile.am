@@ -21,40 +21,18 @@
 ## Programs.  ##
 ## ---------- ##
 
-bin_PROGRAMS = bin/mcron
+bin_SCRIPTS = bin/mcron
+noinst_SCRIPTS = 
 
 if MULTI_USER
-bin_PROGRAMS += bin/crontab
-sbin_PROGRAMS = bin/cron
+bin_SCRIPTS += bin/crontab
+sbin_SCRIPTS = bin/cron
 else
-noinst_PROGRAMS = bin/cron bin/crontab
+noinst_SCRIPTS += bin/cron bin/crontab
 endif
 
-AM_CPPFLAGS = \
-  -DPACKAGE_LOAD_PATH=\"$(guilesitedir)\" \
-  -DPACKAGE_LOAD_COMPILED_PATH=\"$(guilesitegodir)\" \
-  -D_GNU_SOURCE
-
-AM_CFLAGS = @GUILE_CFLAGS@
-LDADD = @GUILE_LIBS@ src/libmcron.a
-
-bin_mcron_SOURCES = src/mcron.c
-bin_mcron_DEPENDENCIES = $(compiled_modules) $(noinst_LIBRARIES)
-
-bin_cron_SOURCES = src/cron.c
-bin_cron_DEPENDENCIES = $(compiled_modules) $(noinst_LIBRARIES)
-
-bin_crontab_SOURCES = src/crontab.c
-bin_crontab_DEPENDENCIES = $(compiled_modules) $(noinst_LIBRARIES)
-
 # wrapper to be used in the build environment and for running tests.
-noinst_SCRIPTS = pre-inst-env
-
-# local library.
-noinst_LIBRARIES = src/libmcron.a
-src_libmcron_a_SOURCES = \
-  src/utils.c \
-  src/utils.h
+noinst_SCRIPTS += pre-inst-env
 
 ## --------------- ##
 ## Guile modules.  ##
@@ -97,7 +75,7 @@ compiled_modules = \
   $(pkgmodulego_DATA) \
   $(pkgscriptgo_DATA)
 
-CLEANFILES = $(compiled_modules)
+CLEANFILES = $(compiled_modules) bin/crontab bin/cron bin/mcron
 DISTCLEANFILES = src/mcron/config.scm
 
 # Unset 'GUILE_LOAD_COMPILED_PATH' altogether while compiling.  Otherwise, if
@@ -119,6 +97,24 @@ DISTCLEANFILES = src/mcron/config.scm
 	  --load-path="$(srcdir)/src" \
 	  --warn=format --warn=unbound-variable --warn=arity-mismatch \
 	  --target="$(host)" --output="$@" "$<" $(devnull_verbose)
+
+
+bin/% : src/%.in Makefile
+	-@sed	-e 's,%PREFIX%,${prefix},g'				\
+		-e 's,%modsrcdir%,${guilesitedir},g'			\
+		-e 's,%modbuilddir%,${guilesitegodir},g'		\
+		-e 's,%localstatedir%,${localstatedir},g'		\
+		-e 's,%pkglibdir%,${pkglibdir},g'			\
+		-e 's,%sysconfdir%,${sysconfdir},g'			\
+		-e 's,%localedir%,${localedir},g'			\
+		-e 's,%VERSION%,@VERSION@,g'				\
+		-e 's,%PACKAGE_BUGREPORT%,@PACKAGE_BUGREPORT@,g'	\
+		-e 's,%PACKAGE_NAME%,@PACKAGE_NAME@,g'			\
+		-e 's,%PACKAGE_URL%,@PACKAGE_URL@,g'			\
+		-e 's,%GUILE%,$(GUILE),g'				\
+	   $< > $@;
+	-@chmod a+x $@
+
 
 ## ------------ ##
 ## Test suite.  ##
@@ -161,25 +157,28 @@ EXTRA_DIST = \
 # Sed command for Transforming program names.
 transform_exe = s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/
 
-if MULTI_USER
 install-exec-hook:
-	tcrontab=`echo crontab$(EXEEXT) | sed '$(transform_exe)'`; \
+if MULTI_USER
+	tcrontab=`echo crontab | sed '$(transform_exe)'`; \
 	chmod u+s $(DESTDIR)$(bindir)/$${tcrontab}
+	tcron=`echo cron | sed '$(transform_exe)'`; \
+	chmod u+s $(DESTDIR)$(sbindir)/$${tcron}
 endif
+	tmcron=`echo mcron | sed '$(transform_exe)'`;
 
 installcheck-local:
 ## Check that only expected programs are installed and configured
-	tmcron=`echo mcron$(EXEEXT) | sed '$(transform_exe)'`; \
+	tmcron=`echo mcron | sed '$(transform_exe)'`; \
 	test -e $(DESTDIR)$(bindir)/$${tmcron}
 if MULTI_USER
-	tcrontab=`echo crontab$(EXEEXT) | sed '$(transform_exe)'`; \
+	tcrontab=`echo crontab | sed '$(transform_exe)'`; \
 	test -u $(DESTDIR)$(bindir)/$${tcrontab}
-	tcron=`echo cron$(EXEEXT) | sed '$(transform_exe)'`; \
+	tcron=`echo cron | sed '$(transform_exe)'`; \
 	test -e $(DESTDIR)$(sbindir)/$${tcron}
 else !MULTI_USER
-	tcrontab=`echo crontab$(EXEEXT) | sed '$(transform_exe)'`; \
+	tcrontab=`echo crontab | sed '$(transform_exe)'`; \
 	test ! -u $(DESTDIR)$(bindir)/$${tcrontab}
-	tcron=`echo cron$(EXEEXT) | sed '$(transform_exe)'`; \
+	tcron=`echo cron | sed '$(transform_exe)'`; \
 	test ! -f $(DESTDIR)$(sbindir)/$${tcron}
 endif !MULTI_USER
 
@@ -220,10 +219,10 @@ gen_man = \
   esac
 
 $(srcdir)/doc/mcron.1: src/mcron/scripts/mcron.scm bin/mcron
-	-@prog="mcron"; man_section=1; $(gen_man)
+	-@prog="bin/mcron"; man_section=1; $(gen_man)
 
 $(srcdir)/doc/crontab.1: src/mcron/scripts/crontab.scm bin/crontab
-	-@prog="crontab"; man_section=1; $(gen_man)
+	-@prog="bin/crontab"; man_section=1;	 $(gen_man)
 
 $(srcdir)/doc/cron.8: src/mcron/scripts/cron.scm bin/cron
 	-@prog="cron"; man_section=8; $(gen_man)

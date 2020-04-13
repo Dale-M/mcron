@@ -1,0 +1,7 @@
+#!%GUILE% --no-auto-compile
+-*- scheme -*-
+!#
+
+(set! %load-path (cons "%modsrcdir%" %load-path))
+(set! %load-compiled-path (cons "%modbuilddir%" %load-compiled-path))
+((@ (mcron scripts crontab) main))

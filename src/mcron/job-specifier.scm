@@ -202,14 +202,14 @@ go into the list.  For example, (range 1 6 2) returns '(1 3 5)."
 ;; The job function, available to configuration files for adding a job rule to
 ;; the system.
 ;;
-;; Here we must 'normalize' the next-time-function so that it is always a lambda
-;; function which takes one argument (the last time the job ran) and returns a
-;; single value (the next time the job should run). If the input value is a
-;; string this is parsed as a Vixie-style time specification, and if it is a
-;; list then we arrange to eval it (but note that such lists are expected to
-;; ignore the function parameter - the last run time is always read from the
-;; %CURRENT-ACTION-TIME parameter object). A similar normalization is applied to
-;; the action.
+;; Here we must 'normalize' the next-time-function so that it is always a
+;; lambda function which takes one argument (the last time the job ran) and
+;; returns a single value (the next time the job should run). If the input
+;; value is a string this is parsed as a Vixie-style time specification, and
+;; if it is a list then we arrange to eval it (but note that such lists are
+;; expected to ignore the function parameter - the last run time is always
+;; read from the %CURRENT-ACTION-TIME parameter object). A similar
+;; normalization is applied to the action.
 ;;
 ;; Here we also compute the first time that the job is supposed to run, by
 ;; finding the next legitimate time from the current configuration time (set
@@ -229,7 +229,8 @@ go into the list.  For example, (range 1 6 2) returns '(1 3 5)."
          (cond ((procedure? time-proc) time-proc)
                ((string? time-proc)    (parse-vixie-time time-proc))
                ((list? time-proc)      (lambda (current-time)
-                                         (primitive-eval time-proc)))
+                                         (eval time-proc
+                               (resolve-module '(mcron job-specifier)))))
                (else
                 (throw 'mcron-error 3
                        "job: invalid first argument (next-time-function; "

@@ -17,6 +17,7 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with GNU Mcron.  If not, see <http://www.gnu.org/licenses/>.
 
+
 (define-module (mcron scripts cron)
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 ftw)
@@ -27,6 +28,8 @@
   #:use-module (mcron vixie-specification)
   #:use-module (srfi srfi-2)
   #:export (main))
+
+
 
 (define (show-help)
   (display "Usage: cron [OPTIONS]
@@ -41,12 +44,15 @@ reading all the information in the users' crontabs and in /etc/crontab.
   (newline)
   (show-package-information))
 
-(define %options
-  `((schedule (single-char #\s) (value #t)
-              (predicate ,(λ (str) (string->number str))))
-    (noetc    (single-char #\n) (value #f))
-    (version  (single-char #\v) (value #f))
-    (help     (single-char #\h) (value #f))))
+
+
+(define  %options  `((schedule (single-char #\s) (value #t)
+                               (predicate ,string->number))
+                     (noetc    (single-char #\n) (value #f))
+                     (version  (single-char #\v) (value #f))
+                     (help     (single-char #\h) (value #f))))
+
+
 
 (define (delete-run-file)
   "Remove the /var/run/cron.pid file so that crontab and other invocations of
@@ -59,6 +65,8 @@ received."
       (delete-file config-socket-file))
     noop)
   (quit))
+
+
 
 (define (cron-file-descriptors)
   "Establish a socket to listen for updates from a crontab program, and return
@@ -73,6 +81,8 @@ crontab.  This requires that command-type is 'cron."
     (λ (key . args)
       (delete-file config-pid-file)
       (mcron-error 1 "Cannot bind to UNIX socket " config-socket-file))))
+
+
 
 (define (process-files-in-system-directory)
   "Process all the files in the crontab directory.  When the job procedure is
@@ -103,9 +113,6 @@ operation.  The permissions on the /var/cron/tabs directory enforce this."
     (with-output-to-file config-pid-file noop))
   ;; Clear MAILTO so that outputs are sent to the various users.
   (setenv "MAILTO" #f)
-  ;; XXX: At compile time, this yields a "possibly unbound variable" warning,
-  ;; but this is OK since it is bound in the C wrapper.
-  (c-set-cron-signals)
   ;; Having defined all the necessary procedures for scanning various sets of
   ;; files, we perform the actual configuration of the program depending on
   ;; the personality we are running as. If it is mcron, we either scan the
@@ -138,42 +145,53 @@ option.\n")
   (let ((opts (getopt-long args %options)))
     (when config-debug
       (debug-enable 'backtrace))
-    (cond
-     ((option-ref opts 'help #f)
-      (show-help)
-      (exit 0))
-     ((option-ref opts 'version #f)
-      (show-version "cron")
-      (exit 0))
-     ((not (zero? (getuid)))
-      (mcron-error 16
-        "This program must be run by the root user (and should"
-        " have been installed as such)."))
-     ((access? config-pid-file F_OK)
-      (mcron-error 1
-        "A cron daemon is already running.\n  (If you are sure"
-        " this is not true, remove the file\n   "
-        config-pid-file ".)"))
-     (else
-      (%process-files (option-ref opts 'schedule #f)
-                      (option-ref opts 'noetc #f))
-      (cond ((option-ref opts 'schedule #f) ;display jobs schedule
-             => (λ (count)
-                  (display-schedule (max 1 (string->number count)))
-                  (exit 0)))
-            (else (case (primitive-fork) ;run the daemon
-                    ((0)
-                     (setsid)
-                     ;; we can now write the PID file.
-                     (with-output-to-file config-pid-file
-                       (λ () (display (getpid)) (newline))))
-                    (else (exit 0)))))
-      ;; Forever execute the 'run-job-loop', and when it drops out (can
-      ;; only be because a message has come in on the socket) we
-      ;; process the socket request before restarting the loop again.
-      (catch-mcron-error
-       (let ((fdes-list (cron-file-descriptors)))
-         (while #t
-           (run-job-loop fdes-list)
-           (unless (null? fdes-list)
-             (process-update-request fdes-list)))))))))
+    (cond  ((option-ref opts 'help #f)
+               (show-help)
+               (exit 0))
+           ((option-ref opts 'version #f)
+               (show-version "cron")
+               (exit 0))
+           ((not (zero? (getuid)))
+               (mcron-error 16
+                   "This program must be run by the root user (and should"
+                   " have been installed as such)."))
+           ((access? config-pid-file F_OK)
+               (mcron-error 1
+                   "A cron daemon is already running.\n  (If you are sure"
+                   " this is not true, remove the file\n   "
+                   config-pid-file ".)"))
+           (else
+               (%process-files (option-ref opts 'schedule #f)
+                               (option-ref opts 'noetc #f))
+               (cond ((option-ref opts 'schedule #f)
+                      => (λ (count)
+                           (display-schedule (max 1 (string->number count)))
+                           (exit 0)))))))
+
+  ;; Daemonize ourself.
+  (unless  (eq? 0 (primitive-fork))  (exit 0))
+  (setsid)
+
+  ;; Set up process signal handlers, as signals are the only way to terminate
+  ;; the daemon and we MUST be graceful in defeat.
+  (for-each   (λ (x)  (sigaction  x
+                          (λ (sig)  (catch #t
+                                           (λ ()
+                                             (delete-file config-pid-file)
+                                             (delete-file config-socket-file))
+                                           noop)
+                             (exit EXIT_FAILURE))))
+                '(SIGTERM SIGINT SIGQUIT SIGHUP))
+
+  ;; We can now write the PID file.
+  (with-output-to-file  config-pid-file
+                        (λ () (display (getpid)) (newline)))
+
+  ;; Forever execute the 'run-job-loop', and when it drops out (can
+  ;; only be because a message has come in on the socket) we
+  ;; process the socket request before restarting the loop again.
+  (catch-mcron-error
+   (let ((fdes-list (cron-file-descriptors)))
+     (while #t
+       (run-job-loop fdes-list)
+       (unless (null? fdes-list) (process-update-request fdes-list))))))

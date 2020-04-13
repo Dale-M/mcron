@@ -26,12 +26,12 @@ export SOURCE_DATE_EPOCH
 TZ=UTC0
 export TZ
 
-LC_ALL=C
-export LC_ALL
-
 # Use current working directory to store mcron files
 XDG_CONFIG_HOME=`pwd`
 export XDG_CONFIG_HOME
+
+LC_ALL=C
+export LC_ALL
 
 mkdir cron
 cat > cron/foo.guile <<EOF
@@ -73,10 +73,9 @@ Thu Jan  1 00:00:08 1970 +0000
 
 EOF
 
-mcron -s cron/foo.guile > output-A
-diff expected output-A \
+mcron -s cron/foo.guile > output
+diff expected output \
     || skip_ 'The -s option is not fully functional; 
-this will be fixed with a future version of GNU Guile and then 
-a future version of GNU Mcron.'
+this will be fixed with a future version of GNU Guile.'
 
 Exit 0

@@ -32,16 +32,16 @@
                 '(".git" "autom4te" "Makefile.in" ".go" ".log"
                   "stamp-vti" ".dirstamp"))
            (any (λ (str) (string-suffix? str file))
-                '("trs""configure" "Makefile" "config.status" "pre-inst-env"
-                  "aclocal.m4" "bin/cron" "bin/mcron" "bin/crontab" "config.cache"
-                  "guix.scm")))))
+                '("trs" "configure" "Makefile" "config.status" "pre-inst-env"
+                  "aclocal.m4" "bin/cron" "bin/mcron" "bin/crontab"
+                  "config.cache" "guix.scm")))))
 
 (define %srcdir
   (or (current-source-directory) "."))
 
 (package
   (inherit (specification->package "mcron"))
-  (version "1.1.4")
+  (version "1.1.4+")
   (source (local-file (dirname %srcdir) #:recursive? #t
                       #:select? keep-mcron-file?))
   (inputs
