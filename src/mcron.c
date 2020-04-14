@@ -110,8 +110,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
         SCM lst = SCM_EOL;
         int filec = state->argc - state->next;
         char **filev = state->argv + state->next;
+	int i;
 
-        for (int i = filec - 1; i >= 0; i--)
+        for (i = filec - 1; i >= 0; i--)
           lst = scm_cons (scm_from_locale_string (filev[i]), lst);
 
         assq_symbol_set_x (config, "files", lst);
