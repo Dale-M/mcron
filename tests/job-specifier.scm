@@ -56,36 +56,32 @@
 
 ;;; TODO: Find more meaningful date examples.
 
+(setenv "TZ" ":UTC")
+
 (test-equal "next-year"
-  (list 59989762800 1546293600)
-  (list (next-year '(1971))
+  (list 1893456000 1546300800)
+  (list (next-year '(130))   ;; This is the year 2030.
         (next-year-from 1522095469)))
 
 (test-equal "next-month"
-  (list 28854000 5094000)
-  (list (next-month '(11))
-        (next-month-from 101 '(0 2 4))))
+  5097600
+  (next-month-from 101 '(0 2 4)))
 
 (test-equal "next-day"
-  (list 2588400 342000)
-  (list (next-day '(31))
-        (next-day-from 4337 '(0 5 10))))
+  345600
+  (next-day-from 4337 '(0 5 10)))
 
 (test-equal "next-hour"
-  '(3600 82800 3600)
-  (list (next-hour)
-        (next-hour '(0))
-        (next-hour-from 3 '(0 1 2 3 4))))
+  3600
+  (next-hour-from 3 '(0 1 2 3 4)))
 
 (test-equal "next-minute"
-  '(240 60)
-  (list (next-minute '(4 9))
-        (next-minute-from 8)))
+  60
+  (next-minute-from 8))
 
 (test-equal "next-second"
-  '(52 15)
-  (list (next-second '(52 55))
-        (next-second-from 14)))
+  15
+  (next-second-from 14))
 
 ;;;
 ;;; Check 'configuration-user' manipulation

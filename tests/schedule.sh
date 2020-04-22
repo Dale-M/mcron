@@ -26,6 +26,9 @@ export SOURCE_DATE_EPOCH
 TZ=UTC0
 export TZ
 
+LC_ALL=C
+export LC_ALL
+
 # Use current working directory to store mcron files
 XDG_CONFIG_HOME=`pwd`
 export XDG_CONFIG_HOME

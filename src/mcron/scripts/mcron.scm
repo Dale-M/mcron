@@ -19,12 +19,39 @@
 
 (define-module (mcron scripts mcron)
   #:use-module (ice-9 ftw)
+  #:use-module (ice-9 getopt-long)
+  #:use-module (ice-9 local-eval)
+  #:use-module (ice-9 rdelim)
   #:use-module (mcron base)
   #:use-module (mcron config)
-  #:use-module (mcron job-specifier)    ;for user/system files
+  #:use-module (mcron job-specifier)    ; For user/system files.
   #:use-module (mcron utils)
   #:use-module (mcron vixie-specification)
   #:export (main))
+
+
+
+(define (show-help)
+  (display "Usage: mcron [OPTION...] [FILE...]
+Run an mcron process according to the specifications in the FILE... (`-' for
+standard input), or use all the files in ~/.config/cron (or the deprecated
+~/.cron) with .guile or .vixie extensions.
+
+  -d, --daemon               Run as a daemon process
+  -i, --stdin=(guile|vixie)  Format of data passed as standard input or file
+                             arguments (default guile)
+  -s, --schedule[=N]         Display the next N (or 8) jobs that will be run
+  -?, --help                 Give this help list
+  -V, --version              Print program version
+
+Mandatory or optional arguments to long options are also mandatory or optional
+for any corresponding short options.
+
+Report bugs to bug-mcron@gnu.org.
+
+"))
+
+
 
 (define process-user-file
   (let ((guile-regexp (make-regexp "\\.gui(le)?$"))
@@ -34,13 +61,17 @@
 force guile syntax usage.  If FILE-NAME format is not recognized, it is
 silently ignored."
       (cond ((string=? "-" file-name)
-             (if (string=? input "vixie")
-                 (read-vixie-port (current-input-port))
-                 (eval-string (read-string))))
+                  (if (string=? input "vixie")
+                      (read-vixie-port (current-input-port))
+                      (eval-string (read-string)
+                                   (resolve-module '(mcron job-specifier)))))
             ((or guile-syntax? (regexp-exec guile-regexp file-name))
-             (load file-name))
+                  (eval-string (read-delimited "" (open-input-file file-name))
+                               (resolve-module '(mcron job-specifier))))
             ((regexp-exec vixie-regexp file-name)
-             (read-vixie-file file-name))))))
+                  (read-vixie-file file-name))))))
+
+
 
 (define (process-files-in-user-directory input-type)
   "Process files in $XDG_CONFIG_HOME/cron and/or ~/.cron directories (if
@@ -64,6 +95,8 @@ $XDG_CONFIG_HOME is not defined uses ~/.config/cron instead)."
       (mcron-error 13
         "Cannot read files in your ~/.config/cron (or ~/.cron) directory."))))
 
+
+
 (define (%process-files files input-type)
   (if (null? files)
       (process-files-in-user-directory input-type)
@@ -74,30 +107,47 @@ $XDG_CONFIG_HOME is not defined uses ~/.config/cron instead)."
 ;;; Entry point.
 ;;;
 
-(define* (main #:optional (opts '()))
-  (when config-debug
-    (debug-enable 'backtrace))
+(define (main)
 
-  (%process-files (or (assq-ref opts 'files) '())
-                  (if (assq-ref opts 'vixie) "vixie" "guile"))
+  (let ((options
+            (getopt-long
+                (command-line)
+                `((daemon   (single-char #\d) (value #f))
+                  (stdin    (single-char #\i) (value #t)
+                            (predicate ,(λ (in) (or (string=? in "guile")
+                                                    (string=? in "vixie")))))
+                  (schedule (single-char #\s) (value optional)
+                            (predicate ,string->number))
+                  (help     (single-char #\?))
+                  (version  (single-char #\V))))))
 
-  (cond ((assq-ref opts 'schedule) ;display jobs schedule
-         => (λ (count)
-              (display-schedule (max 1 count))
-              (exit 0)))
-        ((assq-ref opts 'daemon) ;run mcron as a daemon
-         (case (primitive-fork)
-           ((0)  (setsid))
-           (else (exit 0)))))
+    (cond ((option-ref options 'help #f)      (show-help)             (exit 0))
+          ((option-ref options 'version #f)   (show-version "mcron")  (exit 0)))
+  
+    (when config-debug
+      (debug-enable 'backtrace))
 
-  ;; Forever execute the 'run-job-loop', and when it drops out (can
-  ;; only be because a message has come in on the socket) we process
-  ;; the socket request before restarting the loop again.
-  (catch-mcron-error
-   (let ((fdes-list '()))
-     (while #t
-       (run-job-loop fdes-list)
-       ;; we can also drop out of run-job-loop because of a SIGCHLD,
-       ;; so must test FDES-LIST.
-       (unless (null? fdes-list)
-         (process-update-request fdes-list))))))
+    (%process-files (option-ref options '() '())
+                    (option-ref options 'stdin "guile"))
+
+    (cond ((option-ref options 'schedule #f)
+               => (λ (count)
+                     (let ((c (if (string? count) (string->number count) 8)))
+                       (display-schedule  (if (exact-integer? c) (max 1 c) 8)))
+                     (exit 0)))
+          ((option-ref options 'daemon #f)
+               (case (primitive-fork)
+                     ((0)  (setsid))
+                     (else (exit 0)))))
+
+    ;; Forever execute the 'run-job-loop', and when it drops out (can only be
+    ;; because a message has come in on the socket) we process the socket
+    ;; request before restarting the loop again.
+    (catch-mcron-error
+     (let ((fdes-list '()))
+       (while #t
+         (run-job-loop fdes-list)
+         ;; we can also drop out of run-job-loop because of a SIGCHLD,
+         ;; so must test FDES-LIST.
+         (unless (null? fdes-list)
+           (process-update-request fdes-list)))))))

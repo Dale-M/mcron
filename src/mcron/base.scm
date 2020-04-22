@@ -139,7 +139,7 @@ entries that are to run at this time.  When SCHEDULE is empty next time is
 (define* (display-schedule count #:optional (port (current-output-port))
                            #:key (schedule %global-schedule))
   "Display on PORT a textual list of the next COUNT jobs to run.  This
-simulates the run of the job loop to display the resquested information.
+simulates the run of the job loop to display the requested information.
 Since calling this procedure has the effect of mutating the job timings, the
 program must exit after.  Otherwise the internal data state will be left
 unusable."

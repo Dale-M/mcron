@@ -25,13 +25,13 @@
   #:use-module (mcron vixie-specification)
   #:export (main))
 
-(define* (show-help)
+(define (show-help)
   (display "Usage: crontab [-u user] file
        crontab [-u user] { -e | -l | -r }
                (default operation is replace, per 1003.2)
        -e      (edit user's crontab)
        -l      (list user's crontab)
-       -r      (delete user's crontab")
+       -r      (delete user's crontab)")
   (newline)
   (show-package-information))
 

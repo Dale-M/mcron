@@ -1,5 +1,5 @@
-# basic.sh -- basic tests for mcron
-# Copyright © 2017 Mathieu Lirzin <mthl@gnu.org>
+# schedule-2.sh -- Check mcron schedule output
+# Copyright © 2020  Dale Mellor <mcron-lsfnyl@rdmp.org>
 #
 # This file is part of GNU Mcron.
 #
@@ -18,19 +18,64 @@
 
 source "${srcdir}/tests/init.sh"
 
+# Use UTC and SOURCE_DATE_EPOCH to get reproducible result.
+
+SOURCE_DATE_EPOCH=1
+export SOURCE_DATE_EPOCH
+
+TZ=UTC0
+export TZ
+
 # Use current working directory to store mcron files
 XDG_CONFIG_HOME=`pwd`
 export XDG_CONFIG_HOME
+
+LC_ALL=C
+export LC_ALL
 
 mkdir cron
 cat > cron/foo.guile <<EOF
 (job '(next-second) '(display "foo\n"))
 EOF
 
-mcron --schedule=1 cron/foo.guile > "output$$"
-grep -e "foo" "output$$" || fail_ "'foo.guile' job is not scheduled"
+cat > expected <<EOF
+Thu Jan  1 00:00:01 1970 +0000
+(display foo
+)
 
-mcron --schedule=1 > "output$$"
-grep -e "foo" "output$$" || fail_ "'foo.guile' job is not scheduled"
+Thu Jan  1 00:00:02 1970 +0000
+(display foo
+)
+
+Thu Jan  1 00:00:03 1970 +0000
+(display foo
+)
+
+Thu Jan  1 00:00:04 1970 +0000
+(display foo
+)
+
+Thu Jan  1 00:00:05 1970 +0000
+(display foo
+)
+
+Thu Jan  1 00:00:06 1970 +0000
+(display foo
+)
+
+Thu Jan  1 00:00:07 1970 +0000
+(display foo
+)
+
+Thu Jan  1 00:00:08 1970 +0000
+(display foo
+)
+
+EOF
+
+mcron -s cron/foo.guile > output
+diff expected output \
+    || skip_ 'The -s option is not fully functional; 
+this will be fixed with a future version of GNU Guile.'
 
 Exit 0
