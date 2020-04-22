@@ -1,5 +1,14 @@
 GNU Mcron NEWS                                    -*- outline -*-
 
+* Noteworthy changes in release 1.2.0 (2020-04-22) [stable]
+
+** Improvements
+  C code removed, mcron becomes 100% Guile.
+  Make doc/mcron.texi gender neutral.
+  Have src/mcron/scripts/mcron.scm (process-user-file): use read and eval
+    instead of load.
+  New tests added for extra checks.
+
 * Noteworthy changes in release 1.1.4 (2020-04-12) [stable]
 
 ** Improvements
