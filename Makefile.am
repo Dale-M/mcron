@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in.
 # Copyright © 2003 Dale Mellor <dale_mellor@users.sourceforge.net>
-# Copyright © 2015, 2016, 2017, 2018 Mathieu Lirzin <mthl@gnu.org>
+# Copyright © 2015, 2016, 2017, 2018, 2020 Mathieu Lirzin <mthl@gnu.org>
 #
 # This file is part of GNU Mcron.
 #
@@ -100,7 +100,8 @@ DISTCLEANFILES = src/mcron/config.scm
 
 
 bin/% : src/%.in Makefile
-	-@sed	-e 's,%PREFIX%,${prefix},g'				\
+	$(AM_V_GEN)$(MKDIR_P) bin ; \
+	  sed	-e 's,%PREFIX%,${prefix},g'				\
 		-e 's,%modsrcdir%,${guilesitedir},g'			\
 		-e 's,%modbuilddir%,${guilesitegodir},g'		\
 		-e 's,%localstatedir%,${localstatedir},g'		\
@@ -112,8 +113,8 @@ bin/% : src/%.in Makefile
 		-e 's,%PACKAGE_NAME%,@PACKAGE_NAME@,g'			\
 		-e 's,%PACKAGE_URL%,@PACKAGE_URL@,g'			\
 		-e 's,%GUILE%,$(GUILE),g'				\
-	   $< > $@;
-	-@chmod a+x $@
+	   $< > $@ ; \
+	  chmod a+x $@
 
 
 ## ------------ ##
