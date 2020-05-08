@@ -2,7 +2,9 @@
 -*- scheme -*-
 !#
 
-(set! %load-path (cons "%modsrcdir%" %load-path))
-(set! %load-compiled-path (cons "%modbuilddir%" %load-compiled-path))
-(use-modules  (mcron scripts mcron))
+(unless (getenv "MCRON_UNINSTALLED")
+  (set! %load-path (cons "%modsrcdir%" %load-path))
+  (set! %load-compiled-path (cons "%modbuilddir%" %load-compiled-path)))
+
+(use-modules (mcron scripts mcron))
 (main)
