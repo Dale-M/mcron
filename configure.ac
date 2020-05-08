@@ -1,7 +1,7 @@
 ## Process this file with autoconf to produce a configure script.
 #
 # Copyright © 2003, 2005, 2012, 2014 Dale Mellor <mcron-lsfnyl@rdmp.org>
-# Copyright © 2015, 2016, 2017, 2018 Mathieu Lirzin <mthl@gnu.org>
+# Copyright © 2015, 2016, 2017, 2018, 2020 Mathieu Lirzin <mthl@gnu.org>
 # Copyright © 2018 宋文武 <iyzsong@member.fsf.org>
 #
 # This file is part of GNU Mcron.
@@ -32,6 +32,13 @@ AM_INIT_AUTOMAKE([1.11 gnu silent-rules subdir-objects color-tests
 AM_SILENT_RULES([yes])		# Enables silent rules by default.
 
 AC_CANONICAL_HOST
+
+dnl We require pkg.m4 (from pkg-config) and guile.m4 (from Guile.)
+dnl Make sure they are available when generating the configure script.
+m4_pattern_forbid([^PKG_PROG])
+m4_pattern_forbid([^PKG_CHECK])
+m4_pattern_forbid([^GUILE_P])
+m4_pattern_allow([^GUILE_PKG_ERRORS])
 
 # Check for Guile development files.
 GUILE_PKG([3.0 2.2 2.0])
