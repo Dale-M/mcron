@@ -43,12 +43,7 @@ m4_pattern_allow([^GUILE_PKG_ERRORS])
 # Check for Guile development files.
 GUILE_PKG([3.0 2.2 2.0])
 
-# Set Guile flags without using GUILE_FLAGS which is requiring the unused
-# 'config.rpath' script.
-PKG_CHECK_MODULES(GUILE, [guile-$GUILE_EFFECTIVE_VERSION])
-
 # Checks for programs.
-
 GUILE_PROGS
 
 AM_MISSING_PROG(HELP2MAN, help2man, $missing_dir)
