@@ -148,6 +148,9 @@ EXTRA_DIST = \
   bootstrap \
   build-aux/guix.scm \
   HACKING \
+  src/cron.in \
+  src/crontab.in \
+  src/mcron.in \
   tests/init.sh \
   $(TESTS)
 
