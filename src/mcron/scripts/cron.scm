@@ -20,7 +20,6 @@
 
 
 (define-module (mcron scripts cron)
-  #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 ftw)
   #:use-module (mcron base)
   #:use-module (mcron config)
@@ -29,33 +28,6 @@
   #:use-module (mcron vixie-specification)
   #:use-module (srfi srfi-2)
   #:export (main))
-
-
-
-(define (show-help)
-  (display "Usage: cron [OPTIONS]
-Unless an option is specified, run a cron daemon as a detached process,
-reading all the information in the users' crontabs and in /etc/crontab.
-
-  -v, --version             Display version
-  -h, --help                Display this help message
-  -sN, --schedule[=]N       Display the next N jobs that will be run by cron
-  -n, --noetc               Do not check /etc/crontab for updates (HIGHLY
-                              RECOMMENDED).
-  --log-format=FMT          (ice-9 format) format string for log messages
-  --date-format=FMT         (srfi srfi-19) date format string for log messages")
-  (newline)
-  (show-package-information))
-
-
-
-(define  %options  `((schedule (single-char #\s) (value #t)
-                               (predicate ,string->number))
-                     (noetc    (single-char #\n) (value #f))
-                     (log-format  (value #t) (predicate ,validate-log-format))
-                     (date-format (value #t) (predicate ,validate-date-format))
-                     (version  (single-char #\v) (value #f))
-                     (help     (single-char #\h) (value #f))))
 
 
 
@@ -112,10 +84,7 @@ operation.  The permissions on the /var/cron/tabs directory enforce this."
       (mcron-error 4
         "You do not have permission to access the system crontabs."))))
 
-(define (%process-files schedule? noetc?)
-  ;; XXX: What is this supposed to do?
-  (when schedule?
-    (with-output-to-file config-pid-file noop))
+(define (%process-files noetc?)
   ;; Clear MAILTO so that outputs are sent to the various users.
   (setenv "MAILTO" #f)
   ;; Having defined all the necessary procedures for scanning various sets of
@@ -146,35 +115,24 @@ option.\n")
 ;;; Entry point.
 ;;;
 
-(define* (main #:optional (args (command-line)))
+(define (main --schedule --noetc)
+    (when  config-debug  (debug-enable 'backtrace))
 
-  (define opts (getopt-long args %options))
-
-  (when config-debug
-    (debug-enable 'backtrace))
-
-  (cond  ((option-ref opts 'help #f)
-          (show-help)
-          (exit 0))
-         ((option-ref opts 'version #f)
-          (show-version "cron")
-          (exit 0))
-         ((not (zero? (getuid)))
-          (mcron-error 16
-            "This program must be run by the root user (and should"
-            " have been installed as such)."))
-         ((access? config-pid-file F_OK)
-          (mcron-error 1
-            "A cron daemon is already running.\n  (If you are sure"
-            " this is not true, remove the file\n   "
-            config-pid-file ".)"))
-         (else
-          (%process-files (option-ref opts 'schedule #f)
-                          (option-ref opts 'noetc #f))
-          (cond ((option-ref opts 'schedule #f)
-                 => (λ (count)
-                      (display-schedule (max 1 (string->number count)))
-                      (exit 0))))))
+    (cond  ((not (zero? (getuid)))
+               (mcron-error 16
+                   "This program must be run by the root user (and should"
+                   " have been installed as such)."))
+           ((access? config-pid-file F_OK)
+               (mcron-error 1
+                   "A cron daemon is already running.\n  (If you are sure"
+                   " this is not true, remove the file\n   "
+                   config-pid-file ".)"))
+           (else
+               (cond (--schedule
+                      => (λ (count)
+                           (display-schedule (max 1 (string->number count)))
+                           (exit 0))))
+               (%process-files --noetc)))
 
   ;; Daemonize ourself.
   (unless  (eq? 0 (primitive-fork))  (exit 0))

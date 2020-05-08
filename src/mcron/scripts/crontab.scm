@@ -1,5 +1,5 @@
 ;;;; crontab -- edit user's cron tabs
-;;; Copyright © 2003, 2004 Dale Mellor <dale_mellor@users.sourceforge.net>
+;;; Copyright © 2003, 2004 Dale Mellor <>
 ;;; Copyright © 2016 Mathieu Lirzin <mthl@gnu.org>
 ;;;
 ;;; This file is part of GNU Mcron.
@@ -18,30 +18,11 @@
 ;;; along with GNU Mcron.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (mcron scripts crontab)
-  #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 rdelim)
   #:use-module (mcron config)
   #:use-module (mcron utils)
   #:use-module (mcron vixie-specification)
   #:export (main))
-
-(define (show-help)
-  (display "Usage: crontab [-u user] file
-       crontab [-u user] { -e | -l | -r }
-               (default operation is replace, per 1003.2)
-       -e      (edit user's crontab)
-       -l      (list user's crontab)
-       -r      (delete user's crontab)")
-  (newline)
-  (show-package-information))
-
-(define %options
-  '((user     (single-char #\u) (value #t))
-    (edit     (single-char #\e) (value #f))
-    (list     (single-char #\l) (value #f))
-    (remove   (single-char #\r) (value #f))
-    (version  (single-char #\v) (value #f))
-    (help     (single-char #\h) (value #f))))
 
 (define (hit-server user-name)
   "Tell the running cron daemon that the user corresponding to
@@ -55,6 +36,25 @@ USER-NAME has modified his crontab.  USER-NAME is written to the
         (close socket)))
     (lambda (key . args)
       (display "Warning: a cron daemon is not running.\n"))))
+
+
+
+;; Display the prompt and wait for user to type his choice. Return #t if the
+;; answer begins with 'y' or 'Y', return #f if it begins with 'n' or 'N',
+;; otherwise ask again.
+(define  (get-yes-no prompt . re-prompt)
+  (unless (null? re-prompt)
+      (display "Please answer y or n.\n"))
+  (display (string-append prompt " "))
+  (let ((r (read-line)))
+    (if (not (string-null? r))
+        (case (string-ref r 0)
+              ((#\y #\Y) #t)
+              ((#\n #\N) #f)
+              (else (get-yes-no prompt #t)))
+      (get-yes-no prompt #t))))
+
+
 
 (define (in-access-file? file name)
   "Scan FILE which should contain one user name per line (such as
@@ -78,60 +78,34 @@ USER-NAME has modified his crontab.  USER-NAME is written to the
 ;;; Entry point.
 ;;;
 
-(define* (main #:optional (args (command-line)))
-  (let ((opts (getopt-long args %options)))
-    (when config-debug
-      (debug-enable 'backtrace))
-    (cond ((option-ref opts 'help #f)
-           (show-help)
-           (exit 0))
-          ((option-ref opts 'version #f)
-           (show-version "crontab")
-           (exit 0)))
-    (let ((crontab-real-user
-           ;; This program should have been installed SUID root. Here we get
-           ;; the passwd entry for the real user who is running this program.
-           (passwd:name (getpw (getuid)))))
+(define (main --user --edit --list --remove files)
+  (when config-debug  (debug-enable 'backtrace))
+  (let ((crontab-real-user
+         ;; This program should have been installed SUID root. Here we get
+         ;; the passwd entry for the real user who is running this program.
+         (passwd:name (getpw (getuid)))))
 
-      ;; If the real user is not allowed to use crontab due to the
-      ;; /var/cron/allow and/or /var/cron/deny files, bomb out now.
-      (if (or (eq? (in-access-file? config-allow-file crontab-real-user) #f)
-              (eq? (in-access-file? config-deny-file crontab-real-user) #t))
-          (mcron-error 6 "Access denied by system operator."))
+    ;; If the real user is not allowed to use crontab due to the
+    ;; /var/cron/allow and/or /var/cron/deny files, bomb out now.
+    (if (or (eq? (in-access-file? config-allow-file crontab-real-user) #f)
+            (eq? (in-access-file? config-deny-file crontab-real-user) #t))
+        (mcron-error 6 "Access denied by system operator."))
 
-      ;; Check that no more than one of the mutually exclusive options are
-      ;; being used.
-      (when (> (+ (if (option-ref opts 'edit #f) 1 0)
-                  (if (option-ref opts 'list #f) 1 0)
-                  (if (option-ref opts 'remove #f) 1 0))
-               1)
+    ;; Check that no more than one of the mutually exclusive options are
+    ;; being used.
+      (when (<  1  (+ (if --edit 1 0) (if --list 1 0) (if --remove 1 0)))
         (mcron-error 7 "Only one of options -e, -l or -r can be used."))
 
       ;; Check that a non-root user is trying to read someone else's files.
-      (when (and (not (zero? (getuid)))
-                 (option-ref opts 'user #f))
+      (when (and (not (zero? (getuid))) --user)
         (mcron-error 8 "Only root can use the -u option."))
 
       (letrec* (;; Iff the --user option is given, the crontab-user may be
                 ;; different from the real user.
-                (crontab-user (option-ref opts 'user crontab-real-user))
+                (crontab-user (or --user crontab-real-user))
                 ;; So now we know which crontab file we will be manipulating.
-                (crontab-file (string-append config-spool-dir "/" crontab-user))
-                ;; Display the prompt and wait for user to type his
-                ;; choice. Return #t if the answer begins with 'y' or 'Y',
-                ;; return #f if it begins with 'n' or 'N', otherwise ask
-                ;; again.
-                (get-yes-no (λ (prompt . re-prompt)
-                              (if (not (null? re-prompt))
-                                  (display "Please answer y or n.\n"))
-                              (display (string-append prompt " "))
-                              (let ((r (read-line)))
-                                (if (not (string-null? r))
-                                    (case (string-ref r 0)
-                                      ((#\y #\Y) #t)
-                                      ((#\n #\N) #f)
-                                      (else (get-yes-no prompt #t)))
-                                    (get-yes-no prompt #t))))))
+                (crontab-file
+                         (string-append config-spool-dir "/" crontab-user)))
         ;; There are four possible sub-personalities to the crontab
         ;; personality: list, remove, edit and replace (when the user uses no
         ;; options but supplies file names on the command line).
@@ -140,7 +114,7 @@ USER-NAME has modified his crontab.  USER-NAME is written to the
          ;; character-by-character to the standard output. If anything goes
          ;; wrong, it can only mean that this user does not have a crontab
          ;; file.
-         ((option-ref opts 'list #f)
+         (--list
           (catch #t
             (λ ()
               (with-input-from-file crontab-file
@@ -163,7 +137,7 @@ USER-NAME has modified his crontab.  USER-NAME is written to the
          ;; cron daemon up, and remove the temporary file. If the parse fails,
          ;; we give user a choice of editing the file again or quitting the
          ;; program and losing all changes made.
-         ((option-ref opts 'edit #f)
+         (--edit
           (let ((temp-file (string-append config-tmp-dir
                                           "/crontab."
                                           (number->string (getpid)))))
@@ -191,12 +165,9 @@ USER-NAME has modified his crontab.  USER-NAME is written to the
 
          ;; In the remove personality we simply make an effort to delete the
          ;; crontab and wake the daemon. No worries if this fails.
-         ((option-ref opts 'remove #f)
-          (catch #t
-            (λ ()
-              (delete-file crontab-file)
-              (hit-server crontab-user))
-            noop))
+         (--remove (catch #t (λ ()  (delete-file crontab-file)
+                                    (hit-server crontab-user))
+                          noop))
 
          ;; XXX: This comment is wrong.
          ;; In the case of the replace personality we loop over all the
@@ -206,8 +177,8 @@ USER-NAME has modified his crontab.  USER-NAME is written to the
          ;; location; we deal with the standard input in the same way but
          ;; different. :-) In either case the server is woken so that it will
          ;; read the newly installed crontab.
-         ((not (null? (option-ref opts '() '())))
-          (let ((input-file (car (option-ref opts '() '()))))
+         ((not (null? files))
+          (let ((input-file (car files)))
             (catch-mcron-error
              (if (string=? input-file "-")
                  (let ((input-string (read-string)))
@@ -222,4 +193,4 @@ USER-NAME has modified his crontab.  USER-NAME is written to the
          ;; The user is being silly. The message here is identical to the one
          ;; Vixie cron used to put out, for total compatibility.
          (else (mcron-error 15
-                 "usage error: file name must be specified for replace.")))))))
+                 "usage error: file name must be specified for replace."))))))

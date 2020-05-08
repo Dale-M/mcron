@@ -2,10 +2,51 @@
 -*- scheme -*-
 !#
 
+;;;; cron -- run jobs at scheduled times
+;;; Copyright © 2003, 2012, 2020, 2022  Dale Mellor <mcron-lsfnyl@rdmp.org>
+;;; Copyright © 2015, 2016, 2018  Mathieu Lirzin <mthl@gnu.org>
+;;;
+;;; This file is part of GNU Mcron.
+;;;
+;;; GNU Mcron is free software: you can redistribute it and/or modify
+;;; it under the terms of the GNU General Public License as published by
+;;; the Free Software Foundation, either version 3 of the License, or
+;;; (at your option) any later version.
+;;;
+;;; GNU Mcron is distributed in the hope that it will be useful,
+;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;; GNU General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU General Public License
+;;; along with GNU Mcron.  If not, see <http://www.gnu.org/licenses/>.
+
+
 (unless (getenv "MCRON_UNINSTALLED")
   (set! %load-path (cons "%modsrcdir%" %load-path))
   (set! %load-compiled-path (cons "%modbuilddir%" %load-compiled-path)))
 
-(use-modules (mcron scripts cron))
-(use-modules (mcron utils))
-(catch-mcron-error (main))
+(use-modules  (mcron scripts cron)
+              (ice-9 command-line-processor))
+
+(process-command-line  (command-line)
+   application "cron"
+   version     "%VERSION%"
+   usage       "[OPTIONS]"
+   help-preamble
+ "Unless an option is specified, run a cron daemon as a detached process,"
+ "reading all the information in the usersʼ crontabs and in /etc/crontab."
+   option (--schedule=8 -s string->number
+                        "display the next N (or 8) jobs that will be"
+                        "run, and exit")
+   option (--noetc -n "do not check /etc/crontab for updates (use"
+                   "of this option is HIGHLY RECOMMENDED)")
+   help-postamble
+ "Mandatory or optional arguments to long options are also mandatory or "
+ "optional for any corresponding short options."
+   bug-address "%PACKAGE_BUGREPORT%"
+   copyright "2003 - 2022  Free Software Foundation, Inc."
+   license     GPLv3)
+
+
+(catch-mcron-error (main --schedule --noetc))
