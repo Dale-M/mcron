@@ -1,6 +1,6 @@
 ;;;; vixie-time.scm -- parse Vixie-style times
 ;;; Copyright © 2003 Dale Mellor <dale_mellor@users.sourceforge.net>
-;;; Copyright © 2018 Mathieu Lirzin <mthl@gnu.org>
+;;; Copyright © 2018, 2020 Mathieu Lirzin <mthl@gnu.org>
 ;;;
 ;;; This file is part of GNU Mcron.
 ;;;
@@ -360,7 +360,7 @@ accounted for."
                                    (time-spec:list wday)
                                    (tm:mon time)
                                    (tm:year time)))))
-             (nudge-day! (pk time) (pk (cddr time-spec-list)))
+             (nudge-day! time (cddr time-spec-list))
              (set-tm:hour time -1))
            (unless (member (tm:hour time)
                            (time-spec:list hour))
