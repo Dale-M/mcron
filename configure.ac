@@ -39,6 +39,8 @@ m4_pattern_forbid([^PKG_PROG])
 m4_pattern_forbid([^PKG_CHECK])
 m4_pattern_forbid([^GUILE_P])
 m4_pattern_allow([^GUILE_PKG_ERRORS])
+m4_pattern_allow([^GUILE_PKG])
+m4_pattern_allow([^GUILE_PROGS])
 
 # Check for Guile development files.
 GUILE_PKG([3.0 2.2 2.0])
