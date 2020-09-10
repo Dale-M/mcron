@@ -27,7 +27,7 @@
   (set! %load-compiled-path (cons "%modbuilddir%" %load-compiled-path)))
 
 (use-modules (mcron scripts crontab)
-             (ice-9 command-line-processor))
+             (mcron command-line-processor))
 
 (process-command-line  (command-line)
    application "crontab"

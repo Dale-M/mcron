@@ -28,7 +28,7 @@
 
 (use-modules  (mcron scripts cron)
               (mcron utils)
-              (ice-9 command-line-processor))
+              (mcron command-line-processor))
 
 (process-command-line  (command-line)
    application "cron"
@@ -48,6 +48,5 @@
    bug-address "%PACKAGE_BUGREPORT%"
    copyright "2003 - 2022  Free Software Foundation, Inc."
    license     GPLv3)
-
 
 (catch-mcron-error (main --schedule --noetc))

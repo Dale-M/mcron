@@ -74,8 +74,6 @@ Thu Jan  1 00:00:08 1970 +0000
 EOF
 
 mcron -s cron/foo.guile > output
-diff expected output \
-    || skip_ 'The -s option is not fully functional; 
-this will be fixed with a future version of GNU Guile.'
+diff expected output || fail_ "schedule output with -s is not correct"
 
 Exit 0

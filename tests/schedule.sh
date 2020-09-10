@@ -126,6 +126,6 @@ Thu Jan  1 00:00:10 1970 +0000
 EOF
 
 mcron --schedule=10 > output
-diff expected output || fail_ "schedule output is not correct"
+diff expected output || fail_ "schedule output with --schedule is not correct"
 
 Exit 0

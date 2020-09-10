@@ -28,7 +28,7 @@
 
 (use-modules  (mcron scripts mcron)
               (mcron utils)
-              (ice-9 command-line-processor))
+              (mcron command-line-processor))
 
 (process-command-line  (command-line)
        application   "mcron"

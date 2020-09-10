@@ -47,7 +47,9 @@ pkgmoduledir = $(guilesitedir)/$(PACKAGE)
 pkgmodule_DATA = src/mcron/config.scm
 dist_pkgmodule_DATA = \
   src/mcron/base.scm \
+  src/mcron/command-line-processor.scm \
   src/mcron/environment.scm \
+  src/mcron/getopt-long.scm \
   src/mcron/job-specifier.scm \
   src/mcron/redirect.scm \
   src/mcron/utils.scm \
