@@ -38,8 +38,8 @@ standard input), or use all the files in ~/.config/cron (or the deprecated
 ~/.cron) with .guile or .vixie extensions.
 
   -d, --daemon               Run as a daemon process
-  -i, --stdin=(guile|vixie)  Format of data passed as standard input or file
-                             arguments (default guile)
+  -i, --stdin=(guile|vixie)  Format of data passed as standard input
+                             (default guile)
   -s, --schedule[=N]         Display the next N (or 8) jobs that will be run
   -?, --help                 Give this help list
   -V, --version              Print program version
