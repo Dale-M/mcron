@@ -176,7 +176,7 @@
                                        (open-output-pipe config-sendmail)))
           (set-current-input-port (car child->parent))
           (display "To: ") (display user) (newline)
-          (display "From: mcron") (newline)
+          (display "From: GNU Mcron") (newline)
           (display (string-append "Subject: " user "@" (gethostname)))
           (newline)
           (newline)
