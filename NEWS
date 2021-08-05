@@ -1,5 +1,12 @@
 GNU Mcron NEWS                                    -*- outline -*-
 
+* Noteworthy changes in release 1.2.1 (2021-08-05) [stable]
+
+** Improvements
+  Fixed "mcron --help" to show --stdin does not apply to files.
+  Updated to latest autoconf.
+  Changes in strings to reflect GNU Mcron and not just mcron.
+
 * Noteworthy changes in release 1.2.0 (2020-04-22) [stable]
 
 ** Improvements
