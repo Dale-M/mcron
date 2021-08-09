@@ -182,7 +182,17 @@ next value."
         (λ ()
           (setgid (passwd:gid (job:user job)))
           (setuid (passwd:uid (job:user job)))
-          (chdir (passwd:dir (job:user job)))
+          ;; Handle the case where the home directory points to a nonexistent
+          ;; location, as can be the case when running the job as the "nobody"
+          ;; user.
+          (catch 'system-error
+            (lambda ()
+              (chdir (passwd:dir (job:user job))))
+            (lambda args
+              (let ((errno (system-error-errno args)))
+                (cond
+                 ((= ENOENT errno) (chdir "/"))
+                 (else (throw 'system-error args))))))
           (modify-environment (job:environment job) (job:user job))
           ((job:action job)))
         (λ ()
