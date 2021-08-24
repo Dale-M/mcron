@@ -13,6 +13,7 @@ program for running jobs at scheduled times.
 
 Copyright @copyright{}  2003, 2005, 2006, 2012, 2014, 2022  Dale Mellor
 Copyright @copyright{}  2018  Mathieu Lirzin
+Copyright @copyright{}  2021  Maxim Cournoyer
 
 @quotation
 Permission is granted to copy, distribute and/or modify this
@@ -887,6 +888,53 @@ This option is used to indicate whether the configuration information
 being passed on the standard input is in Vixie format or Guile
 format.  Guile is the default.
 
+@cindex log-format option
+@cindex options, log-format
+@cindex --log-format option
+@cindex logging output, configuration
+@cindex configuring the logging output
+@anchor{--log-format}
+@item --log-format
+This option accepts an @code{(ice-9 format)} format string that can be used to
+customize the appearance of the output.  The format string is applied to
+@code{format} with the following four arguments:
+@enumerate
+@item A date/time string.
+@item The job process PID (as as number).
+@item The action name.
+@item The message to log.
+@end enumerate
+
+It defaults to @code{"~a ~2@*~a: ~a~%"}, which produces output messages like:
+
+@example
+2021-08-17T12:01:01 some-job: completed in 0.218s
+@end example
+
+If you'd rather see the job process PID instead of a timestamp, you could
+instead specify the format string as @code{"~1@*~a ~a: ~a~%"}, which would
+result in something like:
+
+@example
+39234 some-job: completed in 0.218s
+@end example
+
+To learn about all the possibilities offered by @code{(ice-9 format)}, refer
+to @ref{Formatted Output,,, guile, GNU@tie{}Guile@tie{}Reference@tie{}Manual}.
+
+@cindex date-format option
+@cindex options, date-format
+@cindex --date-format option
+@cindex timestamp, modification
+@cindex changing the default timestamp
+@anchor{--date-format}
+@item --date-format
+This option accepts a @code{(srfi srfi-19)} date string format, to customize
+the appearance of the timestamp in output messages.  It defaults to
+@code{"~5"}, which corresponds to a local ISO-8601 date/time format
+(@pxref{SRFI-19 Date to string,,,
+guile,GNU@tie{}Guile@tie{}Reference@tie{}Manual}).
+
 @cindex -v option
 @cindex --version option
 @cindex options, -v
@@ -980,6 +1028,12 @@ This tells cron not to add a job to the system which wakes up every
 minute to check for modifications to @code{/etc/crontab}.  It is
 recommended that this option be used (and further that the
 @code{/etc/crontab} file be taken off the system altogether!)
+
+@item --log-format
+Analogous to mcron's @ref{--log-format}.
+
+@item --date-format
+Analogous to mcron's @ref{--date-format}.
 
 @end table
 
@@ -1264,6 +1318,36 @@ that this procedure is disruptive; if @code{run-job-loop} is called
 after this procedure, the first job to run will be the one after the
 last job that was reported in the schedule report.  The report itself
 is returned to the calling program as a string.
+@end deffn
+
+@defopt %date-format
+@cindex parameters, date format
+@cindex date format parameter
+This parameter holds the @code{(srfi srfi-19)} format string used to produce
+the timestamp found in output messages.  It defaults to @code{"~5"}.
+@end defopt
+
+@deffn{Scheme procedure} validate-date-format @var{fmt}
+@cindex date format validator
+This procedure is used to validate @var{fmt}, a @code{(srfi srfi-19)} format
+string.  When @var{fmt} is invalid, an error message is displayed and the
+program is aborted.
+@end deffn
+
+@defopt %log-format
+@cindex parameters, log format
+@cindex log format parameter
+This parameter holds the @code{(ice-9 format)} format string used to produce
+the output messages.  The four arguments applied to format are the timestamp,
+the process PID, the job name and the message.  It defaults to @code{"~a
+~2@*~a: ~a~%"}.
+@end defopt
+
+@deffn{Scheme procedure} validate-log-format @var{fmt}
+@cindex log format validator
+This procedure is used to validate @var{fmt}, a @code{(ice-9 format)} format
+string.  When @var{fmt} is invalid, an error message is displayed and the
+program is aborted.
 @end deffn
 
 @node The redirect module, The vixie-time module, The base module, Guile modules

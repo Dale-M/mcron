@@ -1,6 +1,7 @@
 ;;;; mcron -- run jobs at scheduled times
 ;;; Copyright © 2003, 2012 Dale Mellor <dale_mellor@users.sourceforge.net>
 ;;; Copyright © 2015, 2016, 2018 Mathieu Lirzin <mthl@gnu.org>
+;;; Copyright © 2021 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;;
 ;;; This file is part of GNU Mcron.
 ;;;
@@ -41,6 +42,8 @@ standard input), or use all the files in ~/.config/cron (or the deprecated
   -i, --stdin=(guile|vixie)  Format of data passed as standard input
                              (default guile)
   -s, --schedule[=N]         Display the next N (or 8) jobs that will be run
+  --log-format=FMT           (ice-9 format) format string for log messages
+  --date-format=FMT          (srfi srfi-19) date format string for log messages
   -?, --help                 Give this help list
   -V, --version              Print program version
 
@@ -119,6 +122,8 @@ directory. Double-check the folder and file permissions and syntax."))))
                                                     (string=? in "vixie")))))
                   (schedule (single-char #\s) (value optional)
                             (predicate ,string->number))
+                  (log-format  (value #t) (predicate ,validate-log-format))
+                  (date-format (value #t) (predicate ,validate-date-format))
                   (help     (single-char #\?))
                   (version  (single-char #\V))))))
 
@@ -141,14 +146,7 @@ directory. Double-check the folder and file permissions and syntax."))))
                      ((0)  (setsid))
                      (else (exit 0)))))
 
-    ;; Forever execute the 'run-job-loop', and when it drops out (can only be
-    ;; because a message has come in on the socket) we process the socket
-    ;; request before restarting the loop again.
-    (catch-mcron-error
-     (let ((fdes-list '()))
-       (while #t
-         (run-job-loop fdes-list)
-         ;; we can also drop out of run-job-loop because of a SIGCHLD,
-         ;; so must test FDES-LIST.
-         (unless (null? fdes-list)
-           (process-update-request fdes-list)))))))
+    (parameterize
+        ((%log-format  (option-ref options 'log-format (%log-format)))
+         (%date-format (option-ref options 'date-format (%date-format))))
+      (run-job-loop))))

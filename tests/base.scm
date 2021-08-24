@@ -1,5 +1,6 @@
 ;;;; base.scm -- tests for (mcron base) module
 ;;; Copyright © 2018 Mathieu Lirzin <mthl@gnu.org>
+;;; Copyright © 2021 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;;
 ;;; This file is part of GNU Mcron.
 ;;;
@@ -16,7 +17,8 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with GNU Mcron.  If not, see <http://www.gnu.org/licenses/>.
 
-(use-modules (srfi srfi-64)
+(use-modules ((rnrs base) #:select (assert))
+             (srfi srfi-64)
              (srfi srfi-111)
              (mcron base))
 
@@ -40,7 +42,7 @@
                          #:key
                          (user (getpw))
                          (time-proc 1+)
-                         (action (λ () "dummy action"))
+                         (action (lambda () "dummy action"))
                          (environment '())
                          (next-time 0))
   (make-job user time-proc action environment displayable next-time))
@@ -191,25 +193,101 @@
 ;;; Check 'run-job' and 'child-cleanup'.
 ;;; XXX: Having to use the filesystem for a unit test is wrong.
 (let* ((filename (tmpnam))
-       (action (λ () (close-port (open-output-file filename))))
+       (action (lambda () (close-port (open-output-file filename))))
        (job (make-dummy-job #:user (getpw (getuid)) #:action action)))
   (dynamic-wind
     (const #t)
-    (λ ()
+    (lambda ()
       (sigaction SIGCHLD (const #t))
-      (run-job job)
-      ;; Wait for the SIGCHLD signal sent when job exits.
-      (pause)
-      ;; Check 'run-job' result and if the number of children is up-to-date.
-      (test-equal "run-job: basic"
-        1
-        (and (access? filename F_OK)
-             (unbox number-children)))
-      (child-cleanup)
+      (let ((child-data (run-job job)))
+        ;; Wait for the SIGCHLD signal sent when job exits.
+        (pause)
+        ;; Check 'run-job' result and if the number of children is up-to-date.
+        (test-equal "run-job: basic"
+          1
+          (and (access? filename F_OK)
+               (unbox number-children)))
+        (child-cleanup (list child-data)))
       ;; Check that 'child-cleanup' updates the number of children.
       (test-equal "child-cleanup: one" 0 (unbox number-children)))
-    (λ ()
+    (lambda ()
       (and (access? filename F_OK) (delete-file filename))
       (sigaction SIGCHLD SIG_DFL))))
+
+(define (dummy-job/capture-output action)
+  "Return the output of a dummy-job that ran ACTION."
+  (with-output-to-string
+    (lambda ()
+      (dynamic-wind
+        (const #t)
+        (lambda ()
+          (sigaction SIGCHLD (const #t))
+          (let ((child-data
+                 (run-job
+                  (make-dummy-job
+                   #:user (getpw (getuid))
+                   #:action action))))
+            (pause)
+            (child-cleanup (list child-data))))
+        (lambda ()
+          #t
+          (sigaction SIGCHLD SIG_DFL))))))
+
+(test-assert "run-job, output"
+  (let ((output (dummy-job/capture-output
+                 (lambda ()
+                   (format #t "output line 1~%")
+                   (format #t "output line 2\nand 3~%")
+                   (system "echo poutine")
+                   (format (current-error-port)
+                           "some error~%")))))
+    (assert (string-contains output "dummy: running"))
+    (assert (string-contains output "dummy: output line 1"))
+    (assert (string-contains output "dummy: and 3"))
+    (assert (string-contains output "dummy: poutine"))
+    (assert (string-contains output "dummy: some error"))
+    (assert (string-contains output "dummy: completed in"))))
+
+(test-assert "validate-date-format, valid"
+  (validate-date-format "~1"))
+
+(test-assert "validate-date-format, invalid"
+  (catch 'mcron-error
+    (lambda ()
+      (validate-date-format "~¾")
+      #f)
+    (const #t)))
+
+(test-assert "validate-log-format, valid"
+  (validate-log-format "the message only: ~3@*~a~%"))
+
+(test-assert "validate-log-format, invalid"
+  (catch 'mcron-error
+    (lambda ()
+      ;; There aren't that many arguments!
+      (validate-log-format "~20@*~a~%")
+      #f)
+    (const #t)))
+
+(test-assert "run-job, output with custom format"
+  (let ((output (parameterize ((%log-format "the message only: ~3@*~a~%"))
+                  (dummy-job/capture-output
+                   (lambda ()
+                     (format #t "output line 1~%"))))))
+    (string-contains output "the message only: output line 1\n")))
+
+(test-assert "run-job, failure"
+  (let ((output (dummy-job/capture-output
+                 (lambda ()
+                   (error "that didn't go well")))))
+    (assert (string-contains output "that didn't go well"))
+    (assert (string-contains output "failed after"))))
+
+(test-assert "run-job, failure in shell action"
+  (let ((output (dummy-job/capture-output
+                 (lambda ()
+                   (system "exit 1")))))
+    (assert (string-contains output "unclean exit status"))
+    (assert (string-contains output "failed after"))))
 
 (test-end)

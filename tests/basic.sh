@@ -1,5 +1,6 @@
 # basic.sh -- basic tests for mcron
 # Copyright © 2017 Mathieu Lirzin <mthl@gnu.org>
+# Copyright © 2021 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 #
 # This file is part of GNU Mcron.
 #
@@ -32,5 +33,17 @@ grep -e "foo" "output$$" || fail_ "'foo.guile' job is not scheduled"
 
 mcron --schedule=1 > "output$$"
 grep -e "foo" "output$$" || fail_ "'foo.guile' job is not scheduled"
+
+mcron --date-format="~½" cron/foo.guile \
+    && fail_ "mcron --date-format unexpected pass"
+
+mcron --log-format="~½" cron/foo.guile \
+    && fail_ "mcron --log-format unexpected pass"
+
+cron --date-format="~½" cron/foo.guile \
+    && fail_ "cron --date-format unexpected pass"
+
+cron --log-format="~½" cron/foo.guile \
+    && fail_ "cron --log-format unexpected pass"
 
 Exit 0

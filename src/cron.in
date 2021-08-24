@@ -7,4 +7,5 @@
   (set! %load-compiled-path (cons "%modbuilddir%" %load-compiled-path)))
 
 (use-modules (mcron scripts cron))
-(main)
+(use-modules (mcron utils))
+(catch-mcron-error (main))

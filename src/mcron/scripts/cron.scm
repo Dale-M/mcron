@@ -1,6 +1,7 @@
 ;;;; cron -- daemon for running jobs at scheduled times
 ;;; Copyright © 2003, 2012 Dale Mellor <dale_mellor@users.sourceforge.net>
 ;;; Copyright © 2015, 2016, 2018 Mathieu Lirzin <mthl@gnu.org>
+;;; Copyright © 2021 Maxim Cournoyer <maxim.cournoyer@gmail.com>
 ;;;
 ;;; This file is part of GNU Mcron.
 ;;;
@@ -40,7 +41,9 @@ reading all the information in the users' crontabs and in /etc/crontab.
   -h, --help                Display this help message
   -sN, --schedule[=]N       Display the next N jobs that will be run by cron
   -n, --noetc               Do not check /etc/crontab for updates (HIGHLY
-                              RECOMMENDED).")
+                              RECOMMENDED).
+  --log-format=FMT          (ice-9 format) format string for log messages
+  --date-format=FMT         (srfi srfi-19) date format string for log messages")
   (newline)
   (show-package-information))
 
@@ -49,6 +52,8 @@ reading all the information in the users' crontabs and in /etc/crontab.
 (define  %options  `((schedule (single-char #\s) (value #t)
                                (predicate ,string->number))
                      (noetc    (single-char #\n) (value #f))
+                     (log-format  (value #t) (predicate ,validate-log-format))
+                     (date-format (value #t) (predicate ,validate-date-format))
                      (version  (single-char #\v) (value #f))
                      (help     (single-char #\h) (value #f))))
 
@@ -142,31 +147,34 @@ option.\n")
 ;;;
 
 (define* (main #:optional (args (command-line)))
-  (let ((opts (getopt-long args %options)))
-    (when config-debug
-      (debug-enable 'backtrace))
-    (cond  ((option-ref opts 'help #f)
-               (show-help)
-               (exit 0))
-           ((option-ref opts 'version #f)
-               (show-version "cron")
-               (exit 0))
-           ((not (zero? (getuid)))
-               (mcron-error 16
-                   "This program must be run by the root user (and should"
-                   " have been installed as such)."))
-           ((access? config-pid-file F_OK)
-               (mcron-error 1
-                   "A cron daemon is already running.\n  (If you are sure"
-                   " this is not true, remove the file\n   "
-                   config-pid-file ".)"))
-           (else
-               (%process-files (option-ref opts 'schedule #f)
-                               (option-ref opts 'noetc #f))
-               (cond ((option-ref opts 'schedule #f)
-                      => (λ (count)
-                           (display-schedule (max 1 (string->number count)))
-                           (exit 0)))))))
+
+  (define opts (getopt-long args %options))
+
+  (when config-debug
+    (debug-enable 'backtrace))
+
+  (cond  ((option-ref opts 'help #f)
+          (show-help)
+          (exit 0))
+         ((option-ref opts 'version #f)
+          (show-version "cron")
+          (exit 0))
+         ((not (zero? (getuid)))
+          (mcron-error 16
+            "This program must be run by the root user (and should"
+            " have been installed as such)."))
+         ((access? config-pid-file F_OK)
+          (mcron-error 1
+            "A cron daemon is already running.\n  (If you are sure"
+            " this is not true, remove the file\n   "
+            config-pid-file ".)"))
+         (else
+          (%process-files (option-ref opts 'schedule #f)
+                          (option-ref opts 'noetc #f))
+          (cond ((option-ref opts 'schedule #f)
+                 => (λ (count)
+                      (display-schedule (max 1 (string->number count)))
+                      (exit 0))))))
 
   ;; Daemonize ourself.
   (unless  (eq? 0 (primitive-fork))  (exit 0))
@@ -187,11 +195,12 @@ option.\n")
   (with-output-to-file  config-pid-file
                         (λ () (display (getpid)) (newline)))
 
-  ;; Forever execute the 'run-job-loop', and when it drops out (can
-  ;; only be because a message has come in on the socket) we
-  ;; process the socket request before restarting the loop again.
-  (catch-mcron-error
-   (let ((fdes-list (cron-file-descriptors)))
-     (while #t
-       (run-job-loop fdes-list)
-       (unless (null? fdes-list) (process-update-request fdes-list))))))
+  (parameterize ((%log-format  (option-ref opts 'log-format (%log-format)))
+                 (%date-format (option-ref opts 'date-format (%date-format))))
+    ;; Forever execute the 'run-job-loop', and when it drops out (can
+    ;; only be because a message has come in on the socket) we
+    ;; process the socket request before restarting the loop again.
+    (let ((fdes-list (cron-file-descriptors)))
+      (while #t
+        (run-job-loop fdes-list)
+        (unless (null? fdes-list) (process-update-request fdes-list))))))
