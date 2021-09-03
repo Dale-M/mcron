@@ -214,7 +214,7 @@ hours? Edit the file to read
 (job
    '(next-minute-from
       (next-hour (range 0 24 2))
-      15)
+      '(15))
    "my-program")
 @end example
 
