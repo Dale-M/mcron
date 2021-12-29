@@ -93,7 +93,8 @@ $XDG_CONFIG_HOME is not defined uses ~/.config/cron instead)."
                               "/cron")))
     (when (eq? 2 errors)
       (mcron-error 13
-        "Cannot read files in your ~/.config/cron (or ~/.cron) directory."))))
+        "There was an error reading files in your ~/.config/cron (or ~/.cron)
+directory. Double-check the folder and file permissions and syntax."))))
 
 
 
