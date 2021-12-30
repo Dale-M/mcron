@@ -176,31 +176,31 @@ unusable."
   "Run JOB in a separate process. The process is run as JOB user with the
 environment properly set.  Update the NEXT-TIME field of JOB by computing its
 next value."
-  (if (= (primitive-fork) 0)
-      (dynamic-wind                     ;child
-        (const #t)
-        (λ ()
-          (setgid (passwd:gid (job:user job)))
-          (setuid (passwd:uid (job:user job)))
-          ;; Handle the case where the home directory points to a nonexistent
-          ;; location, as can be the case when running the job as the "nobody"
-          ;; user.
-          (catch 'system-error
-            (lambda ()
-              (chdir (passwd:dir (job:user job))))
-            (lambda args
-              (let ((errno (system-error-errno args)))
-                (cond
-                 ((= ENOENT errno) (chdir "/"))
-                 (else (throw 'system-error args))))))
-          (modify-environment (job:environment job) (job:user job))
-          ((job:action job)))
-        (λ ()
-          (primitive-exit 0)))
-      (begin                            ;parent
-        (update-number-children! 1+)
-        (job:next-time-set! job ((job:next-time-function job)
-                                 (current-time))))))
+  (case (primitive-fork)
+          ((0)  (dynamic-wind    ;child
+                  (const #t)
+                  (λ ()
+                    (setgid (passwd:gid (job:user job)))
+                    (setuid (passwd:uid (job:user job)))
+
+                    ;; Handle the case where the home directory points to a
+                    ;; nonexistent location, as can be the case when running
+                    ;; the job as the "nobody" user.
+                    (catch 'system-error
+                           (λ ()
+                             (chdir (passwd:dir (job:user job))))
+                           (λ args
+                             (if (= ENOENT (system-error-errno args))
+                                 (chdir "/")
+                                 (throw 'system-error args))))
+
+                    (modify-environment (job:environment job) (job:user job))
+                    ((job:action job)))
+                  (λ ()
+                    (primitive-exit 0))))
+          (else (update-number-children! 1+)     ;parent
+                (job:next-time-set! job ((job:next-time-function job)
+                                         (current-time))))))
 
 (define (child-cleanup)
   ;; Give any zombie children a chance to die, and decrease the number known
