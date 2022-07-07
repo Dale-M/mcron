@@ -3,7 +3,7 @@
 !#
 
 ;;;; mcron -- run jobs at scheduled times
-;;; Copyright © 2003, 2012, 2020  Dale Mellor <mcron-lsfnyl@rdmp.org>
+;;; Copyright © 2003, 2012, 2020, 2022  Dale Mellor <mcron-lsfnyl@rdmp.org>
 ;;; Copyright © 2015, 2016, 2018  Mathieu Lirzin <mthl@gnu.org>
 ;;;
 ;;; This file is part of GNU Mcron.
