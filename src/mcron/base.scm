@@ -397,16 +397,16 @@ of CHILDREN-DATA."
   (define (match-collected-pid? job-data)
     (= (job-data:pid job-data) collected-pid))
 
-  (if (and has-children?
-           (not (= 0 collected-pid)))   ;at least one process was collected
-      (begin
-        (update-number-children! 1-)
-        ;; Fully collect the output of the reaped child process.
-        (and=> (find match-collected-pid? children-data)
-               (lambda (child-data)
-                 (process-output (list child-data))))
-        (child-cleanup (remove match-collected-pid? children-data)))
-      children-data))
+  (cond ((and has-children?
+              (not (= 0 collected-pid)))   ;at least one process was collected
+         (update-number-children! 1-)
+         ;; Fully collect the output of the reaped child process.
+         (and=> (find match-collected-pid? children-data)
+                (lambda (child-data)
+                  (process-output (list child-data))))
+         (child-cleanup (remove match-collected-pid? children-data)))
+        (else
+         children-data)))
 
 (define* (run-job-loop #:optional (fd-list '())
                        #:key (schedule %global-schedule))
@@ -423,20 +423,6 @@ infinitum."
   ;; case we break out of the loop here, and let the main procedure deal with
   ;; the situation (it will eventually re-call this function, thus maintaining
   ;; the loop).
-  (cond-expand
-    ((or guile-3.0 guile-2.2)                     ;2.2 and 3.0
-     (define select* select))
-    (else
-     ;; On Guile 2.0, 'select' could throw upon EINTR or EAGAIN.
-     (define (select* read write except time)
-       (catch 'system-error
-         (lambda ()
-           (select read write except time))
-         (lambda args
-           (if (member (system-error-errno args) (list EAGAIN EINTR))
-               '(() () ())
-               (apply throw args)))))))
-
   (let/ec break
     (let loop ((children-data '()))     ;list of <job-data> objects
       (match (find-next-jobs #:schedule schedule)
@@ -452,8 +438,8 @@ infinitum."
                                                   (port->fdes p)))
                                            ports)))
            (when (> sleep-time 0)
-             (match (select* (append fd-list children-fdes)
-                             '() '() sleep-time)
+             (match (select (append fd-list children-fdes)
+                            '() '() sleep-time)
                ((() () ())
                 ;; 'select' returned an empty set, perhaps because it got
                 ;; EINTR or EAGAIN.

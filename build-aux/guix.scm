@@ -45,7 +45,7 @@
   (source (local-file (dirname %srcdir) #:recursive? #t
                       #:select? keep-mcron-file?))
   (inputs
-   `(("guile" ,(specification->package "guile@2.2"))))
+   `(("guile" ,(specification->package "guile@3"))))
   (native-inputs
    `(("autoconf" ,(specification->package "autoconf"))
      ("automake" ,(specification->package "automake"))
