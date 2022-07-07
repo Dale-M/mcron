@@ -48,8 +48,8 @@
                       "format of data passed as standard input or file "
                       "arguments, 'guile' or 'vixie' (default guile)")
        option  (--log  -l  "write log messages to standard output")
-       option  (--log-format  "(ice-9 format) format string for log messages")
-       option  (--date-format "(srfi srfi-19) date format for log messages")
+       option  (--log-format=  "(ice-9 format) format string for log messages")
+       option  (--date-format= "(srfi srfi-19) date format for log messages")
        help-postamble
   "Mandatory or optional arguments to long options are also mandatory or "
   "optional for any corresponding short options."
