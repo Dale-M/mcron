@@ -42,6 +42,7 @@ standard input), or use all the files in ~/.config/cron (or the deprecated
   -i, --stdin=(guile|vixie)  Format of data passed as standard input
                              (default guile)
   -s, --schedule[=N]         Display the next N (or 8) jobs that will be run
+  -l, --log                  Write log messages to standard output
   --log-format=FMT           (ice-9 format) format string for log messages
   --date-format=FMT          (srfi srfi-19) date format string for log messages
   -?, --help                 Give this help list
@@ -122,6 +123,7 @@ directory. Double-check the folder and file permissions and syntax."))))
                                                     (string=? in "vixie")))))
                   (schedule (single-char #\s) (value optional)
                             (predicate ,string->number))
+                  (log (single-char #\l) (value #f))
                   (log-format  (value #t) (predicate ,validate-log-format))
                   (date-format (value #t) (predicate ,validate-date-format))
                   (help     (single-char #\?))
@@ -147,6 +149,7 @@ directory. Double-check the folder and file permissions and syntax."))))
                      (else (exit 0)))))
 
     (parameterize
-        ((%log-format  (option-ref options 'log-format (%log-format)))
+        ((%do-logging (option-ref options 'log (%do-logging)))
+         (%log-format  (option-ref options 'log-format (%log-format)))
          (%date-format (option-ref options 'date-format (%date-format))))
       (run-job-loop))))

@@ -234,13 +234,14 @@
           (sigaction SIGCHLD SIG_DFL))))))
 
 (test-assert "run-job, output"
-  (let ((output (dummy-job/capture-output
-                 (lambda ()
-                   (format #t "output line 1~%")
-                   (format #t "output line 2\nand 3~%")
-                   (system "echo poutine")
-                   (format (current-error-port)
-                           "some error~%")))))
+  (let ((output (parameterize ((%do-logging #t))
+                  (dummy-job/capture-output
+                   (lambda ()
+                     (format #t "output line 1~%")
+                     (format #t "output line 2\nand 3~%")
+                     (system "echo poutine")
+                     (format (current-error-port)
+                             "some error~%"))))))
     (assert (string-contains output "dummy: running"))
     (assert (string-contains output "dummy: output line 1"))
     (assert (string-contains output "dummy: and 3"))
@@ -270,7 +271,8 @@
     (const #t)))
 
 (test-assert "run-job, output with custom format"
-  (let ((output (parameterize ((%log-format "the message only: ~3@*~a~%"))
+  (let ((output (parameterize ((%do-logging #t)
+                               (%log-format "the message only: ~3@*~a~%"))
                   (dummy-job/capture-output
                    (lambda ()
                      (format #t "output line 1~%"))))))

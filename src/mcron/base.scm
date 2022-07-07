@@ -45,6 +45,7 @@
             display-schedule
             run-job-loop
 
+            %do-logging
             %date-format
             %log-format
             validate-date-format
@@ -84,6 +85,8 @@
   ;; list for all other jobs.
   (user    schedule-user    set-schedule-user!)     ;list of <job>
   (current schedule-current set-schedule-current!)) ;symbol 'user or 'system
+
+(define %do-logging (make-parameter #f))
 
 ;; A (srfi srfi-19) format string for the date.  It is used to format the
 ;; timestamp argument.  Defaults to the local ISO-8601 date/time format.
@@ -284,7 +287,8 @@ streams can be read as well as the name of the job."
      ;; Execute the action.
      (catch #t
        (lambda ()
-         (format #t "running...~%")
+         (if (%do-logging)
+             (format #t "running...~%"))
          (flush-all-ports)
          (let* ((result ((job:action job)))
                 (exit-val/maybe (false-if-exception
@@ -292,7 +296,8 @@ streams can be read as well as the name of the job."
            (when (and exit-val/maybe
                       (not (= 0 exit-val/maybe)))
              (error "unclean exit status" exit-val/maybe)))
-         (format #t "completed in ~,3fs~%" (seconds-since start))
+         (if (%do-logging)
+             (format #t "completed in ~,3fs~%" (seconds-since start)))
          (flush-all-ports)
          (primitive-exit 0))
        (lambda args
@@ -354,7 +359,11 @@ associated <job-data> instance."
             (cons 'suspended partial-continuation))))
 
       (define (format-line line)
-        (format #t "~@?" (%log-format) timestamp pid name line))
+        (cond ((%do-logging)
+               (format #t "~@?" (%log-format) timestamp pid name line))
+              ((and (string? line)
+                    (not (string-null? line)))
+               (display line))))
 
       (let loop ((line+delim (read-line*)))
         (match line+delim
@@ -367,8 +376,10 @@ associated <job-data> instance."
           (("" . #\cr)
            ;; A carriage return directly followed a delimiter.  Ignore it.
            (loop (read-line*)))
-          ((line . _)
-           (format-line line)
+          ((line . delim)
+           (format-line (if (%do-logging)
+                            line
+                            (string-append line (string delim))))
            (loop (read-line*)))))))
 
   (for-each log-data
