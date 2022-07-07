@@ -153,12 +153,10 @@ option.\n")
   (with-output-to-file  config-pid-file
                         (λ () (display (getpid)) (newline)))
 
-  (parameterize ((%log-format  (option-ref opts 'log-format (%log-format)))
-                 (%date-format (option-ref opts 'date-format (%date-format))))
-    ;; Forever execute the 'run-job-loop', and when it drops out (can
-    ;; only be because a message has come in on the socket) we
-    ;; process the socket request before restarting the loop again.
-    (let ((fdes-list (cron-file-descriptors)))
-      (while #t
-        (run-job-loop fdes-list)
-        (unless (null? fdes-list) (process-update-request fdes-list))))))
+  ;; Forever execute the 'run-job-loop', and when it drops out (can
+  ;; only be because a message has come in on the socket) we
+  ;; process the socket request before restarting the loop again.
+  (let ((fdes-list (cron-file-descriptors)))
+    (while #t
+      (run-job-loop fdes-list)
+      (unless (null? fdes-list) (process-update-request fdes-list)))))
