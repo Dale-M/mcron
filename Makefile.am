@@ -100,10 +100,7 @@ DISTCLEANFILES = src/mcron/config.scm
 	  --warn=format --warn=unbound-variable --warn=arity-mismatch \
 	  --target="$(host)" --output="$@" "$<" $(devnull_verbose)
 
-
-bin/% : src/%.in Makefile
-	$(AM_V_GEN)$(MKDIR_P) bin ; \
-	  sed	-e 's,%PREFIX%,${prefix},g'				\
+do_subst = sed	-e 's,%PREFIX%,${prefix},g'				\
 		-e 's,%modsrcdir%,${guilesitedir},g'			\
 		-e 's,%modbuilddir%,${guilesitegodir},g'		\
 		-e 's,%localstatedir%,${localstatedir},g'		\
@@ -114,8 +111,14 @@ bin/% : src/%.in Makefile
 		-e 's,%PACKAGE_BUGREPORT%,@PACKAGE_BUGREPORT@,g'	\
 		-e 's,%PACKAGE_NAME%,@PACKAGE_NAME@,g'			\
 		-e 's,%PACKAGE_URL%,@PACKAGE_URL@,g'			\
-		-e 's,%GUILE%,$(GUILE),g'				\
-	   $< > $@ ; \
+		-e 's,%GUILE%,$(GUILE),g'
+
+src/mcron/config.scm: src/mcron/config.scm.in Makefile
+	$(AM_V_GEN)$(do_subst) $< > $@
+
+bin/% : src/%.in Makefile
+	$(AM_V_GEN)$(MKDIR_P) bin ; \
+	  $(do_subst) $< > $@ ; \
 	  chmod a+x $@
 
 

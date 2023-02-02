@@ -127,5 +127,5 @@ AC_CONFIG_FILES([pre-inst-env:build-aux/pre-inst-env.in],
                 [chmod +x pre-inst-env])
 AC_CONFIG_FILES([doc/config.texi
                  Makefile
-                 src/mcron/config.scm])
+                 src/mcron/config.scm.in])
 AC_OUTPUT
