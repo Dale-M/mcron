@@ -26,9 +26,9 @@ noinst_SCRIPTS =
 
 if MULTI_USER
 bin_SCRIPTS += bin/crontab
-sbin_SCRIPTS = bin/cron
+sbin_SCRIPTS = bin/cron bin/crontab-access
 else
-noinst_SCRIPTS += bin/cron bin/crontab
+noinst_SCRIPTS += bin/cron bin/crontab bin/crontab-access
 endif
 
 # wrapper to be used in the build environment and for running tests.
@@ -68,6 +68,7 @@ pkgscriptdir = $(pkgmoduledir)/scripts
 dist_pkgscript_DATA = \
   src/mcron/scripts/cron.scm \
   src/mcron/scripts/crontab.scm \
+  src/mcron/scripts/crontab-access.scm \
   src/mcron/scripts/mcron.scm
 
 pkgscriptgodir = $(pkgmodulegodir)/scripts
@@ -77,7 +78,11 @@ compiled_modules = \
   $(pkgmodulego_DATA) \
   $(pkgscriptgo_DATA)
 
-CLEANFILES = $(compiled_modules) bin/crontab bin/cron bin/mcron
+CLEANFILES = $(compiled_modules) \
+	bin/crontab \
+	bin/crontab-access \
+        bin/cron \
+	bin/mcron
 DISTCLEANFILES = src/mcron/config.scm
 
 # Unset 'GUILE_LOAD_COMPILED_PATH' altogether while compiling.  Otherwise, if
@@ -101,6 +106,8 @@ DISTCLEANFILES = src/mcron/config.scm
 	  --target="$(host)" --output="$@" "$<" $(devnull_verbose)
 
 do_subst = sed	-e 's,%PREFIX%,${prefix},g'				\
+		-e 's,%sbindir%,${sbindir},g'				\
+		-e 's,%libexecdir%,${libexecdir},g'			\
 		-e 's,%modsrcdir%,${guilesitedir},g'			\
 		-e 's,%modbuilddir%,${guilesitegodir},g'		\
 		-e 's,%localstatedir%,${localstatedir},g'		\
@@ -156,6 +163,7 @@ EXTRA_DIST = \
   HACKING \
   src/cron.in \
   src/crontab.in \
+  src/crontab-access.in \
   src/mcron.in \
   tests/init.sh \
   $(TESTS)
@@ -169,8 +177,9 @@ transform_exe = s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/
 
 install-exec-hook:
 if MULTI_USER
-	tcrontab=`echo crontab | sed '$(transform_exe)'`; \
-	chmod u+s $(DESTDIR)$(bindir)/$${tcrontab}
+	tcrontab=`echo crontab | sed '$(transform_exe)'`;
+	tcrontab_access=`echo crontab-access | sed '$(transform_exe)'`; \
+	chmod u+s $(DESTDIR)$(sbindir)/$${tcrontab_access}
 	tcron=`echo cron | sed '$(transform_exe)'`;
 endif
 	tmcron=`echo mcron | sed '$(transform_exe)'`;
@@ -180,8 +189,9 @@ installcheck-local:
 	tmcron=`echo mcron | sed '$(transform_exe)'`; \
 	test -e $(DESTDIR)$(bindir)/$${tmcron}
 if MULTI_USER
-	tcrontab=`echo crontab | sed '$(transform_exe)'`; \
-	test -u $(DESTDIR)$(bindir)/$${tcrontab}
+	tcrontab=`echo crontab | sed '$(transform_exe)'`;
+	tcrontab_access=`echo crontab | sed '$(transform_exe)'`; \
+	test -u $(DESTDIR)$(bindir)/$${tcrontab_access}
 	tcron=`echo cron | sed '$(transform_exe)'`; \
 	test -e $(DESTDIR)$(sbindir)/$${tcron}
 else !MULTI_USER
