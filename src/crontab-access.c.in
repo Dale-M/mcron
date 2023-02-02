@@ -1,0 +1,10 @@
+#include <unistd.h>
+
+int main(int argc, char **argv)
+{
+  char *envp = NULL;
+  execve("%libexecdir%/crontab-access-real",
+         argv, &envp);
+  /* Should not get here! */
+  return 1;
+}

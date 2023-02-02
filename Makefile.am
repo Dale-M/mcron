@@ -26,10 +26,17 @@ noinst_SCRIPTS =
 
 if MULTI_USER
 bin_SCRIPTS += bin/crontab
-sbin_SCRIPTS = bin/cron bin/crontab-access
+sbin_SCRIPTS = bin/cron
+libexec_SCRIPTS = bin/crontab-access-real
+sbin_PROGRAMS = bin/crontab-access
 else
-noinst_SCRIPTS += bin/cron bin/crontab bin/crontab-access
+noinst_SCRIPTS += bin/cron bin/crontab bin/crontab-access-real
+noinst_PROGRAMS = bin/crontab-access
 endif
+
+# The dynamic linker should detect that it's being run for a setuid program,
+# but we take no chances.
+bin_crontab_access_LDFLAGS = -static
 
 # wrapper to be used in the build environment and for running tests.
 noinst_SCRIPTS += pre-inst-env
@@ -81,6 +88,8 @@ compiled_modules = \
 CLEANFILES = $(compiled_modules) \
 	bin/crontab \
 	bin/crontab-access \
+	src/crontab-access.c \
+	bin/crontab-access-real \
         bin/cron \
 	bin/mcron
 DISTCLEANFILES = src/mcron/config.scm
@@ -123,6 +132,9 @@ do_subst = sed	-e 's,%PREFIX%,${prefix},g'				\
 src/mcron/config.scm: src/mcron/config.scm.in Makefile
 	$(AM_V_GEN)$(do_subst) $< > $@
 
+src/crontab-access.c: src/crontab-access.c.in Makefile
+	$(AM_V_GEN)$(do_subst) $< > $@
+
 bin/% : src/%.in Makefile
 	$(AM_V_GEN)$(MKDIR_P) bin ; \
 	  $(do_subst) $< > $@ ; \
@@ -163,7 +175,8 @@ EXTRA_DIST = \
   HACKING \
   src/cron.in \
   src/crontab.in \
-  src/crontab-access.in \
+  src/crontab-access-real.in \
+  src/crontab-access.c.in \
   src/mcron.in \
   tests/init.sh \
   $(TESTS)
