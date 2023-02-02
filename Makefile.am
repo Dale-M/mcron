@@ -168,8 +168,7 @@ install-exec-hook:
 if MULTI_USER
 	tcrontab=`echo crontab | sed '$(transform_exe)'`; \
 	chmod u+s $(DESTDIR)$(bindir)/$${tcrontab}
-	tcron=`echo cron | sed '$(transform_exe)'`; \
-	chmod u+s $(DESTDIR)$(sbindir)/$${tcron}
+	tcron=`echo cron | sed '$(transform_exe)'`;
 endif
 	tmcron=`echo mcron | sed '$(transform_exe)'`;
 
