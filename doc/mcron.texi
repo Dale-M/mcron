@@ -85,6 +85,7 @@ Full available syntax
 Extended Guile examples
 
 * AT commands::
+* Weekly::
 * Every second Sunday::
 * Two hours every day::
 * Missing the first appointment::
@@ -309,12 +310,11 @@ of jobs that mcron has to start at the same time.}
 @findex next-minute-from
 @findex next-hour-from
 @findex next-day-from
-@findex next-week-from
 @findex next-month-from
 @findex next-year-from
 Similarly to @code{next-second-from}, there are also
 @code{next-minute-from}, @code{next-hour-from}, @code{next-day-from},
-@code{next-week-from}, @code{next-month-from}, @code{next-year-from}.
+@code{next-month-from}, @code{next-year-from}.
 
 @findex iota
 Furthermore, the optional argument can be fulfilled by the Guile
@@ -333,7 +333,6 @@ example @code{(range 0 10 2)} will also yield the list @code{'(0 2 4 6
 @findex next-minute
 @findex next-hour
 @findex next-day
-@findex next-week
 @findex next-month
 @findex next-year
 @cindex time specification, list
@@ -413,13 +412,14 @@ demonstrate how to code around them.
 
 @menu
 * AT commands::
+* Weekly::
 * Every second Sunday::
 * Two hours every day::
 * Missing the first appointment::
 * Penultimate day of every month::
 @end menu
 
-@node AT commands, Every second Sunday, Extended Guile examples, Extended Guile examples
+@node AT commands, Weekly, Extended Guile examples, Extended Guile examples
 @subsection Synthesizing ``at'' commands
 @cindex at command
 The current implementation of mcron does not provide for an @emph{at}
@@ -438,7 +438,27 @@ superfluous entries).
                 (kill (getppid) SIGINT)))
 @end example
 
-@node Every second Sunday, Two hours every day, AT commands, Extended Guile examples
+@node Weekly, Every second Sunday, AT commands, Extended Guile examples
+@subsection Weekly
+@cindex examples, weekly
+The astute reader will have noticed that there are no @code{next-week} or
+@code{next-week-from} functions.  This is because these concepts are fraught
+with ambiguity: does ``next week'' mean seven days from now, or next Sunday,
+or next Monday, or what?  If the month does not start on a week boundary, are
+the first few days considered the first week, or does the first week begin on
+the first Sunday (or Monday)?  This is important because, for example, trying
+to specify the second Thursday in a month might actually get the third one if
+the latter interpretation is held.  Because of this we do not provide these
+functions.
+
+If you really want a job to run every seven days, you could use code like
+
+@example
+(job (lambda (current-time) (+ current-time (* 7 24 60 60)))
+     "my-program")
+@end example
+
+@node Every second Sunday, Two hours every day, Weekly, Extended Guile examples
 @subsection Every second Sunday
 @cindex examples, every second sunday
 To run @code{my-program} on the second Sunday of every month, a Guile
@@ -1207,7 +1227,7 @@ Cron has been run by a user other than root.
 
 
 
-@node Guile modules, Index, Invoking, Top
+@node Guile modules, GNU Free Documentation License, Invoking, Top
 @chapter Guile modules
 Some of the key parts of mcron are implemented as modules so they can
 be incorporated into other Guile programs, or even into C-sourced
@@ -1438,12 +1458,12 @@ Once this module has been declared in a program, a crontab file can be
 used to augment the current job list with a call to
 @code{read-vixie-file}.
 
-@node GNU Free Documentation License
+@node GNU Free Documentation License, Index, Guile modules, Top
 @appendix GNU Free Documentation License
 
 @include fdl.texi
 
-@node Index,  , Guile modules, Top
+@node Index,  , GNU Free Documentation License, Top
 @unnumbered Index
 
 @printindex cp
