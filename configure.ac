@@ -43,7 +43,7 @@ m4_pattern_allow([^GUILE_PKG])
 m4_pattern_allow([^GUILE_PROGS])
 
 # Check for latest Guile development files.
-GUILE_PKG([3.0])
+GUILE_PKG
 
 # Checks for programs.
 GUILE_PROGS
