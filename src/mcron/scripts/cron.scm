@@ -147,7 +147,7 @@ option.\n")
                                              (delete-file config-socket-file))
                                            noop)
                              (exit EXIT_FAILURE))))
-                '(SIGTERM SIGINT SIGQUIT SIGHUP))
+              (list SIGTERM SIGINT SIGQUIT SIGHUP))
 
   ;; We can now write the PID file.
   (with-output-to-file  config-pid-file

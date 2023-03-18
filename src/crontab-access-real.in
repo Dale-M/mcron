@@ -1,0 +1,45 @@
+#!%GUILE% --no-auto-compile
+-*- scheme -*-
+!#
+
+;;;; crontab -- run jobs at scheduled times
+;;; Copyright © 2003, 2020  Dale Mellor <mcron-lsfnyl@rdmp.org>
+;;; Copyright © 2015, 2016, 2018  Mathieu Lirzin <mthl@gnu.org>
+;;;
+;;; This file is part of GNU Mcron.
+;;;
+;;; GNU Mcron is free software: you can redistribute it and/or modify
+;;; it under the terms of the GNU General Public License as published by
+;;; the Free Software Foundation, either version 3 of the License, or
+;;; (at your option) any later version.
+;;;
+;;; GNU Mcron is distributed in the hope that it will be useful,
+;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;; GNU General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU General Public License
+;;; along with GNU Mcron.  If not, see <http://www.gnu.org/licenses/>.
+
+
+(unless (getenv "MCRON_UNINSTALLED")
+  (set! %load-path (cons "%modsrcdir%" %load-path))
+  (set! %load-compiled-path (cons "%modbuilddir%" %load-compiled-path)))
+
+(use-modules (mcron scripts crontab)
+             (mcron command-line-processor))
+
+(process-command-line  (command-line)
+   application "crontab"
+   version     "%VERSION%"
+   usage       "[-u user] { -R | -l | -r }"
+   help-preamble "the default operation is to list."
+   option (--user=     -u  "the user whose files are to be manipulated")
+   option (--replace   -R  "replace this userʼs crontab via stdin")
+   option (--list      -l  "list this userʼs crontab")
+   option (--remove    -r  "delete the userʼs crontab")
+   bug-address "%PACKAGE_BUGREPORT%"
+   copyright   "2003, 2016, 2020  Free Software Foundation, Inc."
+   license     GPLv3)
+
+((@ (mcron scripts crontab-access) main) --user --replace --list --remove)

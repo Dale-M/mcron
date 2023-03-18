@@ -19,25 +19,11 @@
 
 (define-module (mcron scripts crontab)
   #:use-module (ice-9 rdelim)
+  #:use-module (srfi srfi-1)
   #:use-module (mcron config)
   #:use-module (mcron utils)
   #:use-module (mcron vixie-specification)
   #:export (main))
-
-(define (hit-server user-name)
-  "Tell the running cron daemon that the user corresponding to
-USER-NAME has modified his crontab.  USER-NAME is written to the
-'/var/cron/socket' UNIX socket."
-  (catch #t
-    (lambda ()
-      (let ((socket (socket AF_UNIX SOCK_STREAM 0)))
-        (connect socket AF_UNIX config-socket-file)
-        (display user-name socket)
-        (close socket)))
-    (lambda (key . args)
-      (display "Warning: a cron daemon is not running.\n"))))
-
-
 
 ;; Display the prompt and wait for user to type his choice. Return #t if the
 ;; answer begins with 'y' or 'Y', return #f if it begins with 'n' or 'N',
@@ -56,23 +42,6 @@ USER-NAME has modified his crontab.  USER-NAME is written to the
 
 
 
-(define (in-access-file? file name)
-  "Scan FILE which should contain one user name per line (such as
-'/var/cron/allow' and '/var/cron/deny').  Return #t if NAME is in there, and
-#f otherwise.  if FILE cannot be opened, a error is signaled."
-  (catch #t
-    (lambda ()
-      (with-input-from-file file
-        (lambda ()
-          (let loop ((input (read-line)))
-            (cond ((eof-object? input)
-                   #f)
-                  ((string=? input name)
-                   #t)
-                  (else
-                   (loop (read-line))))))))
-    (const '())))
-
 
 ;;;
 ;;; Entry point.
@@ -80,117 +49,117 @@ USER-NAME has modified his crontab.  USER-NAME is written to the
 
 (define (main --user --edit --list --remove files)
   (when config-debug  (debug-enable 'backtrace))
-  (let ((crontab-real-user
-         ;; This program should have been installed SUID root. Here we get
-         ;; the passwd entry for the real user who is running this program.
-         (passwd:name (getpw (getuid)))))
+  ;; Check that no more than one of the mutually exclusive options are
+  ;; being used.
+  (when (<  1  (+ (if --edit 1 0) (if --list 1 0) (if --remove 1 0)))
+    (mcron-error 7 "Only one of options -e, -l or -r can be used."))
 
-    ;; If the real user is not allowed to use crontab due to the
-    ;; /var/cron/allow and/or /var/cron/deny files, bomb out now.
-    (if (or (eq? (in-access-file? config-allow-file crontab-real-user) #f)
-            (eq? (in-access-file? config-deny-file crontab-real-user) #t))
-        (mcron-error 6 "Access denied by system operator."))
+  ;; Check that a non-root user is trying to read someone else's files.
+  ;; This will be enforced in the setuid helper 'crontab-access', but good
+  ;; to let the user know early.
+  (when (and (not (zero? (getuid))) --user)
+    (mcron-error 8 "Only root can use the -u option."))
 
-    ;; Check that no more than one of the mutually exclusive options are
-    ;; being used.
-      (when (<  1  (+ (if --edit 1 0) (if --list 1 0) (if --remove 1 0)))
-        (mcron-error 7 "Only one of options -e, -l or -r can be used."))
+  ;; Crontabs being edited should not be global or group-readable.
+  (umask #o077)
 
-      ;; Check that a non-root user is trying to read someone else's files.
-      (when (and (not (zero? (getuid))) --user)
-        (mcron-error 8 "Only root can use the -u option."))
+  (let ((user-args (if --user (list "-u" --user) '())))
+    (define (usable-crontab-access? filename)
+      (and=> (stat filename #f)
+             (λ (st)
+               (or (zero? (getuid))
+                   (and (not (zero? (logand #o4000 (stat:mode st))))
+                        (zero? (stat:uid st))
+                        (access? filename X_OK))))))
 
-      (letrec* (;; Iff the --user option is given, the crontab-user may be
-                ;; different from the real user.
-                (crontab-user (or --user crontab-real-user))
-                ;; So now we know which crontab file we will be manipulating.
-                (crontab-file
-                         (string-append config-spool-dir "/" crontab-user)))
-        ;; There are four possible sub-personalities to the crontab
-        ;; personality: list, remove, edit and replace (when the user uses no
-        ;; options but supplies file names on the command line).
+    (define crontab-access
+      (find usable-crontab-access?
+            (map (λ (f) (string-append f "/crontab-access"))
+                 (cons config-sbin-dir
+                       (or (and=> (getenv "PATH") parse-path)
+                           '())))))
+
+    (define (exec-crontab-access . args)
+      (catch #t
+        (λ ()
+          (apply execlp crontab-access crontab-access
+                 (append user-args args))
+          (mcron-error 18 "Couldn't execute `crontab-access'."))
+        (λ args
+          (apply mcron-error 18 "Couldn't execute `crontab-access'." args))))
+
+    (define (crontab-access-dup2 srcs dsts closes . args)
+      (let ((pid (primitive-fork)))
         (cond
-         ;; In the list personality, we simply open the crontab and copy it
-         ;; character-by-character to the standard output. If anything goes
-         ;; wrong, it can only mean that this user does not have a crontab
-         ;; file.
-         (--list
+         ((zero? pid)
+          (for-each dup2 srcs dsts)
+          (for-each close-fdes closes)
+          (apply exec-crontab-access args))
+         (else
+          (waitpid pid)))))
+
+    (define (try-replace file)
+      (call-with-input-file file
+        (λ (port)
+          (crontab-access-dup2 (list (fileno port)) '(0) '() "-R"))))
+
+    (unless crontab-access
+      (mcron-error 18 "Couldn't find a usable `crontab-access'."))
+
+    ;; There are four possible sub-personalities to the crontab
+    ;; personality: list, remove, edit and replace (when the user uses no
+    ;; options but supplies file names on the command line).
+    (cond
+     (--list (exec-crontab-access "-l"))
+     (--remove (exec-crontab-access "-r"))
+
+     ;; In the edit personality, we determine the name of a temporary file and
+     ;; an editor command, copy an existing crontab file (if it is there) to
+     ;; the temporary file, once the editor returns we try to replace any
+     ;; existing crontab file.  If this fails, we give user a choice of
+     ;; editing the file again or quitting the program and losing all changes
+     ;; made.
+     (--edit
+      (let* ((template (string-append config-tmp-dir
+                                      "/crontab."
+                                      (number->string (getpid))
+                                      ".XXXXXX"))
+             (temp-file (call-with-port (mkstemp template "w")
+                          (λ (port)
+                            (crontab-access-dup2 (list (fileno port)) '(1)
+                                                 '(2) "-l")
+                            (chmod port #o600)
+                            (port-filename port)))))
+        (define (exit/cleanup status)
+          (false-if-exception (delete-file temp-file))
+          (primitive-exit status))
+
+        (let retry ()
           (catch #t
-            (λ ()
-              (with-input-from-file crontab-file
-                (λ ()
-                  (do ((input (read-char) (read-char)))
-                      ((eof-object? input))
-                    (display input)))))
-            (λ (key . args)
-              (display (string-append "No crontab for "
-                                      crontab-user
-                                      " exists.\n")))))
-
-         ;; In the edit personality, we determine the name of a temporary file
-         ;; and an editor command, copy an existing crontab file (if it is
-         ;; there) to the temporary file, making sure the ownership is set so
-         ;; the real user can edit it; once the editor returns we try to read
-         ;; the file to check that it is parseable (but do nothing more with
-         ;; the configuration), and if it is okay (this program is still
-         ;; running!) we move the temporary file to the real crontab, wake the
-         ;; cron daemon up, and remove the temporary file. If the parse fails,
-         ;; we give user a choice of editing the file again or quitting the
-         ;; program and losing all changes made.
-         (--edit
-          (let ((temp-file (string-append config-tmp-dir
-                                          "/crontab."
-                                          (number->string (getpid)))))
-            (catch #t
-              (λ () (copy-file crontab-file temp-file))
-              (λ (key . args) (with-output-to-file temp-file noop)))
-            (chown temp-file (getuid) (getgid))
-            (let retry ()
-              (system (string-append
-                       (or (getenv "VISUAL") (getenv "EDITOR") "vi")
-                       " "
-                       temp-file))
-              (catch 'mcron-error
-                (λ () (read-vixie-file temp-file))
-                (λ (key exit-code . msg)
-                  (apply mcron-error 0 msg)
-                  (if (get-yes-no "Edit again?")
-                      (retry)
-                      (begin
-                        (mcron-error 0 "Crontab not changed")
-                        (primitive-exit 0))))))
-            (copy-file temp-file crontab-file)
-            (delete-file temp-file)
-            (hit-server crontab-user)))
-
-         ;; In the remove personality we simply make an effort to delete the
-         ;; crontab and wake the daemon. No worries if this fails.
-         (--remove (catch #t (λ ()  (delete-file crontab-file)
-                                    (hit-server crontab-user))
-                          noop))
-
-         ;; XXX: This comment is wrong.
-         ;; In the case of the replace personality we loop over all the
-         ;; arguments on the command line, and for each one parse the file to
-         ;; make sure it is parseable (but subsequently ignore the
-         ;; configuration), and all being well we copy it to the crontab
-         ;; location; we deal with the standard input in the same way but
-         ;; different. :-) In either case the server is woken so that it will
-         ;; read the newly installed crontab.
-         ((not (null? files))
-          (let ((input-file (car files)))
-            (catch-mcron-error
-             (if (string=? input-file "-")
-                 (let ((input-string (read-string)))
-                   (read-vixie-port (open-input-string input-string))
-                   (with-output-to-file crontab-file
-                     (λ () (display input-string))))
+            (λ () (system (string-append
+                           (or (getenv "VISUAL") (getenv "EDITOR") "vi")
+                           " "
+                           temp-file)))
+            (λ _ (exit/cleanup 1)))
+          (case (status:exit-val (cdr (try-replace temp-file)))
+            ((9 10 11)
+             (if (get-yes-no "Edit again?")
+                 (retry)
                  (begin
-                   (read-vixie-file input-file)
-                   (copy-file input-file crontab-file))))
-            (hit-server crontab-user)))
+                   (mcron-error 0 "Crontab not changed")
+                   (exit/cleanup 0))))
+            (else => exit/cleanup)))))
 
-         ;; The user is being silly. The message here is identical to the one
-         ;; Vixie cron used to put out, for total compatibility.
-         (else (mcron-error 15
-                 "usage error: file name must be specified for replace."))))))
+     ;; Replace crontab with given file or stdin.  If it is a file, it must
+     ;; be opened here and not in the setuid helper, to prevent accessing
+     ;; unauthorized files.
+     ((not (null? files))
+      (let ((input-file (car files)))
+        (unless (string=? input-file "-")
+          (dup2 (fileno (open-file input-file "r")) 0))
+        (exec-crontab-access "-R")))
+
+     ;; The user is being silly. The message here is identical to the one
+     ;; Vixie cron used to put out, for total compatibility.
+     (else (mcron-error 15
+             "usage error: file name must be specified for replace.")))))

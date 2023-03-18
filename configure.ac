@@ -65,6 +65,14 @@ AC_ARG_ENABLE([multi-user],
     [Don't Install legacy cron and crontab programs])],
   [enable_multi_user="$enableval"],
   [enable_multi_user="yes"])
+
+dnl Not possible to run this conditionally?
+AC_PROG_CC
+dnl AS_IF([test "x$enable_multi_user" = xyes],
+dnl   [# Need a C compiler to compile setuid wrapper
+dnl   AC_PROG_CC]
+dnl fi
+
 AM_CONDITIONAL([MULTI_USER], [test "x$enable_multi_user" = xyes])
 
 # Configure the various files that mcron uses at runtime.
@@ -127,5 +135,5 @@ AC_CONFIG_FILES([pre-inst-env:build-aux/pre-inst-env.in],
                 [chmod +x pre-inst-env])
 AC_CONFIG_FILES([doc/config.texi
                  Makefile
-                 src/mcron/config.scm])
+                 src/mcron/config.scm.in])
 AC_OUTPUT

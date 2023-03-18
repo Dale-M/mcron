@@ -26,6 +26,7 @@
 (define-public config-package-url "@PACKAGE_URL@")
 (define-public config-sendmail "@SENDMAIL@")
 
+(define-public config-sbin-dir "%sbindir%")
 (define-public config-spool-dir "@CONFIG_SPOOL_DIR@")
 (define-public config-socket-file "@CONFIG_SOCKET_FILE@")
 (define-public config-allow-file "@CONFIG_ALLOW_FILE@")
