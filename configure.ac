@@ -42,11 +42,11 @@ m4_pattern_allow([^GUILE_PKG_ERRORS])
 m4_pattern_allow([^GUILE_PKG])
 m4_pattern_allow([^GUILE_PROGS])
 
-# Check for latest Guile development files.
-GUILE_PKG
-
 # Checks for programs.
-GUILE_PROGS
+GUILE_PROGS([3.0])
+
+# Check for latest Guile development files.
+GUILE_PKG([3.0])
 
 AM_MISSING_PROG(HELP2MAN, help2man, $missing_dir)
 
